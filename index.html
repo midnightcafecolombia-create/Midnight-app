@@ -588,12 +588,12 @@ body.desk .nav::-webkit-scrollbar{width:0}
 body.desk .dk-grid{grid-template-columns:repeat(4,1fr);gap:14px}
 .dk{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;padding:0 0 10px;font:inherit;color:var(--cream);cursor:pointer}
 .dk:hover{border-color:var(--gold)}
-.dk-img{display:block;aspect-ratio:2/3;background:#0b0907 center/cover}
+.dk-img{display:block;width:100%;height:auto;aspect-ratio:2/3;object-fit:contain;background:#0b0907}
 .dk b{padding:0 10px;font-family:var(--display);font-weight:600;font-size:13px;color:var(--gold-hi);letter-spacing:.03em}
 .dk small{padding:0 10px;font-size:11.5px;color:var(--muted);line-height:1.35}
 .drinksheet{max-height:94%;gap:10px;z-index:24}
 .dk-x{position:absolute;top:10px;right:12px;z-index:2;background:rgba(11,9,7,.7);border:1px solid var(--line);color:var(--cream);width:34px;height:34px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer}
-.dk-big{width:100%;flex:1;min-height:260px;max-height:62vh;border-radius:14px;background:#0b0907 center/contain no-repeat}
+.dk-big{width:100%;flex:none;height:min(58vh,560px);border-radius:14px;background:#0b0907 center/contain no-repeat}
 .dk-box{display:flex;flex-direction:column;gap:6px}
 .dk-box h3{margin:0;font-size:20px}
 .dk-box p{margin:0;font-size:14px;color:var(--cream)}
@@ -2609,7 +2609,7 @@ const MOCKS=[{"c": "Clásica de café", "n": "Espresso Tonic", "i": "Café espre
 const DK_COLS=["Todos",...new Set(MOCKS.map(d=>d.c))];let DKF="Todos";
 function renderDrinks(){
   $("dk-filter").innerHTML=DK_COLS.map(c=>`<button type="button" class="${c===DKF?"on":""}" onclick="DKF='${c}';renderDrinks()">${c}</button>`).join("");
-  $("dk-grid").innerHTML=MOCKS.map((d,i)=>DKF==="Todos"||d.c===DKF?`<button type="button" class="dk" onclick="openDrink(${i})"><span class="dk-img" style="background-image:url(${d.img})"></span><b>${d.n}</b><small>${d.i}</small></button>`:"").join("");
+  $("dk-grid").innerHTML=MOCKS.map((d,i)=>DKF==="Todos"||d.c===DKF?`<button type="button" class="dk" onclick="openDrink(${i})"><img class="dk-img" src="${d.img}" alt="${d.n}" loading="lazy" width="400" height="600"><b>${d.n}</b><small>${d.i}</small></button>`:"").join("");
 }
 function openDrink(i){const d=MOCKS[i];DKI=i;
   $("dk-big").style.backgroundImage=`url(${d.img})`;$("dk-col").textContent=d.c+" · sin alcohol";$("dk-name").textContent=d.n;$("dk-ing").textContent=d.i;
