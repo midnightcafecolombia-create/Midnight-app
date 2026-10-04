@@ -1990,6 +1990,9 @@ document.addEventListener("click",e=>{
   try{if(!(navigator.sendBeacon&&navigator.sendBeacon("/notify.php",new Blob([body],{type:"application/json"}))))fetch("/notify.php",{method:"POST",headers:{"Content-Type":"application/json"},body,keepalive:true}).catch(()=>{})}catch(err){}
 });
 
+/* Stock en vivo: en el dominio propio, el panel de dueños publica el stock en /stock.php */
+if(NOTIFY_ON){fetch("/stock.php",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j&&j.q){STOCK.q=j.q;STOCK.low=j.low??STOCK.low;render();if(current==="b2b")renderB2B();if(current==="order")renderOrder()}}).catch(()=>{})}
+
 /* ===== Costos (solo dueña) =====
    Los números viven en la base privada del artifact (regla: solo la dueña lee y escribe).
    El código de la app no lleva precios de costo. */
