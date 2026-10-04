@@ -648,6 +648,30 @@ body.desk .sheet{left:calc(228px + (100% - 228px)/2);right:auto;width:min(580px,
 body.desk .sheet.on{transform:translate(-50%,0)}
 body.desk .toast{left:calc(228px + (100% - 228px)/2)}
 body.desk .chat-note{left:calc(228px + (100% - 228px)/2 - 290px);right:auto;width:580px;bottom:24px}
+
+/* ===== Inicio en computadora: rejilla de 4 columnas ===== */
+body.desk #home .scroll{padding-left:max(28px,calc((100% - 1120px)/2));padding-right:max(28px,calc((100% - 1120px)/2))}
+body.desk #home .home-hero{padding-top:28px;padding-bottom:26px}
+body.desk #home .grid{grid-template-columns:repeat(4,1fr);gap:18px;padding:8px 0 0}
+body.desk #home .grid>*{grid-column:auto!important;margin:0!important;width:100%!important}
+body.desk #home .grid>.feature{grid-column:span 2!important;grid-row:span 2;min-height:300px;flex-direction:column}
+body.desk #home .grid>.feature .img{width:100%;height:auto;flex:1;min-height:180px;background-position:center}
+body.desk #home .grid>.feature .txt{padding:18px 20px 20px;flex:none}
+body.desk #home .grid>.feature b{font-size:24px}
+body.desk #home .grid>.calc-banner{grid-column:span 2!important;min-height:141px;padding:20px 22px;gap:18px}
+body.desk #home .calc-banner .ic{width:56px;height:56px;flex-basis:56px;border-radius:14px}
+body.desk #home .calc-banner b{font-size:17px}
+body.desk #home .calc-banner small{font-size:13.5px}
+body.desk #home .grid>.tile:not(.feature){min-height:250px}
+body.desk #home .grid>.tile:not(.feature) .img{height:150px}
+body.desk #home .tile .txt{padding:14px 16px 16px}
+body.desk #home .tile b{font-size:16px}
+body.desk #home .tile small{font-size:13px}
+body.desk #home .grid>.tile[onclick*="cuenta"]{grid-column:span 4!important;min-height:120px;flex-direction:row}
+body.desk #home .grid>.tile[onclick*="cuenta"] .img{width:40%;height:auto}
+body.desk #home .grid>.tile[onclick*="cuenta"] .txt{justify-content:center;padding:18px 24px}
+body.desk #home .cs-main{width:100%;margin:18px 0 4px;padding:24px 28px}
+body.desk #home .tile:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.45)}
 </style>
 
 <span id="mount" hidden></span>
@@ -683,10 +707,10 @@ body.desk .chat-note{left:calc(228px + (100% - 228px)/2 - 290px);right:auto;widt
         <button class="calc-banner" style="grid-column:1/-1;margin:0;width:100%" onclick="go('insumos')"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16l-1.5 13h-13zM8 8V6a4 4 0 0 1 8 0v2M9 12v5M15 12v5"/></svg></span><span><b>INSUMOS</b><small>Azúcar, endulzantes, vasos y desechables</small></span></button>
         <button class="tile" onclick="go('club')"><div class="img" style="background-image:url(https://cdn.jsdelivr.net/gh/midnightcafecolombia-create/Midnight-app@ebc5755904c68e052e14b2e8462683568ac20e5e/img/752e4e5801921bcb.jpg)"></div><div class="txt"><b>MIDNIGHT CLUB</b><small>Membresías para negocios</small></div><span class="chev">›</span></button>
         <button class="tile" onclick="go('academy')"><div class="img" style="background-image:url(https://cdn.jsdelivr.net/gh/midnightcafecolombia-create/Midnight-app@ebc5755904c68e052e14b2e8462683568ac20e5e/img/55f3ca783dc2681c.jpg)"></div><div class="txt"><b>MIDNIGHT ACADEMY</b><small>Formación en barismo y mixología</small></div><span class="chev">›</span></button>
-        <button class="calc-banner" style="grid-column:1/-1;margin:0;width:100%" onclick="go('cafeteras')"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3h16v5H4zM6 8v8M18 8v8M4 16h16v5H4zM10 8v3h4V8M9 13h6l-.6 3H9.6z"/></svg></span><span><b>CAFETERAS MIDNIGHT</b><small>Máquinas profesionales para tu negocio</small></span></button>
-        <button class="calc-banner" style="grid-column:1/-1;margin:0;width:100%" onclick="go('franq')"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M4 21V9l8-5 8 5v12M9 21v-6h6v6M8 11h1M15 11h1"/></svg></span><span><b>MIDNIGHT FRANCHISING</b><small>Abre tu propio Midnight · desde $64,000</small></span></button>
         <button class="tile" onclick="go('b2b')"><div class="img" style="background-image:url(https://cdn.jsdelivr.net/gh/midnightcafecolombia-create/Midnight-app@ebc5755904c68e052e14b2e8462683568ac20e5e/img/e77b054c9adc3ffe.jpg)"></div><div class="txt"><b>NEGOCIOS B2B</b><small>Restaurantes, hoteles y cuentas comerciales</small></div><span class="chev">›</span></button>
         <button class="tile" onclick="go('dist')"><div class="img" style="background-image:url(https://cdn.jsdelivr.net/gh/midnightcafecolombia-create/Midnight-app@ebc5755904c68e052e14b2e8462683568ac20e5e/img/e8a0bdea30656dc4.jpg)"></div><div class="txt"><b>DISTRIBUIDORES</b><small>Crece con Midnight</small></div><span class="chev">›</span></button>
+        <button class="calc-banner" style="grid-column:1/-1;margin:0;width:100%" onclick="go('cafeteras')"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3h16v5H4zM6 8v8M18 8v8M4 16h16v5H4zM10 8v3h4V8M9 13h6l-.6 3H9.6z"/></svg></span><span><b>CAFETERAS MIDNIGHT</b><small>Máquinas profesionales para tu negocio</small></span></button>
+        <button class="calc-banner" style="grid-column:1/-1;margin:0;width:100%" onclick="go('franq')"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M4 21V9l8-5 8 5v12M9 21v-6h6v6M8 11h1M15 11h1"/></svg></span><span><b>MIDNIGHT FRANCHISING</b><small>Abre tu propio Midnight · desde $64,000</small></span></button>
         <button class="tile" onclick="go('cuenta')" style="grid-column:1/-1;min-height:auto;flex-direction:row"><div class="img" style="background-image:url(https://cdn.jsdelivr.net/gh/midnightcafecolombia-create/Midnight-app@ebc5755904c68e052e14b2e8462683568ac20e5e/img/fd179bc554e0fbee.jpg);width:40%;height:auto"></div><div class="txt"><b>MI MIDNIGHT</b><small>Pedidos, suscripciones y beneficios</small></div><span class="chev">›</span></button>
       </div>
       <button class="cs-main" onclick="go('consulting')">
