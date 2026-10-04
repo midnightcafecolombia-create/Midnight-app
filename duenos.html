@@ -87,6 +87,12 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
 .toast.on{transform:translate(-50%,0)}
 @media(prefers-reduced-motion:reduce){.toast{transition:none}}
 /* Costos (solo dueña) */
+.cx-incl{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
+.cx-incl div{display:flex;flex-wrap:wrap;gap:6px}
+.cx-incl button{padding:6px 10px;border:1px solid var(--line);border-radius:16px;font-size:12.5px;color:var(--muted);background:none}
+.cx-incl button.on{background:var(--gold);color:#120d07;border-color:var(--gold)}
+.cx-incl small{font-size:11px;color:var(--muted)}
+
 .cx-tabs{display:flex;border-bottom:1px solid var(--line)}
 .cx-tabs button{flex:1;padding:10px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;font-size:13px;letter-spacing:.06em}
 .cx-tabs button.on{color:var(--gold);border-bottom-color:var(--gold)}
@@ -323,6 +329,9 @@ function cxBuild(){
   const S=CX.set;
   $("cx-set").innerHTML=`<label>Vasos<select id="cxs-cups"><option value="logo">Con logo</option><option value="plain">Sin logo</option></select></label><label>Cálculo<select id="cxs-basis"><option value="frac">Fraccionado</option><option value="case">Cajas completas</option></select></label>`+
     CX_SET.map(([k,l,st])=>`<label>${l}<input id="cxs-${k}" type="number" step="${st}" inputmode="decimal" value="${S[k]}"></label>`).join("");
+  $("cx-set").insertAdjacentHTML("afterbegin",`<div class="cx-incl" style="grid-column:1/-1"><span>Incluido en el kit</span><div>${CX_GROUPS.map(g=>`<button type="button" class="${cxEx(g)?"":"on"}" data-g="${g}">${cxEx(g)?"":"✓ "}${g}</button>`).join("")}</div><small>Toca para incluir o quitar. Lo que no provee Midnight queda fuera del costo y del precio.</small></div>`);
+  $("cx-set").querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const ex=[...(S.excl||CX_EX_DEF)];const g=b.dataset.g,i=ex.indexOf(g);if(i<0)ex.push(g);else ex.splice(i,1);S.excl=ex;cxBuild();cxSave()});
+  ["mw","mo","ma"].forEach(k=>{const el=$("cxs-"+k);if(el)el.closest("label").hidden=cxEx("Leches")});
   $("cxs-cups").value=S.cups;$("cxs-basis").value=S.basis;
   $("cxs-cups").onchange=e=>{S.cups=e.target.value;cxKit();cxSave()};$("cxs-basis").onchange=e=>{S.basis=e.target.value;cxKit();cxSave()};
   CX_SET.forEach(([k])=>$("cxs-"+k).oninput=e=>{S[k]=+e.target.value||0;cxKit();cxSave()});
@@ -355,12 +364,19 @@ function cxUsage(n){const S=CX.set,q={},pc=k=>(S[k]||0)/100,w=1+pc("waste");CX.i
   q.mw=milk*pc("mw");q.mo=milk*pc("mo");q.ma=milk*pc("ma");q.yv=syr*.40;q.yc=syr*.35;q.yh=syr*.25;
   const sp=n*S.sweet;q.sw=sp*pc("sw");q.sr=sp*pc("sr");q.ss=sp*pc("ss");q.sv=sp*pc("sv");
   q.sleeve=c812*S.sleeve;q.stir=n*S.stir;q.nap=n*S.nap;q.carry=n*pc("carry")/4;return q}
+const CX_GROUPS=["Café","Vasos y tapas","Endulzantes","Consumibles","Leches","Syrups y salsa"];
+const CX_EX_DEF=["Leches","Syrups y salsa"]; // Midnight no provee leches ni syrups
+const cxEx=g=>(CX.set.excl||CX_EX_DEF).includes(g);
 function cxCalc(n){const q=cxUsage(n),rows=[];let cost=0;
-  CX.items.forEach(i=>{const qty=q[i.id];if(!(qty>0))return;const pp=cxPP(i),packs=Math.ceil(qty/i.ps-1e-9),c=CX.set.basis==="case"?packs*pp:qty*pp/i.ps;cost+=c;rows.push({i,pp,qty,packs,c})});
+  CX.items.forEach(i=>{const qty=q[i.id];if(!(qty>0)||cxEx(i.g))return;const pp=cxPP(i),packs=Math.ceil(qty/i.ps-1e-9),c=CX.set.basis==="case"?packs*pp:qty*pp/i.ps;cost+=c;rows.push({i,pp,qty,packs,c})});
   cost+=CX.set.deliv;const m=Math.min(CX.set.margin,95)/100,price=cost/(1-m);return{rows,cost,price,cpc:cost/n,ppc:price/n,gain:price-cost}}
 function cxDrink(m){const S=CX.set,I=cxIt(),u=id=>cxPP(I[id])/I[id].ps,pc=k=>(S[k]||0)/100,w=1+pc("waste");
-  return m.g*w*u("coffee")+u("c"+m.cup)+u("l"+m.cup)+m.milk*w*(pc("mw")*u("mw")+pc("mo")*u("mo")+pc("ma")*u("ma"))+m.syr*(.4*u("yv")+.35*u("yc")+.25*u("yh"))+m.choc*u("ch")
-   +S.sweet*(pc("sw")*u("sw")+pc("sr")*u("sr")+pc("ss")*u("ss")+pc("sv")*u("sv"))+S.stir*u("stir")+S.nap*u("nap")+pc("carry")/4*u("carry")+(m.cup>4?S.sleeve*u("sleeve"):0)}
+  return (cxEx("Café")?0:m.g*w*u("coffee"))
+   +(cxEx("Vasos y tapas")?0:u("c"+m.cup)+u("l"+m.cup)+(m.cup>4?S.sleeve*u("sleeve"):0))
+   +(cxEx("Leches")?0:m.milk*w*(pc("mw")*u("mw")+pc("mo")*u("mo")+pc("ma")*u("ma")))
+   +(cxEx("Syrups y salsa")?0:m.syr*(.4*u("yv")+.35*u("yc")+.25*u("yh"))+m.choc*u("ch"))
+   +(cxEx("Endulzantes")?0:S.sweet*(pc("sw")*u("sw")+pc("sr")*u("sr")+pc("ss")*u("ss")+pc("sv")*u("sv")))
+   +(cxEx("Consumibles")?0:S.stir*u("stir")+S.nap*u("nap")+pc("carry")/4*u("carry"))}
 function cxKit(){if(!CX)return;
   const sum=CX.menu.reduce((s,m)=>s+m.mix,0);$("cx-mixsum").textContent=sum===100?"La mezcla suma 100%.":`La mezcla suma ${sum}%: ajústala a 100%.`;
   CX.menu.forEach((m,i)=>$("cxd-"+i).textContent=cxm(cxDrink(m),3));
