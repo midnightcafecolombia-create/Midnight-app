@@ -568,6 +568,9 @@ body.desk .nav button{flex-direction:row;justify-content:flex-start;gap:14px;fon
 body.desk .nav button:hover{background:rgba(212,171,95,.08)}
 body.desk .nav button.act{background:rgba(212,171,95,.14);color:var(--gold-hi)}
 body.desk .nav button.act::before{display:none}
+.nav .desk-only{display:none}
+body.desk .nav .desk-only{display:flex}
+body.desk .nav button svg{width:22px;height:22px;flex:none}
 body.desk .screen{inset:0 0 0 228px}
 body.desk .bar,body.desk .scroll{padding-left:max(24px,calc((100% - 860px)/2));padding-right:max(24px,calc((100% - 860px)/2))}
 body.desk .scroll{padding-bottom:40px}
@@ -1354,7 +1357,10 @@ function load(){try{const s=JSON.parse(localStorage.getItem("midnight-v2")||"{}"
 function save(){try{localStorage.setItem("midnight-v2",JSON.stringify({cart,F,C,calcNote}))}catch(e){}}
 
 /* ===== Navegación ===== */
-$("nav").innerHTML=NAV.map(([k,l])=>`<button data-k="${k}" onclick="go('${k}')">${ICON[k]}<span>${l}</span></button>`).join("");
+/* En computadora el menú lateral también muestra Cafeteras y Franquicia */
+const NAV_DESK={cafeteras:["Cafeteras",`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3h16v5H4zM6 8v8M18 8v8M4 16h16v5H4zM10 8v3h4V8M9 13h6l-.6 3H9.6z"/></svg>`],franq:["Franquicia",`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M4 21V9l8-5 8 5v12M9 21v-6h6v6M8 11h1M15 11h1"/></svg>`]};
+const NAV_ALL=[["home"],["cafe"],["cafeteras",1],["calc"],["insumos"],["b2b"],["franq",1],["order"],["cuenta"]];
+$("nav").innerHTML=NAV_ALL.map(([k,d])=>{const l=d?NAV_DESK[k][0]:NAV.find(n=>n[0]===k)[1],ic=d?NAV_DESK[k][1]:ICON[k];return `<button data-k="${k}"${d?' class="desk-only"':''} onclick="go('${k}')">${ic}<span>${l}</span></button>`}).join("");
 const cartSvg='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM5.2 4l.9 2H21l-3.4 7.2a2 2 0 0 1-1.8 1.1H8.1l-1 1.7H19v2H5l2.1-3.6L3.8 4H2V2h3.1l.1.2Z"/></svg>';
 function renderProds(){$("prods").innerHTML=PRODUCTS.map(p=>{const st=stockTag(p.id);return `<div class="prod ${st.out?"out":""}"><div class="img" style="background-image:url(${p.img})">${st.html}</div><div class="info"><b>${p.name}</b><small>${p.roast}</small><div class="row"><div><div class="size">${p.size}</div><div class="price">${money(p.price)}</div></div><button class="add" aria-label="${st.out?"Agotado: ver otras opciones":"Agregar "+p.name}" onclick="add('${p.id}',1,this)">${st.out?"✕":cartSvg}</button></div></div></div>`}).join("")}
 
