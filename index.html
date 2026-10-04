@@ -2246,7 +2246,11 @@ try{const lo=JSON.parse(localStorage.getItem("midnight-last")||"null");if(lo){la
 /* Tablets y computadoras: agranda la app para que llene la pantalla (iPad, Mac) */
 function fitScreen(){const ph=$("app");if(!ph)return;const W=innerWidth,H=innerHeight;
   const z=W>=600?Math.max(1,Math.min(W/460,H/620,2)):1;
-  if(z>1.04){ph.style.zoom=z;ph.style.height=(H/z)+"px";ph.style.maxWidth=Math.min(W/z,520)+"px"}else{ph.style.zoom="";ph.style.height="";ph.style.maxWidth=""}}
+  // Escala con transform (más compatible que zoom: las imágenes se ven en todos los iPad)
+  ph.style.zoom="";
+  if(z>1.04){const w=Math.min(W/z,520);ph.style.width=w+"px";ph.style.maxWidth=w+"px";ph.style.height=(H/z)+"px";ph.style.flex="none";
+    ph.style.transform="scale("+z+")";ph.style.border="0";ph.style.borderRadius="0";document.body.style.margin="0";ph.style.transformOrigin="top center";document.body.style.overflow="hidden";document.body.style.alignItems="flex-start";document.body.style.padding="0"}
+  else{ph.style.width=ph.style.maxWidth=ph.style.height=ph.style.flex=ph.style.transform=ph.style.transformOrigin=ph.style.border=ph.style.borderRadius="";document.body.style.overflow=document.body.style.alignItems=document.body.style.padding=""}}
 addEventListener("resize",fitScreen);addEventListener("orientationchange",()=>setTimeout(fitScreen,250));fitScreen();
 $("home").classList.add("on");
 document.querySelector('.nav button[data-k="home"]').classList.add("act");
