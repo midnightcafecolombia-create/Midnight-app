@@ -126,6 +126,32 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
 .cx-pre{white-space:pre-wrap;font-size:11.5px;line-height:1.45;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0;max-height:260px;overflow:auto;color:var(--cream)}
 
 
+.chats{display:flex;flex-direction:column;gap:8px}
+.chat-row{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.chat-row.unread{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.chat-row .av{flex:0 0 38px;height:38px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font:600 15px var(--display);color:var(--gold)}
+.chat-row .bd{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.chat-row .hd{display:flex;justify-content:space-between;gap:8px}
+.chat-row .hd b{font-weight:500;color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-row .hd span{font-size:12px;color:var(--muted);white-space:nowrap}
+.chat-row .mc{font-size:12px;color:var(--gold)}
+.chat-row .ls{font-size:13.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-row .ls.c{color:var(--cream)}
+.th-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.th-head .back{border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--gold)}
+.th-head b{font-weight:500;font-size:16px}
+.th-head small{display:block;color:var(--muted);font-size:12px}
+.th-head .sp{flex:1}
+.th-head a,.th-head .arch{font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--gold);text-decoration:none}
+.thread{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:200px;max-height:58vh;overflow-y:auto}
+.bub{max-width:82%;align-self:flex-start;background:var(--panel2);border:1px solid rgba(212,171,95,.22);border-radius:14px 14px 14px 4px;padding:8px 12px;font-size:14px;white-space:pre-wrap;word-wrap:break-word}
+.bub.m{align-self:flex-end;background:var(--gold);color:#120d07;border-color:var(--gold);border-radius:14px 14px 4px 14px}
+.bub small{display:block;font-size:11px;opacity:.7;margin-top:3px}
+.bub .mc{display:block;font-size:11px;color:var(--gold);margin-bottom:2px}
+.reply{display:flex;flex-direction:column;gap:8px}
+.reply textarea{width:100%;min-height:76px;resize:vertical;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:16px}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -133,6 +159,7 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
   <div class="top-row"><div class="brand">MIDNIGHT · DUEÑOS</div><div class="who"><span id="who"></span><a href="?salir=1">Salir</a></div></div>
   <nav class="tabs" role="tablist">
     <button type="button" class="on" data-v="ordenes">Órdenes<span class="n" id="n-new" hidden></span></button>
+    <button type="button" data-v="preguntas">Preguntas<span class="n" id="n-chat" hidden></span></button>
     <button type="button" data-v="stock">Stock</button>
     <button type="button" data-v="costos">Costos</button>
     <button type="button" data-v="equipo">Equipo</button>
@@ -149,6 +176,23 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
     </div>
     <div id="o-list" class="view"></div>
     <p class="note">Una orden aparece aquí cuando el cliente la envía desde app.midnightcgo.com. Marca «Pago verificado» solo después de ver el dinero en tu banco.</p>
+  </section>
+
+  <section class="view" id="v-preguntas" hidden>
+    <div id="q-list-wrap" class="view">
+      <div class="filters" id="q-filter"><button type="button" class="on" data-f="act">Activas</button><button type="button" data-f="arch">Archivadas</button></div>
+      <div class="chats" id="q-list"></div>
+      <p class="note">Aquí llegan las preguntas que los clientes escriben en «Pregunta · More info» de cada cafetera. Lo que respondas le aparece al cliente en el chat de la app.</p>
+    </div>
+    <div id="q-thread" class="view" hidden>
+      <div class="th-head" id="q-head"></div>
+      <div class="thread" id="q-msgs" aria-live="polite"></div>
+      <form class="reply" id="q-form">
+        <div class="quick" id="q-quick"></div>
+        <textarea id="q-text" placeholder="Escribe tu respuesta…" maxlength="2000"></textarea>
+        <button class="btn" type="submit" id="q-send">Responder</button>
+      </form>
+    </div>
   </section>
 
   <section class="view" id="v-stock" hidden>
@@ -398,11 +442,47 @@ function cxKit(){if(!CX)return;
 function cxStart(){CX=JSON.parse(JSON.stringify(D.costing));$("cx-status").hidden=true;cxBuild()}
 function cxSave(){clearTimeout(CXsaveT);CXsaveT=setTimeout(async()=>{try{await api("save_costing",{costing:CX});D.costing=JSON.parse(JSON.stringify(CX))}catch(e){toast("No se guardó el cambio. Revisa la conexión")}},900)}
 
+
+/* ===== Preguntas de clientes ===== */
+let QS=[],QF="act",QCID=null,QCHAT=null;
+const QUICK=["¡Hola! Gracias por escribirnos 😊","¿Para qué tipo de negocio la necesitas?","¿Más o menos cuántos cafés venden al día?","¿A qué WhatsApp te escribo para darte el precio?","Te la podemos tener con el Midnight Club: tu café y la cafetera en una sola membresía mensual."];
+const ago=iso=>{const d=new Date(iso),s=(Date.now()-d)/1000;if(s<60)return"ahora";if(s<3600)return Math.floor(s/60)+" min";if(s<86400)return Math.floor(s/3600)+" h";return d.toLocaleDateString("es-US",{day:"numeric",month:"short"})};
+const hhmm=t=>new Date(t).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+function setChatBadge(n){const b=$("n-chat");b.hidden=!n;b.textContent=n}
+async function loadChats(){try{const r=await api("chats");QS=r.chats;renderChats()}catch(e){}}
+function renderChats(){
+  setChatBadge(QS.filter(c=>!c.arch&&c.unread).length);
+  const L=QS.filter(c=>QF==="arch"?c.arch:!c.arch);
+  $("q-list").innerHTML=L.length?L.map(c=>`<button type="button" class="chat-row${c.unread?" unread":""}" onclick="openChat('${c.cid}')"><span class="av">${esc((c.name||"?").trim()[0]||"?").toUpperCase()}</span><span class="bd"><span class="hd"><b>${esc(c.name||"Cliente sin nombre")}</b><span>${ago(c.updated)}${c.unread?` · <span class="chip low">${c.unread} nueva${c.unread>1?"s":""}</span>`:""}</span></span>${c.machine?`<span class="mc">${esc(c.machine)}</span>`:""}<span class="ls${c.lastFrom==="c"?" c":""}">${c.lastFrom==="m"?"Tú: ":""}${esc(c.last)}</span></span></button>`).join(""):`<div class="empty">${QF==="arch"?"No hay preguntas archivadas.":"Todavía no hay preguntas. Cuando un cliente escriba en una cafetera, aparece aquí y te llega una notificación."}</div>`;
+}
+document.querySelectorAll("#q-filter button").forEach(b=>b.onclick=()=>{QF=b.dataset.f;document.querySelectorAll("#q-filter button").forEach(x=>x.classList.toggle("on",x===b));renderChats()});
+async function openChat(cid){QCID=cid;$("q-list-wrap").hidden=true;$("q-thread").hidden=false;$("q-msgs").innerHTML='<p class="note">Cargando…</p>';
+  try{const r=await api("chat",{cid});QCHAT=r.chat;renderThread(true);const c=QS.find(x=>x.cid===cid);if(c){c.unread=0;renderChats()}}catch(e){toast("No se pudo abrir la conversación")}}
+function closeChat(){QCID=null;QCHAT=null;$("q-thread").hidden=true;$("q-list-wrap").hidden=false;loadChats()}
+function renderThread(scroll){
+  const c=QCHAT,tel=(c.tel||"").replace(/\D/g,""),wa=tel?(tel.length===10?"1"+tel:tel):"";
+  const lang={es:"Español",en:"English",it:"Italiano"}[c.lang]||"";
+  $("q-head").innerHTML=`<button type="button" class="back" onclick="closeChat()">‹ Preguntas</button><div><b>${esc(c.name||"Cliente sin nombre")}</b><small>${[c.tel,lang].filter(Boolean).map(esc).join(" · ")||"Sin WhatsApp todavía"}</small></div><span class="sp"></span>${wa?`<a href="https://wa.me/${wa}" target="_blank" rel="noopener">WhatsApp</a>`:""}<button type="button" class="arch" onclick="archChat(${!c.arch})">${c.arch?"Desarchivar":"Archivar"}</button>`;
+  let lastM="";
+  $("q-msgs").innerHTML=(c.msgs||[]).map(m=>{const showM=m.from==="c"&&m.machine&&m.machine!==lastM;if(m.from==="c"&&m.machine)lastM=m.machine;return `<div class="bub ${m.from}">${showM?`<span class="mc">${esc(m.machine)}</span>`:""}${esc(m.text)}<small>${m.from==="m"?esc(m.who||"Midnight")+" · ":""}${hhmm(m.t)}</small></div>`}).join("");
+  if(scroll){const t=$("q-msgs");t.scrollTop=t.scrollHeight}
+  if(c.lang&&c.lang!=="es"&&!$("q-langnote")){$("q-quick").insertAdjacentHTML("beforebegin",`<p class="note" id="q-langnote">Este cliente usa la app en ${lang}. Puedes responderle en ese idioma.</p>`)}else if((!c.lang||c.lang==="es")&&$("q-langnote"))$("q-langnote").remove();
+}
+$("q-quick").innerHTML=QUICK.map((q,i)=>`<button type="button" data-i="${i}">${esc(q.length>34?q.slice(0,32)+"…":q)}</button>`).join("");
+$("q-quick").onclick=e=>{const b=e.target.closest("button");if(!b)return;const t=$("q-text");t.value=(t.value?t.value.trim()+" ":"")+QUICK[+b.dataset.i];t.focus()};
+$("q-form").onsubmit=async e=>{e.preventDefault();const text=$("q-text").value.trim();if(!text||!QCID)return;$("q-send").disabled=true;
+  try{const r=await api("chat_reply",{cid:QCID,text});QCHAT=r.chat;$("q-text").value="";renderThread(true);toast("Respuesta enviada")}catch(err){toast("No se envió. Revisa la conexión")}$("q-send").disabled=false};
+async function archChat(v){try{const r=await api("chat_arch",{cid:QCID,arch:v});QS=r.chats;toast(v?"Archivada":"Movida a activas");closeChat()}catch(e){toast("No se guardó")}}
+setInterval(async()=>{if(document.hidden)return;
+  if(QCID){try{const r=await api("chat",{cid:QCID});const n=(QCHAT.msgs||[]).length;QCHAT=r.chat;if(QCHAT.msgs.length!==n){const t=$("q-msgs"),near=t.scrollHeight-t.scrollTop-t.clientHeight<80;renderThread(near)}}catch(e){}}
+  const before=QS.reduce((a,c)=>a+c.unread,0);await loadChats();const after=QS.reduce((a,c)=>a+c.unread,0);if(after>before)toast("Nueva pregunta de un cliente");
+},15000);
+
 /* ===== Inicio ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
-  renderOrders();renderStock();renderUsers();
+  renderOrders();renderStock();renderUsers();setChatBadge(D.chatsUnread||0);loadChats();
   let v="ordenes";try{v=localStorage.getItem("mdn-tab")||v}catch(e){}showView(v);
   setInterval(async()=>{if(document.hidden)return;try{const r=await api("load");const had=new Set(D.orders.map(o=>o.ref));const fresh=r.orders.filter(o=>!had.has(o.ref));D.orders=r.orders;D.status=r.status;if(!sDirty()){D.stock=r.stock;SW=null;renderStock()}renderOrders();if(fresh.length)toast(fresh.length===1?"Nueva orden recibida":fresh.length+" órdenes nuevas")}catch(e){}},60000);
 }

@@ -529,6 +529,13 @@ button:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
 .ask-msg.typing i{width:6px;height:6px;border-radius:50%;background:var(--gold);opacity:.4;animation:askdot 1s infinite}
 .ask-msg.typing i:nth-child(2){animation-delay:.15s}.ask-msg.typing i:nth-child(3){animation-delay:.3s}
 @keyframes askdot{50%{opacity:1;transform:translateY(-3px)}}
+.ask-who{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+.ask-ct{display:flex;flex-direction:column;gap:6px;max-width:92%}
+.ask-ct input{background:#0b0907;border:1px solid var(--line);border-radius:10px;color:var(--cream);font:inherit;font-size:16px;padding:8px 10px}
+.ask-ct .btn{margin:0;padding:9px}
+.chat-note{position:absolute;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:19;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--gold);color:#1a130b;border:0;border-radius:14px;padding:12px 16px;font:inherit;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.45);transform:translateY(20px);opacity:0;transition:.35s;cursor:pointer}
+.chat-note.on{transform:none;opacity:1}
+.chat-note b{font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:12px}
 .ask-extra{margin-top:6px}
 .ask-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .ask-chips::-webkit-scrollbar{display:none}
@@ -2211,6 +2218,9 @@ function machPic(id,i,btn){const m=MACHINES.find(x=>x.id===id);$("mi-"+id).style
    Para cambiar una respuesta, edita los textos de ASK_TX (es · en · it). */
 const ASK_TX={
 es:{hi:m=>`Hola 👋 Soy el asistente de Midnight. Pregúntame lo que quieras de la <b>${m}</b>, o toca una pregunta rápida.`,
+ sent:"📨 Tu pregunta le llegó a Midnight. Te respondemos <b>aquí mismo</b>, normalmente en pocos minutos.",sentAlso:"📨 Midnight también recibió tu pregunta y te puede responder aquí mismo.",
+ contactQ:"¿Cómo te llamas y a qué WhatsApp te avisamos cuando respondamos? (opcional)",namePh:"Tu nombre",telPh:"Tu WhatsApp",save:"Guardar",saved:"¡Listo! Te avisamos por ahí también.",
+ fromMid:"Midnight",newReply:"Midnight respondió tu pregunta",view:"Ver",err:"No se pudo enviar. Revisa tu conexión o usa WhatsApp.",
  ph:"Escribe tu pregunta…",send:"Enviar",wa:"Hablar con Midnight por WhatsApp",more:"Ver más preguntas",
  chips:{price:"¿Cuánto cuesta?",club:"¿La alquilo o la compro?",volt:"¿Qué voltaje usa?",cap:"¿Para cuánto volumen?",install:"Instalación",warranty:"Garantía",photo:"¿Es la máquina real?",feats:"¿Qué incluye?",deliver:"Entrega",pay:"Formas de pago",coffee:"¿Qué café uso?",maint:"Mantenimiento"},
  price:(m,v)=>v?`El valor de la <b>${m}</b> es <b>${v}</b>.`:`El valor de la <b>${m}</b> depende de la condición de la máquina y de si la compras o la usas con el Midnight Club. <b>Se confirma con tu orden.</b> Escríbenos y te pasamos el precio hoy mismo.`,
@@ -2231,6 +2241,9 @@ es:{hi:m=>`Hola 👋 Soy el asistente de Midnight. Pregúntame lo que quieras de
  none:"No tengo ese dato aquí, pero te lo respondemos rápido. Toca <b>Hablar con Midnight</b> y tu pregunta ya va escrita.",
  waMsg:(m,q)=>`Hola Midnight, tengo una pregunta sobre la cafetera ${m}:${q?`\n"${q}"`:" quiero más información."}`},
 en:{hi:m=>`Hi 👋 I'm Midnight's assistant. Ask me anything about the <b>${m}</b>, or tap a quick question.`,
+ sent:"📨 Your question reached Midnight. We'll answer <b>right here</b>, usually within minutes.",sentAlso:"📨 Midnight also got your question and can answer you right here.",
+ contactQ:"What's your name and which WhatsApp should we message when we reply? (optional)",namePh:"Your name",telPh:"Your WhatsApp",save:"Save",saved:"Done! We'll let you know there too.",
+ fromMid:"Midnight",newReply:"Midnight answered your question",view:"View",err:"Couldn't send. Check your connection or use WhatsApp.",
  ph:"Type your question…",send:"Send",wa:"Talk to Midnight on WhatsApp",more:"More questions",
  chips:{price:"How much is it?",club:"Rent or buy?",volt:"What voltage?",cap:"What volume?",install:"Installation",warranty:"Warranty",photo:"Is it the real machine?",feats:"What's included?",deliver:"Delivery",pay:"Payment",coffee:"Which coffee?",maint:"Maintenance"},
  price:(m,v)=>v?`The <b>${m}</b> is <b>${v}</b>.`:`The price of the <b>${m}</b> depends on its condition and on whether you buy it or use it through Midnight Club. <b>It is confirmed with your order.</b> Message us and we'll send you the price today.`,
@@ -2251,6 +2264,9 @@ en:{hi:m=>`Hi 👋 I'm Midnight's assistant. Ask me anything about the <b>${m}</
  none:"I don't have that detail here, but we'll answer quickly. Tap <b>Talk to Midnight</b> and your question is already written.",
  waMsg:(m,q)=>`Hola Midnight, tengo una pregunta sobre la cafetera ${m}:${q?`\n"${q}"`:" quiero más información."}`},
 it:{hi:m=>`Ciao 👋 Sono l'assistente di Midnight. Chiedimi quello che vuoi sulla <b>${m}</b>, o tocca una domanda rapida.`,
+ sent:"📨 La tua domanda è arrivata a Midnight. Ti rispondiamo <b>proprio qui</b>, di solito in pochi minuti.",sentAlso:"📨 Midnight ha ricevuto anche la tua domanda e può risponderti qui.",
+ contactQ:"Come ti chiami e a quale WhatsApp ti avvisiamo quando rispondiamo? (facoltativo)",namePh:"Il tuo nome",telPh:"Il tuo WhatsApp",save:"Salva",saved:"Fatto! Ti avvisiamo anche lì.",
+ fromMid:"Midnight",newReply:"Midnight ha risposto alla tua domanda",view:"Vedi",err:"Invio non riuscito. Controlla la connessione o usa WhatsApp.",
  ph:"Scrivi la tua domanda…",send:"Invia",wa:"Parla con Midnight su WhatsApp",more:"Altre domande",
  chips:{price:"Quanto costa?",club:"Noleggio o acquisto?",volt:"Che voltaggio?",cap:"Per quale volume?",install:"Installazione",warranty:"Garanzia",photo:"È la macchina reale?",feats:"Cosa include?",deliver:"Consegna",pay:"Pagamento",coffee:"Quale caffè?",maint:"Manutenzione"},
  price:(m,v)=>v?`La <b>${m}</b> costa <b>${v}</b>.`:`Il prezzo della <b>${m}</b> dipende dalle condizioni della macchina e dal fatto che tu la compri o la usi con il Midnight Club. <b>Si conferma con il tuo ordine.</b> Scrivici e ti mandiamo il prezzo oggi stesso.`,
@@ -2327,8 +2343,38 @@ function askChip(k){const T=ASK_TX[LANG]||ASK_TX.es;ASK.last=T.chips[k];askWa();
 function askSend(e){
   if(e)e.preventDefault();const inp=$("ask-in"),q=inp.value.trim();if(!q)return;inp.value="";
   const n=askNorm(q);const hit=ASK_KW.find(([k,re])=>re.test(n));
-  const k=hit?hit[0]:"none";if(k!=="thanks"&&k!=="hello"){ASK.last=q;askWa()}askReply(k,q);
+  const k=hit?hit[0]:"none";if(k!=="thanks"&&k!=="hello"){ASK.last=q;askWa()}
+  if(!CHAT_ON){askReply(k,q);return}
+  /* En el dominio: toda pregunta escrita llega al panel de dueños */
+  const T=ASK_TX[LANG]||ASK_TX.es,m=MACHINES.find(x=>x.id===ASK.id);
+  askBubble(askEsc(q),true);
+  chatApi("send",{text:q,machine:m.name}).then(r=>{chatMerge(r,true);
+    if(k==="none"||k==="hello"){askBubble(T.sent)}else if(k==="thanks"){askBubble(T.thanks)}else{askBubble(askAnswer(k));if(!ASK.told)askBubble(T.sentAlso)}
+    ASK.told=true;askContact();
+  }).catch(()=>{askBubble(askAnswer(k));if(k==="none")$("ask-wa").classList.add("pulse")});
 }
+/* ===== Chat con los dueños (solo en app.midnightcgo.com) ===== */
+const CHAT_ON=typeof NOTIFY_ON!=="undefined"?NOTIFY_ON:/(^|\.)midnightcgo\.com$/i.test(location.hostname);
+const CHAT={cid:"",seen:new Set(),lastSeen:0,name:"",tel:"",timer:null};
+try{CHAT.cid=localStorage.getItem("midnight-chat-id")||"";CHAT.lastSeen=+localStorage.getItem("midnight-chat-seen")||0;CHAT.name=localStorage.getItem("midnight-chat-name")||"";CHAT.tel=localStorage.getItem("midnight-chat-tel")||""}catch(e){}
+function chatId(){if(!CHAT.cid){const a=new Uint8Array(16);crypto.getRandomValues(a);CHAT.cid=[...a].map(b=>b.toString(16).padStart(2,"0")).join("");try{localStorage.setItem("midnight-chat-id",CHAT.cid)}catch(e){}}return CHAT.cid}
+async function chatApi(action,body={}){const r=await fetch("/chat.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,cid:chatId(),lang:LANG,name:CHAT.name,tel:CHAT.tel,...body})});const j=await r.json();if(!r.ok||!j.ok)throw new Error("chat");return j}
+function chatBubbleM(m){const T=ASK_TX[LANG]||ASK_TX.es;askBubble(`<span class="ask-who">${askEsc(m.who||T.fromMid)} · Midnight</span>${askEsc(m.text).replace(/\n/g,"<br>")}`)}
+function chatMerge(r,quiet){let got=0;(r.msgs||[]).forEach(m=>{if(CHAT.seen.has(m.id))return;CHAT.seen.add(m.id);if(m.from==="m"&&!quiet){chatBubbleM(m);got++}});
+  const lastM=(r.msgs||[]).filter(m=>m.from==="m").map(m=>m.t);if(lastM.length&&$("ask").classList.contains("on")){CHAT.lastSeen=Math.max(...lastM);try{localStorage.setItem("midnight-chat-seen",CHAT.lastSeen)}catch(e){}}
+  return got}
+function chatHistory(r){(r.msgs||[]).forEach(m=>{CHAT.seen.add(m.id);if(m.from==="c")askBubble(askEsc(m.text),true);else chatBubbleM(m)})}
+function chatPollStart(){clearInterval(CHAT.timer);CHAT.timer=setInterval(()=>{if(document.hidden||!$("ask").classList.contains("on"))return;chatApi("poll").then(r=>chatMerge(r)).catch(()=>{})},6000)}
+function askContact(){if(CHAT.tel||$("ask-ct"))return;const T=ASK_TX[LANG]||ASK_TX.es;const d=document.createElement("form");d.className="ask-msg ask-ct";d.id="ask-ct";
+  d.innerHTML=`<span>${T.contactQ}</span><input id="ask-ct-n" autocomplete="name" placeholder="${T.namePh}" value="${askEsc(CHAT.name)}"><input id="ask-ct-t" type="tel" autocomplete="tel" inputmode="tel" placeholder="${T.telPh}"><button class="btn" type="submit">${T.save}</button>`;
+  d.onsubmit=ev=>{ev.preventDefault();const nm=$("ask-ct-n").value.trim(),tl=$("ask-ct-t").value.trim();if(!nm&&!tl)return;CHAT.name=nm;CHAT.tel=tl;try{localStorage.setItem("midnight-chat-name",nm);localStorage.setItem("midnight-chat-tel",tl)}catch(e){}
+    chatApi("profile").catch(()=>{});d.remove();askBubble(T.saved)};
+  $("ask-log").appendChild(d);d.scrollIntoView({block:"end",behavior:"smooth"})}
+function chatCheck(){if(!CHAT_ON||!CHAT.cid)return;chatApi("poll").then(r=>{const M=(r.msgs||[]).filter(m=>m.from==="m"&&m.t>CHAT.lastSeen);if(!M.length||$("ask").classList.contains("on"))return;
+  const T=ASK_TX[LANG]||ASK_TX.es,lastC=[...(r.msgs||[])].reverse().find(m=>m.from==="c"&&m.machine),mm=lastC&&MACHINES.find(x=>x.name===lastC.machine)||MACHINES[0];
+  let b=$("chat-note");if(!b){b=document.createElement("button");b.id="chat-note";b.type="button";b.className="chat-note";$("app").appendChild(b)}
+  b.setAttribute("data-noi18n","");b.innerHTML=`<span>💬 ${T.newReply}</span><b>${T.view}</b>`;b.onclick=()=>{b.remove();go("cafeteras");setTimeout(()=>openAsk(mm.id),350)};b.classList.add("on")}).catch(()=>{})}
+if(CHAT_ON){setTimeout(chatCheck,1500);setInterval(()=>{if(!document.hidden)chatCheck()},60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)chatCheck()})}
 function openAsk(id){
   const m=MACHINES.find(x=>x.id===id);if(!m)return;ASK={id,last:""};const T=ASK_TX[LANG]||ASK_TX.es;
   $("ask-name").textContent=typeof tr==="function"?tr(m.name):m.name;$("ask-pic").style.backgroundImage=m.imgs&&m.imgs[0]?`url(${m.imgs[0]})`:"";
@@ -2337,8 +2383,10 @@ function openAsk(id){
   $("ask-chips").innerHTML=order.map(k=>`<button type="button" onclick="askChip('${k}')">${T.chips[k]}</button>`).join("");
   $("ask-log").innerHTML="";askBubble(T.hi($("ask-name").textContent));askWa();
   $("ask").classList.add("on");$("ask-scrim").classList.add("on");
+  if(CHAT_ON&&CHAT.cid){CHAT.seen=new Set();chatApi("poll").then(r=>{chatHistory(r);chatMerge(r,true)}).catch(()=>{})}
+  if(CHAT_ON){chatPollStart();const n=$("chat-note");if(n)n.remove()}
 }
-function closeAsk(){$("ask").classList.remove("on");$("ask-scrim").classList.remove("on");$("ask-in").blur()}
+function closeAsk(){clearInterval(CHAT.timer);$("ask").classList.remove("on");$("ask-scrim").classList.remove("on");$("ask-in").blur()}
 
 
 /* ===== Costos (solo dueña) =====
