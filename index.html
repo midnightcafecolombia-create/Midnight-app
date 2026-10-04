@@ -556,6 +556,33 @@ a.wa:not(#bill-wa) svg{display:none}
 #ask-wa{text-decoration:none}
 #ask-wa.pulse{border-color:var(--gold);color:var(--gold-hi);animation:askpulse 1.4s 2}
 @keyframes askpulse{50%{box-shadow:0 0 0 6px rgba(212,171,95,.2)}}
+
+/* ===== Vista de computadora (pantallas anchas): menú lateral y app a pantalla completa ===== */
+html:has(body.desk){overflow:hidden}
+body.desk{padding:0!important;align-items:stretch!important;overflow:hidden;height:100vh}
+body.desk .phone{overflow:hidden}
+body.desk .phone{max-width:none;width:100%;height:100%;border:0;border-radius:0;box-shadow:none}
+body.desk .nav{top:0;bottom:0;right:auto;width:228px;display:flex;flex-direction:column;gap:4px;padding:22px 14px;border-top:0;border-right:1px solid rgba(212,171,95,.15);background:#0e0b08}
+body.desk .nav::before{content:"MIDNIGHT";font-family:var(--display);font-weight:600;letter-spacing:.2em;color:var(--gold-hi);font-size:20px;padding:6px 12px 22px;border-bottom:1px solid rgba(212,171,95,.15);margin-bottom:10px}
+body.desk .nav button{flex-direction:row;justify-content:flex-start;gap:14px;font-size:14.5px;padding:11px 12px;border-radius:12px;color:var(--cream);letter-spacing:.02em}
+body.desk .nav button:hover{background:rgba(212,171,95,.08)}
+body.desk .nav button.act{background:rgba(212,171,95,.14);color:var(--gold-hi)}
+body.desk .nav button.act::before{display:none}
+body.desk .screen{inset:0 0 0 228px}
+body.desk .bar,body.desk .scroll{padding-left:max(24px,calc((100% - 860px)/2));padding-right:max(24px,calc((100% - 860px)/2))}
+body.desk .scroll{padding-bottom:40px}
+body.desk .home-hero{border-radius:0 0 24px 24px}
+body.desk .home-hero .wordmark{font-size:56px}
+body.desk .grid{grid-template-columns:repeat(3,1fr);gap:14px}
+body.desk .products{flex-wrap:wrap;overflow:visible;gap:14px}
+body.desk .prod{flex:0 0 calc(25% - 11px)}
+body.desk .hero{border-radius:20px;margin-top:14px}
+body.desk .mach-list{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+body.desk .mach-sec{grid-column:1/-1}
+body.desk .sheet{left:calc(228px + (100% - 228px)/2);right:auto;width:min(580px,calc(100% - 268px));transform:translate(-50%,110%);border:1px solid var(--line);border-bottom:0}
+body.desk .sheet.on{transform:translate(-50%,0)}
+body.desk .toast{left:calc(228px + (100% - 228px)/2)}
+body.desk .chat-note{left:calc(228px + (100% - 228px)/2 - 290px);right:auto;width:580px;bottom:24px}
 </style>
 
 <span id="mount" hidden></span>
@@ -2374,12 +2401,12 @@ function askAnswer(key){
   if(m.cond&&(key==="club"||key==="maint"||key==="warranty"))txt+=`<br><br><b>Condiciones de uso:</b> ${m.cond}`;
   return txt+(extra?`<div class="ask-extra">${extra}</div>`:"");
 }
-function askBubble(html,me){const d=document.createElement("div");d.className="ask-msg"+(me?" me":"");d.innerHTML=html;$("ask-log").appendChild(d);d.scrollIntoView({block:"end",behavior:"smooth"})}
+function askBubble(html,me){const d=document.createElement("div");d.className="ask-msg"+(me?" me":"");d.innerHTML=html;$("ask-log").appendChild(d);{const L=$("ask-log");L.scrollTop=L.scrollHeight}}
 function askEsc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 function askWa(){$("ask-wa").href=`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent((ASK_TX[LANG]||ASK_TX.es).waMsg(askSubject(),ASK.last))}`}
 function askReply(key,label){
   askBubble(askEsc(label),true);
-  const typing=document.createElement("div");typing.className="ask-msg typing";typing.innerHTML="<i></i><i></i><i></i>";$("ask-log").appendChild(typing);typing.scrollIntoView({block:"end"});
+  const typing=document.createElement("div");typing.className="ask-msg typing";typing.innerHTML="<i></i><i></i><i></i>";$("ask-log").appendChild(typing);{const L=$("ask-log");L.scrollTop=L.scrollHeight}
   setTimeout(()=>{typing.remove();askBubble(askAnswer(key));if(key==="none")$("ask-wa").classList.add("pulse")},550);
 }
 function askChip(k){const T=ASK_TX[LANG]||ASK_TX.es;ASK.last=T.chips[k];askWa();askReply(k,T.chips[k])}
@@ -2412,7 +2439,7 @@ function askContact(){if(CHAT.tel||$("ask-ct"))return;const T=ASK_TX[LANG]||ASK_
   d.innerHTML=`<span>${T.contactQ}</span><input id="ask-ct-n" autocomplete="name" placeholder="${T.namePh}" value="${askEsc(CHAT.name)}"><input id="ask-ct-t" type="tel" autocomplete="tel" inputmode="tel" placeholder="${T.telPh}"><button class="btn" type="submit">${T.save}</button>`;
   d.onsubmit=ev=>{ev.preventDefault();const nm=$("ask-ct-n").value.trim(),tl=$("ask-ct-t").value.trim();if(!nm&&!tl)return;CHAT.name=nm;CHAT.tel=tl;try{localStorage.setItem("midnight-chat-name",nm);localStorage.setItem("midnight-chat-tel",tl)}catch(e){}
     chatApi("profile").catch(()=>{});d.remove();askBubble(T.saved)};
-  $("ask-log").appendChild(d);d.scrollIntoView({block:"end",behavior:"smooth"})}
+  $("ask-log").appendChild(d);{const L=$("ask-log");L.scrollTop=L.scrollHeight}}
 function chatCheck(){if(!CHAT_ON||!CHAT.cid)return;chatApi("poll").then(r=>{const M=(r.msgs||[]).filter(m=>m.from==="m"&&m.t>CHAT.lastSeen);if(!M.length||$("ask").classList.contains("on"))return;
   const T=ASK_TX[LANG]||ASK_TX.es,lastC=[...(r.msgs||[])].reverse().find(m=>m.from==="c"&&m.machine),mm=lastC&&MACHINES.find(x=>x.name===lastC.machine)||MACHINES[0],tk=lastC&&Object.keys(TOPICS).find(k=>TOPICS[k].n.es===lastC.machine);
   let b=$("chat-note");if(!b){b=document.createElement("button");b.id="chat-note";b.type="button";b.className="chat-note";$("app").appendChild(b)}
@@ -2705,6 +2732,8 @@ i18nInit();renderPolicy();
 try{const lo=JSON.parse(localStorage.getItem("midnight-last")||"null");if(lo){lastOrder=lo;renderReceipt(lo)}}catch(e){}
 /* Tablets y computadoras: agranda la app para que llene la pantalla (iPad, Mac) */
 function fitScreen(){const ph=$("app");if(!ph)return;const W=innerWidth,H=innerHeight;
+  const desk=W>=1000&&H>=500;document.body.classList.toggle("desk",desk);document.documentElement.style.overflow=desk?"hidden":"";
+  if(desk){ph.style.zoom=ph.style.width=ph.style.maxWidth=ph.style.height=ph.style.flex=ph.style.transform=ph.style.transformOrigin=ph.style.border=ph.style.borderRadius="";document.body.style.overflow=document.body.style.alignItems=document.body.style.padding="";return}
   const z=W>=600?Math.max(1,Math.min(W/460,H/620,2)):1;
   // Escala con transform (más compatible que zoom: las imágenes se ven en todos los iPad)
   ph.style.zoom="";
