@@ -478,6 +478,15 @@ button:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
 .pay-cancel{align-self:center;color:var(--muted);font-size:13px;padding:4px}
 #z-big{color:var(--gold-hi)}
 .btn.buy{font-size:15px;padding:16px}
+
+/* Política de devoluciones */
+.polsheet{max-height:88%;z-index:24;gap:8px}
+.pol-body{overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:4px;padding-bottom:6px}
+.pol-body h4{margin:10px 0 0;font-size:14px;font-weight:500;color:var(--gold)}
+.pol-body p{margin:0;font-size:13.5px;line-height:1.5;color:var(--cream)}
+.pol-accept{margin:0;font-size:12px;color:var(--muted);text-align:center}
+.pol-accept .link{font-size:12px;color:var(--gold);text-decoration:underline}
+.pol-link{display:block;margin:10px auto 18px;font-size:12.5px;color:var(--muted);text-decoration:underline}
 </style>
 
 <span id="mount" hidden></span>
@@ -523,6 +532,7 @@ button:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
         <span class="cs-txt"><span class="eyebrow">Operaciones globales</span><b>MIDNIGHT CONSULTING</b><small>Analiza. Optimiza. Capacita. Crece.</small></span>
         <span class="cs-cta">Solicitar evaluación →</span>
       </button>
+      <button type="button" class="link pol-link" onclick="openPolicy()" data-noi18n data-pol-link>Política de devoluciones</button>
     </div>
   </section>
 
@@ -679,6 +689,7 @@ button:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
         <a class="wa" id="bill-wa" href="#" target="_blank" rel="noopener"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Z"/></svg><span id="bill-wa-lbl">Enviar bill por WhatsApp</span></a>
         <p class="note">WhatsApp solo acepta texto desde un enlace: el bill viaja como texto. Para mandarlo con el logo, descarga la imagen y adjúntala en el chat.</p>
         <button class="btn ghost" id="bill-new">Hacer un nuevo pedido</button>
+        <button type="button" class="link pol-link" onclick="openPolicy()" data-noi18n data-pol-link>Política de devoluciones</button>
       </div>
     </div>
   </section>
@@ -1100,7 +1111,16 @@ button:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
       <div class="inp" id="w-zpayer"><label for="f-zpayer">Nombre de quien pagó *</label><input id="f-zpayer" autocomplete="name" placeholder="Como sale en la cuenta del banco"></div>
     </div>
     <a class="wa" id="wa" role="button" tabindex="0" target="_blank" rel="noopener" style="cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.2Z"/></svg>Ya pagué · Enviar orden</a>
+    <p class="pol-accept" data-noi18n><span data-pol-accept>Al enviar tu orden aceptas esta política.</span> <button type="button" class="link" onclick="openPolicy()" data-pol-link>Política de devoluciones</button></p>
     <button class="link pay-cancel" type="button" onclick="closePay()">Volver a mi pedido</button>
+  </div>
+  <div class="scrim" id="pol-scrim" onclick="closePolicy()" style="z-index:23"></div>
+  <div class="sheet polsheet" id="policy" role="dialog" aria-labelledby="pol-title" data-noi18n>
+    <div class="grab"></div>
+    <h3 id="pol-title">Política de devoluciones y reembolsos</h3>
+    <p class="note" id="pol-date" style="margin:-6px 0 6px"></p>
+    <div class="pol-body" id="pol-body"></div>
+    <button class="btn" type="button" id="pol-ok" onclick="closePolicy()">Entendido</button>
   </div>
   <div class="toast" id="toast"></div>
 </div>
@@ -2000,6 +2020,52 @@ document.addEventListener("click",e=>{
 if(NOTIFY_ON){fetch("/stock.php",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j&&j.q){STOCK.q=j.q;STOCK.low=j.low??STOCK.low;render();if(current==="b2b")renderB2B();if(current==="order")renderOrder()}}).catch(()=>{})}
 
 
+/* ===== Política de devoluciones (ES · EN · IT) ===== */
+const POLICY={
+es:{t:"Política de devoluciones y reembolsos",u:"Vigente desde el 4 de octubre de 2026",s:[
+["Pago antes de preparar","Todas las órdenes se pagan por adelantado. Preparamos tu pedido solo después de verificar el pago en nuestro banco."],
+["Cancelar una orden","Puedes cancelar sin costo mientras tu orden no esté preparada. Escríbenos por WhatsApp al (786) 685-0823 con tu número de orden. Te devolvemos el 100% del monto pagado. Si ya la preparamos o salió para entrega, ya no se puede cancelar."],
+["Café: producto alimenticio","Por seguridad e higiene, no aceptamos devoluciones de café abierto, molido a pedido o entregado en buen estado. Tampoco hay devolución por gusto o preferencia personal."],
+["Producto dañado, incorrecto o incompleto","Avísanos dentro de las 48 horas siguientes a la entrega o recogida, con fotos del producto y del empaque. Te enviamos el reemplazo sin costo o te devolvemos el valor de ese producto, lo que prefieras."],
+["Delivery","El costo de delivery se devuelve solo si cancelas antes de que la orden salga, o si el error fue nuestro."],
+["Vasos y tazas personalizados","Se fabrican con tu logo, por eso no tienen devolución una vez que apruebas el diseño. Si llegan con un defecto de fabricación, los reponemos."],
+["Midnight Club","Puedes cancelar tu membresía con 30 días de aviso. El mes en curso no es reembolsable. La máquina sigue siendo propiedad de Midnight y se devuelve en buen estado al terminar la membresía."],
+["Cuentas B2B y franquicias","Los pedidos mayoristas, Supply Kits y servicios de franquicia, Academy y Consulting se rigen por el acuerdo firmado con cada cliente."],
+["Cómo te devolvemos el dinero","El reembolso se hace por Zelle, a la misma cuenta desde la que pagaste, dentro de 3 días hábiles después de aprobado. No enviamos reembolsos a otra persona ni a otra cuenta."],
+["Contacto","Midnight Consulting Global LLC · Miami, Florida · WhatsApp (786) 685-0823 · midnightcafecolombia@gmail.com"]],
+a:"Al enviar tu orden aceptas esta política.",l:"Política de devoluciones",ok:"Entendido"},
+en:{t:"Returns and Refunds Policy",u:"Effective October 4, 2026",s:[
+["Payment before preparation","All orders are paid in advance. We prepare your order only after we verify the payment in our bank."],
+["Cancelling an order","You can cancel at no cost while your order has not been prepared. Message us on WhatsApp at (786) 685-0823 with your order number and we refund 100% of the amount paid. Once the order is prepared or out for delivery, it can no longer be cancelled."],
+["Coffee is a food product","For safety and hygiene reasons, we do not accept returns of opened coffee, coffee ground to order, or coffee delivered in good condition. Returns based on taste or personal preference are not accepted."],
+["Damaged, wrong or incomplete products","Let us know within 48 hours of delivery or pickup, with photos of the product and packaging. We will send a free replacement or refund the value of that product, whichever you prefer."],
+["Delivery","The delivery fee is refunded only if you cancel before the order leaves, or if the mistake was ours."],
+["Custom cups and mugs","They are made with your logo, so they cannot be returned once you approve the design. If they arrive with a manufacturing defect, we replace them."],
+["Midnight Club","You can cancel your membership with 30 days' notice. The current month is non-refundable. The machine remains Midnight's property and must be returned in good condition when the membership ends."],
+["B2B accounts and franchises","Wholesale orders, Supply Kits, and franchise, Academy and Consulting services are governed by the agreement signed with each client."],
+["How we refund you","Refunds are sent by Zelle to the same account you paid from, within 3 business days after approval. We do not send refunds to another person or account."],
+["Contact","Midnight Consulting Global LLC · Miami, Florida · WhatsApp (786) 685-0823 · midnightcafecolombia@gmail.com"]],
+a:"By sending your order you accept this policy.",l:"Returns policy",ok:"Got it"},
+it:{t:"Politica di resi e rimborsi",u:"In vigore dal 4 ottobre 2026",s:[
+["Pagamento prima della preparazione","Tutti gli ordini si pagano in anticipo. Prepariamo il tuo ordine solo dopo aver verificato il pagamento nella nostra banca."],
+["Annullare un ordine","Puoi annullare senza costi finché il tuo ordine non è stato preparato. Scrivici su WhatsApp al (786) 685-0823 con il numero d'ordine e ti rimborsiamo il 100% dell'importo pagato. Se l'ordine è già preparato o in consegna, non si può più annullare."],
+["Il caffè è un prodotto alimentare","Per motivi di sicurezza e igiene non accettiamo resi di caffè aperto, macinato su richiesta o consegnato in buono stato. Non si accettano resi per gusto o preferenza personale."],
+["Prodotto danneggiato, errato o incompleto","Avvisaci entro 48 ore dalla consegna o dal ritiro, con foto del prodotto e della confezione. Ti inviamo la sostituzione gratuita o ti rimborsiamo il valore di quel prodotto, come preferisci."],
+["Consegna","Il costo di consegna viene rimborsato solo se annulli prima che l'ordine parta, o se l'errore è stato nostro."],
+["Bicchieri e tazze personalizzati","Sono prodotti con il tuo logo, quindi non sono rimborsabili dopo l'approvazione del design. Se arrivano con un difetto di fabbricazione, li sostituiamo."],
+["Midnight Club","Puoi annullare l'abbonamento con 30 giorni di preavviso. Il mese in corso non è rimborsabile. La macchina resta di proprietà di Midnight e va restituita in buono stato alla fine dell'abbonamento."],
+["Clienti B2B e franchising","Gli ordini all'ingrosso, i Supply Kit e i servizi di franchising, Academy e Consulting sono regolati dall'accordo firmato con ciascun cliente."],
+["Come ti rimborsiamo","Il rimborso si effettua tramite Zelle sullo stesso conto da cui hai pagato, entro 3 giorni lavorativi dall'approvazione. Non inviamo rimborsi ad altre persone o altri conti."],
+["Contatto","Midnight Consulting Global LLC · Miami, Florida · WhatsApp (786) 685-0823 · midnightcafecolombia@gmail.com"]],
+a:"Inviando l'ordine accetti questa politica.",l:"Politica di resi",ok:"Ho capito"}};
+function renderPolicy(){const P=POLICY[LANG]||POLICY.es;
+  $("pol-title").textContent=P.t;$("pol-date").textContent=P.u;$("pol-ok").textContent=P.ok;
+  $("pol-body").innerHTML=P.s.map(([h,b])=>`<h4>${h}</h4><p>${b}</p>`).join("");
+  document.querySelectorAll("[data-pol-accept]").forEach(e=>e.textContent=P.a);
+  document.querySelectorAll("[data-pol-link]").forEach(e=>e.textContent=P.l);}
+function openPolicy(){renderPolicy();$("policy").classList.add("on");$("pol-scrim").classList.add("on")}
+function closePolicy(){$("policy").classList.remove("on");$("pol-scrim").classList.remove("on")}
+
 /* ===== Costos (solo dueña) =====
    Los números viven en la base privada del artifact (regla: solo la dueña lee y escribe).
    El código de la app no lleva precios de costo. */
@@ -2223,6 +2289,7 @@ function setLang(L){
   document.documentElement.lang=L;
   document.querySelectorAll("#lang-sw button").forEach(b=>{b.classList.toggle("on",b.dataset.l===L);b.setAttribute("aria-pressed",b.dataset.l===L)});
   i18nWalk($("app"));
+  if(typeof renderPolicy==="function")renderPolicy();
 }
 function i18nInit(){
   // Las opciones guardan su valor en español aunque el texto cambie de idioma
@@ -2241,7 +2308,7 @@ load();
 if(!P(C.prod))C.prod="b2b5";
 Object.entries(FIELDS).forEach(([k,id])=>{$(id).value=F[k]||""});
 render();renderCalc();
-i18nInit();
+i18nInit();renderPolicy();
 try{const lo=JSON.parse(localStorage.getItem("midnight-last")||"null");if(lo){lastOrder=lo;renderReceipt(lo)}}catch(e){}
 /* Tablets y computadoras: agranda la app para que llene la pantalla (iPad, Mac) */
 function fitScreen(){const ph=$("app");if(!ph)return;const W=innerWidth,H=innerHeight;
