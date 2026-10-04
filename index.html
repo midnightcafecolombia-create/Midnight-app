@@ -2359,7 +2359,7 @@ const CHAT={cid:"",seen:new Set(),lastSeen:0,name:"",tel:"",timer:null};
 try{CHAT.cid=localStorage.getItem("midnight-chat-id")||"";CHAT.lastSeen=+localStorage.getItem("midnight-chat-seen")||0;CHAT.name=localStorage.getItem("midnight-chat-name")||"";CHAT.tel=localStorage.getItem("midnight-chat-tel")||""}catch(e){}
 function chatId(){if(!CHAT.cid){const a=new Uint8Array(16);crypto.getRandomValues(a);CHAT.cid=[...a].map(b=>b.toString(16).padStart(2,"0")).join("");try{localStorage.setItem("midnight-chat-id",CHAT.cid)}catch(e){}}return CHAT.cid}
 async function chatApi(action,body={}){const r=await fetch("/chat.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,cid:chatId(),lang:LANG,name:CHAT.name,tel:CHAT.tel,...body})});const j=await r.json();if(!r.ok||!j.ok)throw new Error("chat");return j}
-function chatBubbleM(m){const T=ASK_TX[LANG]||ASK_TX.es;askBubble(`<span class="ask-who">${askEsc(m.who||T.fromMid)} · Midnight</span>${askEsc(m.text).replace(/\n/g,"<br>")}`)}
+function chatBubbleM(m){const T=ASK_TX[LANG]||ASK_TX.es;askBubble(`<span class="ask-who">Midnight Sales</span>${askEsc(m.text).replace(/\n/g,"<br>")}`)}
 function chatMerge(r,quiet){let got=0;(r.msgs||[]).forEach(m=>{if(CHAT.seen.has(m.id))return;CHAT.seen.add(m.id);if(m.from==="m"&&!quiet){chatBubbleM(m);got++}});
   const lastM=(r.msgs||[]).filter(m=>m.from==="m").map(m=>m.t);if(lastM.length&&$("ask").classList.contains("on")){CHAT.lastSeen=Math.max(...lastM);try{localStorage.setItem("midnight-chat-seen",CHAT.lastSeen)}catch(e){}}
   return got}

@@ -150,6 +150,19 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
 .bub .mc{display:block;font-size:11px;color:var(--gold);margin-bottom:2px}
 .reply{display:flex;flex-direction:column;gap:8px}
 .reply textarea{width:100%;min-height:76px;resize:vertical;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:16px}
+.reply{position:sticky;bottom:0;background:var(--ink);padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));z-index:3}
+.ai-row{display:flex;gap:8px}
+.ai-row button{flex:1;border:1px solid var(--gold);border-radius:10px;padding:9px 8px;color:var(--gold-hi);font-size:13px;background:rgba(212,171,95,.08)}
+.ai-row button:disabled{opacity:.5}
+.ai-row button.busy{animation:aibusy 1s infinite}
+@keyframes aibusy{50%{opacity:.45}}
+.send-row{display:flex;gap:8px;align-items:center}
+.send-row .btn{flex:1}
+.send-row small{color:var(--muted);font-size:11.5px}
+.ai-box{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.ai-box input{background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit}
+.ai-box .row{display:flex;gap:8px}.ai-box .row .btn{flex:1}
+@media(max-width:560px){.thread{max-height:calc(100vh - 360px);min-height:180px}.quick{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.quick button{flex:0 0 auto;white-space:nowrap}.reply textarea{min-height:64px}}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -189,8 +202,10 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
       <div class="thread" id="q-msgs" aria-live="polite"></div>
       <form class="reply" id="q-form">
         <div class="quick" id="q-quick"></div>
-        <textarea id="q-text" placeholder="Escribe tu respuesta…" maxlength="2000"></textarea>
-        <button class="btn" type="submit" id="q-send">Responder</button>
+        <textarea id="q-text" placeholder="Escribe tu respuesta… o toca «Sugerir con IA»" maxlength="2000"></textarea>
+        <div class="ai-row"><button type="button" id="ai-sug" onclick="aiRun('suggest')">✨ Sugerir con IA</button><button type="button" id="ai-imp" onclick="aiRun('improve')">✨ Mejorar mi texto</button></div>
+        <div class="send-row"><button class="btn" type="submit" id="q-send">Responder como Midnight Sales</button></div>
+        <p class="note">El cliente ve tus respuestas firmadas como «Midnight Sales». Atajo: ⌘ + Enter envía.</p>
       </form>
     </div>
   </section>
@@ -253,6 +268,15 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
         <label>Permiso<select id="u-role"><option value="socio">Socio: ve y actualiza</option><option value="admin">Administrador: también maneja el equipo</option></select></label>
         <button class="btn" type="submit">Agregar</button>
       </form>
+    </div>
+    <span class="lbl">Asistente IA para responder preguntas</span>
+    <div class="ai-box">
+      <p class="note" id="ai-st">—</p>
+      <div id="ai-admin">
+        <p class="note" style="margin-bottom:8px">Pega aquí tu clave de Anthropic (empieza con <b>sk-ant-</b>). Se guarda en tu servidor, fuera de la web; nadie la ve, ni siquiera en este panel. Se cobra por uso en tu cuenta de Anthropic: cada sugerencia cuesta menos de un centavo.</p>
+        <input id="ai-key" type="password" autocomplete="off" placeholder="sk-ant-…">
+        <div class="row" style="margin-top:8px"><button class="btn" type="button" onclick="aiSaveKey()">Guardar clave</button><button class="btn ghost" type="button" onclick="aiClearKey()">Quitar</button></div>
+      </div>
     </div>
     <span class="lbl">Cambiar mi contraseña</span>
     <form class="form" id="p-form" autocomplete="off">
@@ -464,25 +488,39 @@ function renderThread(scroll){
   const lang={es:"Español",en:"English",it:"Italiano"}[c.lang]||"";
   $("q-head").innerHTML=`<button type="button" class="back" onclick="closeChat()">‹ Preguntas</button><div><b>${esc(c.name||"Cliente sin nombre")}</b><small>${[c.tel,lang].filter(Boolean).map(esc).join(" · ")||"Sin WhatsApp todavía"}</small></div><span class="sp"></span>${wa?`<a href="https://wa.me/${wa}" target="_blank" rel="noopener">WhatsApp</a>`:""}<button type="button" class="arch" onclick="archChat(${!c.arch})">${c.arch?"Desarchivar":"Archivar"}</button>`;
   let lastM="";
-  $("q-msgs").innerHTML=(c.msgs||[]).map(m=>{const showM=m.from==="c"&&m.machine&&m.machine!==lastM;if(m.from==="c"&&m.machine)lastM=m.machine;return `<div class="bub ${m.from}">${showM?`<span class="mc">${esc(m.machine)}</span>`:""}${esc(m.text)}<small>${m.from==="m"?esc(m.who||"Midnight")+" · ":""}${hhmm(m.t)}</small></div>`}).join("");
+  $("q-msgs").innerHTML=(c.msgs||[]).map(m=>{const showM=m.from==="c"&&m.machine&&m.machine!==lastM;if(m.from==="c"&&m.machine)lastM=m.machine;return `<div class="bub ${m.from}">${showM?`<span class="mc">${esc(m.machine)}</span>`:""}${esc(m.text)}<small>${m.from==="m"?esc(m.by||m.who||"Midnight")+" · ":""}${hhmm(m.t)}</small></div>`}).join("");
   if(scroll){const t=$("q-msgs");t.scrollTop=t.scrollHeight}
   if(c.lang&&c.lang!=="es"&&!$("q-langnote")){$("q-quick").insertAdjacentHTML("beforebegin",`<p class="note" id="q-langnote">Este cliente usa la app en ${lang}. Puedes responderle en ese idioma.</p>`)}else if((!c.lang||c.lang==="es")&&$("q-langnote"))$("q-langnote").remove();
 }
 $("q-quick").innerHTML=QUICK.map((q,i)=>`<button type="button" data-i="${i}">${esc(q.length>34?q.slice(0,32)+"…":q)}</button>`).join("");
 $("q-quick").onclick=e=>{const b=e.target.closest("button");if(!b)return;const t=$("q-text");t.value=(t.value?t.value.trim()+" ":"")+QUICK[+b.dataset.i];t.focus()};
 $("q-form").onsubmit=async e=>{e.preventDefault();const text=$("q-text").value.trim();if(!text||!QCID)return;$("q-send").disabled=true;
-  try{const r=await api("chat_reply",{cid:QCID,text});QCHAT=r.chat;$("q-text").value="";renderThread(true);toast("Respuesta enviada")}catch(err){toast("No se envió. Revisa la conexión")}$("q-send").disabled=false};
+  try{const r=await api("chat_reply",{cid:QCID,text});QCHAT=r.chat;$("q-text").value="";renderThread(true);toast("Respuesta enviada");$("q-text").style.height=""}catch(err){toast("No se envió. Revisa la conexión")}$("q-send").disabled=false};
 async function archChat(v){try{const r=await api("chat_arch",{cid:QCID,arch:v});QS=r.chats;toast(v?"Archivada":"Movida a activas");closeChat()}catch(e){toast("No se guardó")}}
 setInterval(async()=>{if(document.hidden)return;
   if(QCID){try{const r=await api("chat",{cid:QCID});const n=(QCHAT.msgs||[]).length;QCHAT=r.chat;if(QCHAT.msgs.length!==n){const t=$("q-msgs"),near=t.scrollHeight-t.scrollTop-t.clientHeight<80;renderThread(near)}}catch(e){}}
   const before=QS.reduce((a,c)=>a+c.unread,0);await loadChats();const after=QS.reduce((a,c)=>a+c.unread,0);if(after>before)toast("Nueva pregunta de un cliente");
 },15000);
 
+
+/* ===== Asistente IA ===== */
+const AI_FACTS="CAFETERAS Y MOLINOS:\n- Rancilio · 2 grupos · Espresso profesional · 2 grupos · Máquina propia de Midnight (fotos reales). Máquina de espresso comercial italiana de 2 grupos, ideal para cafeterías y restaurantes con alto volumen. Incluye: 2 grupos · portafiltros Rancilio; Dosis programables en cada grupo; 2 vaporizadores para leche; Salida de agua caliente; Manómetros de presión de caldera y bomba. Valor: se confirma con la orden.\n- Venezia by Cecilware · Espresso profesional · 1 grupo · Máquina propia de Midnight (fotos reales). Máquina de espresso comercial de 1 grupo, con vaporizador para leche, salida de agua caliente y dosis programables. Incluye: 1 grupo · portafiltro profesional; Vaporizador para leche; Salida de agua caliente; 4 dosis programables + modo manual; Certificación NSF · 110–120 V. Valor: se confirma con la orden.\n- Estella Caffè · 1 grupo · Espresso profesional · 1 grupo · Modelo de catálogo, se consigue por pedido (foto de referencia). Máquina compacta de 1 grupo en acero inoxidable, para cafeterías pequeñas, oficinas y barras. Incluye: 1 grupo con dosis programables; Vaporizador para leche; Manómetro de presión; Rejilla calienta-tazas. Valor: se confirma con la orden.\n- Estella Caffè · 2 grupos · Espresso profesional · 2 grupos · Modelo de catálogo, se consigue por pedido (foto de referencia). Máquina de 2 grupos con panel digital y dosis programables, ideal para cafeterías con volumen medio y alto. Incluye: 2 grupos con dosis programables; Pantalla digital de temperatura; 2 vaporizadores para leche; Salida de agua caliente. Valor: se confirma con la orden.\n- Estella Caffè · 3 grupos · Espresso profesional · 3 grupos · Modelo de catálogo, se consigue por pedido (foto de referencia). Máquina de 3 grupos en acero inoxidable para operaciones de alto volumen: restaurantes, hoteles y eventos. Incluye: 3 grupos con dosis programables; 2 vaporizadores para leche; Manómetros de caldera y bomba; Rejilla calienta-tazas. Valor: se confirma con la orden.\n- Nuova Simonelli Appia Life · 1 grupo · Espresso semiautomática · 1 grupo · Modelo de catálogo, se consigue por pedido (foto de referencia). Clásica italiana semiautomática de 1 grupo, confiable y fácil de usar. 110–125 V. Incluye: 1 grupo semiautomático; 1 vaporizador para leche; Manómetro de presión; 110–125 V. Valor: se confirma con la orden.\n- Italia Espresso Venezia · 3 grupos · Espresso automática · 3 grupos · Modelo de catálogo, se consigue por pedido (foto de referencia). Máquina automática de 3 grupos con dosis programables para alto volumen. 220–240 V. Incluye: 3 grupos automáticos; 2 vaporizadores para leche; Dosis programables; 220–240 V. Valor: se confirma con la orden.\n- Molino Hey Café · Molino de café para espresso · Molino. Molino profesional para espresso con tolva transparente, para moler el café Midnight al momento. Incluye: Tolva transparente; Ajuste de molienda; Base para portafiltro. Valor: se confirma con la orden.\n\nMIDNIGHT CLUB (membresía mensual que incluye café y la cafetera; la máquina sigue siendo de Midnight): Essential $79.99/mes (hasta 2 lb de café o 100 cápsulas), Plus $104.99/mes (hasta 3 lb o 150 cápsulas), Premium $159.99/mes (hasta 5 lb o 250 cápsulas). Formato café fresco o cápsulas. Consumo adicional se cobra aparte. Para salir se avisa por escrito con 30 días; el mes en curso no se reembolsa.\nCOMPRA: la cafetera se puede comprar; el precio se confirma con la orden según modelo y condición.\nVOLTAJE: Italia Espresso Venezia 3 grupos es 220–240 V y necesita conexión especial; Venezia by Cecilware 110–120 V; Nuova Simonelli Appia Life 110–125 V; las demás se confirman.\nENTREGA: delivery en el área de Miami, costo según distancia (base + millas). Instalación y garantía se coordinan y confirman con la orden.\nPAGO: Zelle a Midnight (antes Midnight Espresso Lounge LLC, hoy Midnight Consulting Global LLC). La orden se prepara después de verificar el pago.\nOTROS: café de especialidad colombiano Midnight en grano y molido (tienda en app.midnightcgo.com), insumos, vasos personalizados, cuentas B2B, franquicia, Academy y Consulting.\nWhatsApp de Midnight: (786) 685-0823.";
+function aiStatus(){$("ai-st").innerHTML=D&&D.ai?"✅ <b>Activo.</b> En cada pregunta usa «✨ Sugerir con IA» o «✨ Mejorar mi texto».":"Inactivo. "+(BOOT.role==="admin"?"Pega tu clave abajo para activarlo.":"Pídele a un administrador que lo active.");$("ai-admin").hidden=BOOT.role!=="admin"}
+async function aiSaveKey(){const k=$("ai-key").value.trim();if(!k)return toast("Pega la clave primero");try{const r=await api("ai_key",{key:k});D.ai=r.ai;$("ai-key").value="";aiStatus();toast("Asistente IA activado")}catch(e){toast(e.message)}}
+async function aiClearKey(){try{const r=await api("ai_key",{key:""});D.ai=r.ai;aiStatus();toast("Clave quitada")}catch(e){toast(e.message)}}
+async function aiRun(mode){
+  if(!QCID)return;if(!D.ai)return toast(BOOT.role==="admin"?"Activa la IA en Equipo → Asistente IA":"Pide a un administrador que active la IA");
+  const t=$("q-text"),draft=t.value.trim();if(mode==="improve"&&!draft)return toast("Escribe primero tu idea y luego toca «Mejorar»");
+  const b=$(mode==="improve"?"ai-imp":"ai-sug"),lbl=b.textContent;b.disabled=true;b.classList.add("busy");b.textContent="✨ Escribiendo…";
+  try{const r=await api("ai_suggest",{cid:QCID,mode,draft,facts:AI_FACTS});t.value=r.text;t.focus();t.style.height="auto";t.style.height=Math.min(260,t.scrollHeight+4)+"px";toast("Revisa el texto y toca Responder")}catch(e){toast(e.message==="red"?"Sin conexión":e.message)}
+  b.disabled=false;b.classList.remove("busy");b.textContent=lbl}
+$("q-text").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();$("q-form").requestSubmit()}});
+
 /* ===== Inicio ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
-  renderOrders();renderStock();renderUsers();setChatBadge(D.chatsUnread||0);loadChats();
+  renderOrders();renderStock();renderUsers();setChatBadge(D.chatsUnread||0);loadChats();aiStatus();
   let v="ordenes";try{v=localStorage.getItem("mdn-tab")||v}catch(e){}showView(v);
   setInterval(async()=>{if(document.hidden)return;try{const r=await api("load");const had=new Set(D.orders.map(o=>o.ref));const fresh=r.orders.filter(o=>!had.has(o.ref));D.orders=r.orders;D.status=r.status;if(!sDirty()){D.stock=r.stock;SW=null;renderStock()}renderOrders();if(fresh.length)toast(fresh.length===1?"Nueva orden recibida":fresh.length+" órdenes nuevas")}catch(e){}},60000);
 }
