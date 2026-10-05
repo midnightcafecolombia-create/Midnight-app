@@ -288,6 +288,12 @@ main:has(#v-mix:not([hidden])){max-width:1100px}
 .cr-adj{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 @media(max-width:600px){.cr-adj{grid-template-columns:1fr 1fr}}
 .cr-adj label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--muted)}
+.lab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.lab-card{display:flex;flex-direction:column;gap:3px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--cream)}
+.lab-card:hover{border-color:var(--gold)}
+.lab-card.on{border-color:var(--gold);background:linear-gradient(135deg,rgba(212,171,95,.16),rgba(212,171,95,.03))}
+.lab-card .ic{font-size:20px}.lab-card b{font-family:var(--display);color:var(--gold-hi);font-size:13px;letter-spacing:.03em}
+.lab-card small{color:var(--muted);font-size:11.5px;line-height:1.35}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -395,6 +401,7 @@ main:has(#v-mix:not([hidden])){max-width:1100px}
         <button type="button" data-t="dash">Dashboard</button>
         <button type="button" data-t="drinks">Bebidas</button>
         <button type="button" data-t="create">🍸 Creador de tragos</button>
+        <button type="button" data-t="lab">🧪 Laboratorio</button>
         <button type="button" data-t="inv">Inventario</button>
         <button type="button" data-t="eng">Ingeniería de menú</button>
         <button type="button" data-t="ai">Asistente IA</button>
@@ -681,7 +688,7 @@ const $m=n=>n==null||isNaN(n)?"—":"$"+(+n).toLocaleString("en-US",{minimumFrac
 const pc=n=>n==null||isNaN(n)?"—":(Math.round(n*10)/10)+"%";
 const mon=()=>new Date().toISOString().slice(0,7);
 function mxSeed(){const garn=/^(naranja|limón|lima|hierbabuena|cereza|romero|flores comestibles|naranja sanguina|piel de naranja)$/i;
-  return {v:2,venues:[{id:mxId(),name:"Midnight Café",target:20,menus:MX_SEED.map(m=>({id:mxId(),name:m.name.replace("Midnight Mixology · ",""),drinks:m.drinks.map(d=>({id:mxId(),name:d.name,cat:"Mocktails",desc:"",glass:/martini|velvet|cherry/i.test(d.name)?"Coupe":/mule/i.test(d.name)?"Taza mule":"Highball",ice:!/cloud|whisper|cherry|velvet|martini/i.test(d.name),method:"",garnish:"",price:null,sales:null,
+  return {v:2,lab:[],venues:[{id:mxId(),name:"Midnight Café",target:20,menus:MX_SEED.map(m=>({id:mxId(),name:m.name.replace("Midnight Mixology · ",""),drinks:m.drinks.map(d=>({id:mxId(),name:d.name,cat:"Mocktails",desc:"",glass:/martini|velvet|cherry/i.test(d.name)?"Coupe":/mule/i.test(d.name)?"Taza mule":"Highball",ice:!/cloud|whisper|cherry|velvet|martini/i.test(d.name),method:"",garnish:"",price:null,sales:null,
     items:d.items.filter(i=>!/^hielo$/i.test(i.n)).map(i=>garn.test(i.n)?{q:1,u:"garnish",n:i.n}:{q:null,u:"oz",n:i.n})}))}))}],inv:[],log:[]}}
 function mxMigrate(d){if(!d)return mxSeed();if(d.v===2)return d;
   return {v:2,venues:[{id:mxId(),name:"Midnight Café",target:20,menus:(d.menus||[]).map(m=>({...m,name:m.name.replace("Midnight Mixology · ",""),drinks:m.drinks.map(x=>({cat:"Mocktails",desc:"",price:null,sales:null,...x}))}))}],inv:[],log:[]}}
@@ -750,7 +757,7 @@ function mxRender(){
   $("mx-venue").innerHTML=MX.venues.map((v,i)=>`<option value="${i}" ${i===MXV?"selected":""}>${esc(v.name)}</option>`).join("")+'<option value="new">+ Nuevo local…</option><option value="ren">✎ Renombrar local…</option>';
   $("mx-target").innerHTML=TARGETS.map(t=>`<option value="${t}" ${t===(V().target||20)?"selected":""}>${t}%</option>`).join("");
   document.querySelectorAll("#mx-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===MXT));
-  ({dash:mxDash,drinks:mxDrinks,create:mxCreate,inv:mxInv,eng:mxEng,ai:mxAI,rep:mxRep})[MXT]();
+  ({dash:mxDash,drinks:mxDrinks,create:mxCreate,lab:mxLab,inv:mxInv,eng:mxEng,ai:mxAI,rep:mxRep})[MXT]();
 }
 function mxVenue(v){if(v==="new"){const n=prompt("Nombre del restaurante, bar o establecimiento");if(n){MX.venues.push({id:mxId(),name:n.trim(),target:20,menus:[{id:mxId(),name:"Menú principal",drinks:[]}]});MXV=MX.venues.length-1;mxSave()}}
   else if(v==="ren"){const n=prompt("Nuevo nombre del local",V().name);if(n){V().name=n.trim();mxSave()}}else MXV=+v;MXM="all";mxRender()}
@@ -1155,6 +1162,57 @@ async function crRedo(){const r=MXCR.r,b=$("cr-redo");b.disabled=true;b.textCont
     n.glass=r.glass;n.method=r.method;n.ice=r.ice;n.cap=r.cap;n.visual={...(n.visual||{}),ice:r.ice===false?"ninguno":(r.visual&&r.visual.ice)||"cubos"};
     n.items=n.items.map(i=>{const it={q:i.q==null?null:+i.q,u:UNITS[i.u]?i.u:"oz",n:i.n||""};const p=MX.inv.find(p=>it.n.length>2&&(p.name.toLowerCase().includes(it.n.toLowerCase())||it.n.toLowerCase().includes(p.name.toLowerCase())));if(p)it.inv=p.id;return it});
     crFit(n);MXCR.r=n;MXCR.adj=false;MXCRH.push({inp:MXCR.inp,r:n});mxCreateShow();toast("Receta ajustada")}catch(e){toast(e.message);b.disabled=false;b.textContent="✨ Rehacer receta con IA para este ajuste"}}
+/* ---------- 🧪 Laboratorio de mixología ---------- */
+const LAB=[["clar","💧","Clarificación","Milk punch, agar-agar, centrífuga o filtrado: tragos cristalinos y estables"],["smoke","🔥","Ahumado / Smoking","Campana, pistola de humo, maderas, tablas y cristalería ahumada"],["inf","🫙","Infusiones","Destilados, siropes y café infusionados en frío, caliente o al vacío"],["fat","🥓","Fat-washing","Lavar destilados con grasas: mantequilla, coco, tocino, aceite de oliva"],["foam","☁️","Espumas y aires","Con sifón, aquafaba, clara o lecitina; texturas para coronar el trago"],["cord","🍋","Cordiales, siropes y oleo","Siropes, cordiales ácidos, oleo saccharum, shrubs y super juices"],["sphere","🫧","Esferificación y gelificados","Perlas, esferas, gomitas y gelatinas para garnish"],["carb","🫧","Carbonatación","Tragos con gas: sifón, botellas o CO₂"],["batch","🧪","Batch y pre-dilución","Pre-batch para servicio rápido con la dilución ya calculada"],["verif","✅","Verificar receta o técnica","La IA revisa balance, ABV, dilución, volumen, seguridad e higiene"]];
+let LABK="clar",LABR=null;
+function mxLab(){const B=$("mx-body");MX.lab=MX.lab||[];const T=LAB.find(x=>x[0]===LABK);
+  const drinkOpts=allDrinks().map(({d})=>`<option value="${d.id}">${esc(d.name)}</option>`).join("");
+  B.innerHTML=`<div class="lab-grid">${LAB.map(([k,ic,n,d])=>`<button type="button" class="lab-card ${k===LABK?"on":""}" onclick="LABK='${k}';LABR=null;mxRender()"><span class="ic">${ic}</span><b>${n}</b><small>${d}</small></button>`).join("")}</div>
+   <div class="mx-box"><h3>${T[1]} ${T[2]}</h3>
+    ${LABK==="verif"?`<div class="mx-form"><label class="w2">Verificar una bebida del menú<select id="lb-drink"><option value="">— Escribir receta o técnica abajo —</option>${drinkOpts}</select></label><label class="w2">Tamaño del vaso<select id="lb-cap">${[6,8,10,12].map(o=>`<option ${o==10?"selected":""}>${o} oz</option>`).join("")}</select></label>
+      <label class="w4">Receta o técnica a verificar<textarea id="lb-txt" placeholder="Pega la receta o describe tu técnica. Ej.: Milk punch con 750 ml de ron, 250 ml de leche entera, 200 ml de jugo de limón…"></textarea></label></div>`
+    :`<div class="mx-form"><label class="w4">¿Qué quieres hacer?<textarea id="lb-txt" placeholder="${{clar:"Ej.: clarificar un espresso martini para servirlo cristalino",smoke:"Ej.: ahumar un Old Fashioned de tequila con madera de cerezo",inf:"Ej.: infusionar tequila blanco con café Midnight",fat:"Ej.: fat-washing de ron con mantequilla tostada",foam:"Ej.: espuma de maracuyá sin huevo para coronar",cord:"Ej.: cordial de lima y café para highballs",sphere:"Ej.: perlas de café para garnish",carb:"Ej.: carbonatar un cold brew tónic",batch:"Ej.: batch de 20 margaritas con pre-dilución"}[LABK]}"></textarea></label>
+      <label>Cantidad a producir<select id="lb-yield">${["1 trago (prueba)","500 ml","1 litro","2 litros","Batch de 10 tragos","Batch de 20 tragos","Batch de 50 tragos"].map(x=>`<option>${x}</option>`).join("")}</select></label>
+      <label>Equipo disponible<select id="lb-eq">${["Barra básica","Barra completa","Con sifón y pistola de humo","Laboratorio (sous-vide, centrífuga)"].map(x=>`<option>${x}</option>`).join("")}</select></label>
+      <label class="w2">Para usar en (opcional)<input id="lb-for" placeholder="Ej.: menú de otoño, cliente Sushi Único"></label></div>`}
+    <div class="mx-row"><button type="button" class="mx-btn gold" id="lb-go" onclick="mxLabGo()">✨ ${LABK==="verif"?"Verificar con IA":"Diseñar protocolo con IA"}</button></div></div>
+   <div id="lb-out"></div>
+   <div class="mx-box"><h3>Mis protocolos guardados (${MX.lab.length})</h3>${MX.lab.length?`<table class="mx-tbl"><tbody>${MX.lab.slice().reverse().map(p=>`<tr class="clk" onclick="LABR=MX.lab.find(x=>x.id==='${p.id}');mxLabShow()"><td>${(LAB.find(x=>x[0]===p.k)||["","🧪"])[1]} ${esc(p.r.title||"")}</td><td style="color:var(--muted)">${esc(p.r.technique||"")}</td><td class="n" style="color:var(--muted)">${new Date(p.t).toLocaleDateString("es-US",{day:"numeric",month:"short"})}</td></tr>`).join("")}</tbody></table>`:'<p class="note">Los protocolos que guardes quedan aquí para tu equipo.</p>'}</div>`;
+  if(LABR)mxLabShow()}
+async function mxLabGo(){const T=LAB.find(x=>x[0]===LABK);const txt=($("lb-txt").value||"").trim();let ctx;
+  if(LABK==="verif"){const id=$("lb-drink").value;const f=id&&findDrink(id);if(!f&&!txt)return toast("Elige una bebida o escribe la receta");
+    ctx={tecnica:"Verificar receta",vaso_oz:parseInt($("lb-cap").value),bebida:f?{nombre:f.d.name,vaso:f.d.glass,metodo:f.d.method,hielo:f.d.ice,garnish:f.d.garnish,ingredientes:f.d.items.map(i=>`${i.q??"?"} ${i.u} ${i.n}`)}:null,texto:txt}}
+  else{if(!txt)return toast("Escribe qué quieres hacer");ctx={tecnica:T[2],pedido:txt,cantidad:$("lb-yield").value,equipo:$("lb-eq").value,uso:$("lb-for").value,marca:"Midnight (café de especialidad colombiano)"}}
+  const b=$("lb-go");b.disabled=true;b.textContent="Trabajando en el laboratorio…";
+  try{let r;try{r=await api("mix_ai",{mode:"lab",text:JSON.stringify(ctx)})}catch(e){if(!/modo/.test(e.message))throw e;
+      const a=await api("mix_ai",{mode:"ask",text:JSON.stringify(ctx),q:'Actúa como bar chef técnico. Responde SOLO con JSON: {"title":"","technique":"","goal":"","yield":"","time":"","equipment":[],"ingredients":[{"q":0,"u":"ml","n":""}],"steps":[{"t":"","time":"","temp":""}],"checks":[],"storage":"","safety":[],"use":"","verdict":"","score":null,"issues":[],"fixes":[]}'});
+      const m=String(a.text).match(/\{[\s\S]*\}/);r=m?JSON.parse(m[0]):null;if(!r)throw new Error("La IA no devolvió un protocolo. Intenta otra vez.")}
+    if(!r.title&&!r.verdict)throw new Error("La IA no devolvió un protocolo. Intenta otra vez.");
+    LABR={id:mxId(),k:LABK,t:Date.now(),ctx,r};mxLabShow();$("lb-out").scrollIntoView({behavior:"smooth",block:"start"})}catch(e){toast(e.message)}
+  b.disabled=false;b.textContent="✨ "+(LABK==="verif"?"Verificar con IA":"Diseñar protocolo con IA")}
+function mxLabShow(){const p=LABR,r=p.r;const saved=(MX.lab||[]).some(x=>x.id===p.id);const L=a=>Array.isArray(a)?a.filter(Boolean):[];
+  const vcol=/aprob/i.test(r.verdict||"")?"var(--ok)":/rechaz/i.test(r.verdict||"")?"var(--bad)":"var(--warn)";
+  $("lb-out").innerHTML=`<div class="mx-box lab-res"><div class="mx-row"><div><span class="lbl" style="margin:0">${esc(r.technique||"")}</span><h2 class="cr-name" style="font-size:22px">${esc(r.title||"Verificación")}</h2>${r.goal?`<p class="cr-desc">${esc(r.goal)}</p>`:""}</div></div>
+   ${r.verdict?`<div class="mx-vis"><div>Veredicto<b style="color:${vcol}">${esc(r.verdict)}</b></div><div>Puntaje<b>${r.score??"—"}/10</b></div></div>`:""}
+   ${L(r.issues).length?`<span class="lbl">Problemas encontrados</span><ul class="mx-al">${L(r.issues).map(x=>`<li class="w">${esc(x)}</li>`).join("")}</ul>`:""}
+   ${L(r.fixes).length?`<span class="lbl">Cómo corregirlo</span><ul class="mx-al">${L(r.fixes).map(x=>`<li class="o">${esc(x)}</li>`).join("")}</ul>`:""}
+   ${r.yield||r.time?`<div class="mx-vis">${r.yield?`<div>Rinde<b>${esc(r.yield)}</b></div>`:""}${r.time?`<div>Tiempo total<b>${esc(r.time)}</b></div>`:""}${r.storage?`<div>Conservación<b>${esc(r.storage)}</b></div>`:""}</div>`:""}
+   <div class="mx-two">${L(r.ingredients).length?`<div><span class="lbl">Ingredientes</span><table class="mx-tbl"><tbody>${L(r.ingredients).map(i=>`<tr><td class="n" style="width:70px">${i.q??""}</td><td style="width:60px">${esc(i.u||"")}</td><td>${esc(i.n||"")}</td></tr>`).join("")}</tbody></table></div>`:""}
+    ${L(r.equipment).length?`<div><span class="lbl">Equipo</span><ul class="cr-steps" style="list-style:disc">${L(r.equipment).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}</div>
+   ${L(r.steps).length?`<div><span class="lbl">Procedimiento</span><ol class="cr-steps">${L(r.steps).map(s=>`<li>${esc(s.t||s)}${s.time||s.temp?` <span class="mx-tag i">${[s.time,s.temp].filter(Boolean).map(esc).join(" · ")}</span>`:""}</li>`).join("")}</ol></div>`:""}
+   ${L(r.checks).length?`<span class="lbl">Cómo verificar que salió bien</span><ul class="mx-al">${L(r.checks).map(x=>`<li class="i">${esc(x)}</li>`).join("")}</ul>`:""}
+   ${L(r.safety).length?`<span class="lbl">Seguridad</span><ul class="mx-al">${L(r.safety).map(x=>`<li class="b">⚠ ${esc(x)}</li>`).join("")}</ul>`:""}
+   ${r.use?`<p class="note" style="margin:0">🍸 <b>Uso en barra:</b> ${esc(r.use)}</p>`:""}${r.cost_note?`<p class="note" style="margin:0">💲 ${esc(r.cost_note)}</p>`:""}
+   <div class="mx-row">${saved?`<button type="button" class="mx-btn" style="color:var(--bad)" onclick="MX.lab=MX.lab.filter(x=>x.id!=='${p.id}');LABR=null;mxSave();mxRender()">Eliminar protocolo</button>`:`<button type="button" class="mx-btn gold" onclick="(MX.lab=MX.lab||[]).push(LABR);mxSave();mxRender();toast('Protocolo guardado')">💾 Guardar protocolo</button>`}<button type="button" class="mx-btn" onclick="mxLabPrint()">🖨 Imprimir / PDF para el equipo</button></div></div>`}
+function mxLabPrint(){const r=LABR.r,L=a=>Array.isArray(a)?a.filter(Boolean):[];const w=window.open("","_blank");if(!w)return toast("Permite ventanas emergentes");
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(r.title||"Protocolo")}</title><style>body{font:14px/1.5 Helvetica,Arial,sans-serif;color:#1a140d;margin:32px}h1{font:600 24px Georgia,serif;margin:0}h2{font:600 14px Georgia,serif;letter-spacing:.08em;color:#8a6a31;margin:20px 0 6px;text-transform:uppercase}.s{color:#7a6c5c}table{border-collapse:collapse;width:100%}td{padding:5px 8px;border-bottom:1px solid #e3d8c4}.hd{border-bottom:3px solid #d4ab5f;padding-bottom:10px;margin-bottom:10px;display:flex;justify-content:space-between}.w{color:#a3281c}</style></head><body>
+   <div class="hd"><div><div class="s">${esc(r.technique||"")}</div><h1>${esc(r.title||"Verificación")}</h1><div class="s">${esc(r.goal||"")}</div></div><div style="text-align:right;font:600 13px Georgia;letter-spacing:.14em;color:#8a6a31">MIDNIGHT<br><span style="font:11px Helvetica;letter-spacing:0">Mixology Lab</span></div></div>
+   ${r.verdict?`<p><b>Veredicto:</b> ${esc(r.verdict)} · ${r.score??"—"}/10</p>`:""}${L(r.issues).length?`<h2>Problemas</h2><ul>${L(r.issues).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${L(r.fixes).length?`<h2>Correcciones</h2><ul>${L(r.fixes).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+   <p class="s">${[r.yield&&"Rinde: "+esc(r.yield),r.time&&"Tiempo: "+esc(r.time),r.storage&&"Conservación: "+esc(r.storage)].filter(Boolean).join(" · ")}</p>
+   ${L(r.ingredients).length?`<h2>Ingredientes</h2><table>${L(r.ingredients).map(i=>`<tr><td style="width:90px">${i.q??""} ${esc(i.u||"")}</td><td>${esc(i.n||"")}</td></tr>`).join("")}</table>`:""}
+   ${L(r.equipment).length?`<h2>Equipo</h2><p>${L(r.equipment).map(esc).join(" · ")}</p>`:""}${L(r.steps).length?`<h2>Procedimiento</h2><ol>${L(r.steps).map(s=>`<li>${esc(s.t||s)}${s.time||s.temp?` <i class="s">(${[s.time,s.temp].filter(Boolean).map(esc).join(" · ")})</i>`:""}</li>`).join("")}</ol>`:""}
+   ${L(r.checks).length?`<h2>Control de calidad</h2><ul>${L(r.checks).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${L(r.safety).length?`<h2>Seguridad</h2><ul class="w">${L(r.safety).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+   ${r.use?`<h2>Uso en barra</h2><p>${esc(r.use)}</p>`:""}<p class="s" style="margin-top:24px">Midnight Consulting Global LLC · Midnight Mixology Lab</p><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close()}
 
 /* ===== Inicio ===== */
 async function boot(){
