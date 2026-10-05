@@ -359,6 +359,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .sl-taxbox span{color:#e6a08a;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase}.sl-taxbox b{font-size:22px;font-weight:500;color:var(--cream)}.sl-taxbox small{flex-basis:100%;color:var(--muted)}
 .ai-pop input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
+.u-x{background:none;border:1px solid rgba(224,106,90,.5);color:#e06a5a;width:30px;height:30px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;flex:none}.u-x:hover{background:rgba(224,106,90,.15)}
 .ai-mini{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px;margin:14px 0 4px;position:relative}
 .ai-pill{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--gold);color:var(--gold-hi)}.ai-pill.off{border-color:var(--line);color:var(--muted)}
 .ai-cfg summary{list-style:none;cursor:pointer;font-size:12px;color:var(--muted);padding:4px 8px;border:1px solid var(--line);border-radius:999px}.ai-cfg summary::-webkit-details-marker{display:none}
@@ -610,11 +611,10 @@ $("s-save").onclick=async()=>{
 /* ===== Equipo ===== */
 function renderUsers(){
   const admin=BOOT.role==="admin";$("u-admin").hidden=!admin;
-  $("u-list").innerHTML=D.users.map(u=>`<div class="user"><div><b style="font-weight:500">${esc(u.name)}</b><small>${esc(u.user)} · ${u.role==="admin"?"Administrador":"Socio"}${u.user===BOOT.user?" · tú":""}</small></div>${admin&&u.user!==BOOT.user?`<span class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end"><button type="button" class="chip" title="Crear contraseña provisoria y enviarla por WhatsApp" onclick="resetPw('${esc(u.user)}','${esc(u.name)}')">📲 Enviar acceso</button><button type="button" class="chip out" onclick="delUser('${esc(u.user)}')">Quitar acceso</button></span>`:""}</div>`).join("");
+  $("u-list").innerHTML=D.users.map(u=>`<div class="user"><div><b style="font-weight:500">${esc(u.name)}</b><small>${esc(u.user)} · ${u.role==="admin"?"Administrador":"Socio"}${u.user===BOOT.user?" · tú":""}</small></div>${admin&&u.user!==BOOT.user?`<span class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end"><button type="button" class="chip" title="Crear contraseña provisoria y enviarla por WhatsApp" onclick="resetPw('${esc(u.user)}','${esc(u.name)}')">📲 Enviar acceso</button><button type="button" class="u-x" title="Borrar a ${esc(u.name)}" aria-label="Borrar" onclick="delUser('${esc(u.user)}','${esc(u.name)}')">×</button></span>`:""}</div>`).join("");
 }
-let delArm=null;
-async function delUser(u){if(delArm!==u){delArm=u;toast("Toca otra vez «Quitar acceso» para confirmar");setTimeout(()=>delArm=null,4000);return}
-  try{const r=await api("del_user",{user:u});D.users=r.users;renderUsers();toast("Acceso quitado")}catch(e){toast(e.message)}}
+async function delUser(u,n){if(!confirm(`¿Borrar a ${n||u} (${u})? Ya no podrá entrar al panel.`))return;
+  try{const r=await api("del_user",{user:u});D.users=r.users;renderUsers();toast("Persona borrada")}catch(e){toast(e.message)}}
 $("u-form").onsubmit=async e=>{e.preventDefault();try{const nm=$("u-name").value.trim(),us=$("u-user").value.trim().toLowerCase(),pw=$("u-pw").value;const r=await api("add_user",{name:nm,user:us,pw,role:$("u-role").value});D.users=r.users;renderUsers();e.target.reset();$("u-pw").type="password";$("u-pw-tip").hidden=true;waShow(nm,us.replace(/[^a-zA-Z0-9._@-]/g,"").toLowerCase(),pw);toast("Acceso creado")}catch(err){toast(err.message)}};
 function pwGen(id){const A="ABCDEFGHJKLMNPQRSTUVWXYZ",a="abcdefghijkmnpqrstuvwxyz",n="23456789",y="!@#$%*?";const all=A+a+n+y;const r=m=>{const u=new Uint32Array(1);crypto.getRandomValues(u);return u[0]%m};
   let c=[A[r(A.length)],a[r(a.length)],n[r(n.length)],y[r(y.length)]];while(c.length<14)c.push(all[r(all.length)]);for(let i=c.length-1;i>0;i--){const j=r(i+1);[c[i],c[j]]=[c[j],c[i]]}
