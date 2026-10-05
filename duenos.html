@@ -163,6 +163,55 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
 .ai-box input{background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit}
 .ai-box .row{display:flex;gap:8px}.ai-box .row .btn{flex:1}
 @media(max-width:560px){.thread{max-height:calc(100vh - 360px);min-height:180px}.quick{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.quick button{flex:0 0 auto;white-space:nowrap}.reply textarea{min-height:64px}}
+.mx-lock[hidden]{display:none}
+.mx-lock{max-width:420px;margin:30px auto;display:flex;flex-direction:column;gap:12px;text-align:center}
+.mx-lock .big{font-size:42px}
+.mx-lock input{background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px;text-align:center}
+.mx-top{display:flex;flex-direction:column;gap:10px}
+.mx-menus{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.mx-menus button{flex:0 0 auto;padding:8px 14px;border:1px solid var(--line);border-radius:20px;font-size:13px;color:var(--cream);white-space:nowrap}
+.mx-menus button.on{background:var(--gold);color:#120d07;border-color:var(--gold)}
+.mx-acts{display:flex;gap:6px;flex-wrap:wrap}.mx-acts .chip{padding:7px 12px;font-size:12.5px;cursor:pointer;color:var(--gold-hi)}
+.mx-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:560px){.mx-sum{grid-template-columns:repeat(2,1fr)}}
+.mx-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.mx-filters input#mx-q{flex:1;min-width:180px;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit}
+.mx-tg,.mx-units{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.mx-units select,.mx-d select,.mx-d input,.mx-card select{background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;font-size:14px}
+.mx-list{display:flex;flex-direction:column;gap:12px}
+.mx-d{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.mx-d.warn{border-left-color:var(--warn)}.mx-d.bad{border-left-color:var(--bad)}
+.mx-dh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mx-dh input.nm{flex:1;min-width:160px;font-family:var(--display);font-weight:600;color:var(--gold-hi);font-size:15px}
+.mx-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);align-items:center}
+.mx-meta label{display:flex;gap:5px;align-items:center}
+.mx-it{display:grid;grid-template-columns:76px 96px 1fr 70px 28px;gap:6px;align-items:center}
+.mx-it input.q{text-align:right}
+.mx-it .alt{font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.mx-it .del{color:var(--bad);font-size:18px}
+.mx-it.miss input.q{border-color:var(--warn)}
+.mx-bar{height:10px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;position:relative}
+.mx-bar i{position:absolute;inset:0 auto 0 0;background:var(--ok)}.mx-bar i.l{background:rgba(124,199,154,.35);left:auto}
+.mx-d.warn .mx-bar i:not(.l){background:var(--warn)}.mx-d.bad .mx-bar i:not(.l){background:var(--bad)}
+.mx-tot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mx-tot b{color:var(--cream);font-weight:500}
+.mx-al{margin:0;padding-left:18px;font-size:12.5px;display:flex;flex-direction:column;gap:2px}
+.mx-al li.w{color:var(--warn)}.mx-al li.b{color:var(--bad)}.mx-al li.o{color:var(--ok)}
+.mx-ft{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.mx-ft button{padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:12.5px}
+.mx-ft .sp{flex:1}
+.mx-batch{font-size:12.5px;color:var(--muted);background:var(--ink);border:1px dashed var(--line);border-radius:8px;padding:8px 10px}
+.mx-modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:40;display:grid;place-items:center;padding:16px}
+.mx-modal[hidden]{display:none}
+.mx-card{background:var(--panel);border:1px solid var(--gold);border-radius:16px;padding:16px;width:min(560px,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.mx-h{display:flex;justify-content:space-between;align-items:center}.mx-h b{font-family:var(--display);color:var(--gold-hi);letter-spacing:.06em}
+.mx-h .x{font-size:24px;color:var(--muted)}
+.mx-card textarea{min-height:120px;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+.mx-card label{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.mx-file{border:1px dashed var(--gold);border-radius:10px;padding:14px;justify-content:center;cursor:pointer;color:var(--gold-hi)!important}
+.mx-file input{display:none}
+#mx-prev{max-height:200px;object-fit:contain;border-radius:10px;border:1px solid var(--line)}
+@media(max-width:560px){.mx-it{grid-template-columns:60px 84px 1fr 26px}.mx-it .alt{display:none}}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -175,6 +224,7 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
     <button type="button" data-v="preguntas">Preguntas<span class="n" id="n-chat" hidden></span></button>
     <button type="button" data-v="stock">Stock</button>
     <button type="button" data-v="costos">Costos</button>
+    <button type="button" data-v="mix">Mixología 🔒</button>
     <button type="button" data-v="equipo">Equipo</button>
   </nav>
 </header>
@@ -256,6 +306,30 @@ details.raw pre{white-space:pre-wrap;font-size:12px;background:var(--ink);border
       </div>
   </section>
 
+  <section class="view" id="v-mix" hidden>
+    <div id="mx-lock" class="mx-lock"></div>
+    <div id="mx-app" hidden>
+      <div class="mx-top">
+        <div class="mx-menus" id="mx-menus"></div>
+        <div class="mx-acts"><button type="button" class="chip" onclick="mxImportOpen()">⬆ Cargar menú</button><button type="button" class="chip" onclick="mxNewMenu()">+ Menú</button><button type="button" class="chip" onclick="mxLock()">🔒 Cerrar</button></div>
+      </div>
+      <div class="mx-sum" id="mx-sum"></div>
+      <div class="mx-filters"><input id="mx-q" placeholder="Buscar bebida o ingrediente…" oninput="mxRender()"><label class="mx-tg"><input type="checkbox" id="mx-onlybad" onchange="mxRender()"> Solo con alertas</label><span class="mx-units">Ver en <select id="mx-unit" onchange="MXU=this.value;mxRender()"><option value="oz">oz</option><option value="ml">ml</option></select></span></div>
+      <div id="mx-list" class="mx-list"></div>
+      <button class="btn ghost" type="button" onclick="mxNewDrink()">+ Agregar bebida a este menú</button>
+      <p class="note" id="mx-saved">Los cambios se guardan solos. Se guarda un respaldo cada hora.</p>
+    </div>
+    <div class="mx-modal" id="mx-imp" hidden><div class="mx-card">
+      <div class="mx-h"><b>Cargar menú</b><button type="button" class="x" onclick="$('mx-imp').hidden=true">×</button></div>
+      <p class="note">Sube una <b>foto o captura</b> del menú, o <b>pega el texto</b>. La IA lo convierte en recetas; las cantidades que no estén en el menú quedan en blanco para que las completes.</p>
+      <label class="mx-file">📷 Elegir foto del menú<input type="file" id="mx-img" accept="image/*" onchange="mxPickImg(this)"></label>
+      <img id="mx-prev" alt="" hidden>
+      <textarea id="mx-txt" placeholder="O pega aquí el menú. Ejemplo:&#10;Espresso Tonic — 1.5 oz espresso, 4 oz tónica, hielo, piel de naranja"></textarea>
+      <label>Agregar a <select id="mx-dest"></select></label>
+      <button class="btn" type="button" id="mx-go" onclick="mxImport()">Convertir con IA</button>
+    </div></div>
+  </section>
+
   <section class="view" id="v-equipo" hidden>
     <span class="lbl">Personas con acceso</span>
     <div class="users" id="u-list"></div>
@@ -300,7 +374,7 @@ async function api(action,body={}){
 }
 let D=null;
 /* ===== Pestañas ===== */
-function showView(v){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart()}
+function showView(v){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart()}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 
 /* ===== Órdenes ===== */
@@ -515,6 +589,100 @@ async function aiRun(mode){
   try{const r=await api("ai_suggest",{cid:QCID,mode,draft,facts:AI_FACTS});t.value=r.text;t.focus();t.style.height="auto";t.style.height=Math.min(260,t.scrollHeight+4)+"px";toast("Revisa el texto y toca Responder")}catch(e){toast(e.message==="red"?"Sin conexión":e.message)}
   b.disabled=false;b.classList.remove("busy");b.textContent=lbl}
 $("q-text").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();$("q-form").requestSubmit()}});
+
+
+/* ===== Mixología privada (clave aparte) ===== */
+const OZ=29.5735;
+const UNITS={oz:{l:"oz",ml:OZ},ml:{l:"ml",ml:1},cl:{l:"cl",ml:10},dash:{l:"dash",ml:0.9},gota:{l:"gota",ml:0.05},barspoon:{l:"barspoon",ml:5},cdta:{l:"cdta",ml:5},cda:{l:"cda",ml:15},g:{l:"g",ml:null},unidad:{l:"unidad",ml:null},garnish:{l:"decoración",ml:null}};
+const GLASS={"Rocks":10,"Highball":12,"Collins":14,"Coupe":6,"Martini":7,"Copa de vino":12,"Taza mule":16,"Hurricane":18,"Taza espresso":3,"Taza 8 oz":8,"Vaso 12 oz":12,"Vaso 16 oz":16};
+const MX_SEED=[{"name":"Midnight Mixology · Clásica de café","drinks":[{"name":"Espresso Tonic","items":[{"q":null,"u":"oz","n":"Café espresso"},{"q":null,"u":"oz","n":"Agua tónica"},{"q":null,"u":"oz","n":"Hielo"},{"q":null,"u":"oz","n":"Naranja"}]},{"name":"Colombian Mule 0.0","items":[{"q":null,"u":"oz","n":"Cold brew de café"},{"q":null,"u":"oz","n":"Ginger beer"},{"q":null,"u":"oz","n":"Limón"},{"q":null,"u":"oz","n":"Hierbabuena"}]},{"name":"Coffee Negroni 0.0","items":[{"q":null,"u":"oz","n":"Cold brew de café"},{"q":null,"u":"oz","n":"Bitter 0.0"},{"q":null,"u":"oz","n":"Vermú sin alcohol"},{"q":null,"u":"oz","n":"Naranja"}]},{"name":"Passion Fruit Cold Brew","items":[{"q":null,"u":"oz","n":"Cold brew de café"},{"q":null,"u":"oz","n":"Maracuyá"},{"q":null,"u":"oz","n":"Limón"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Midnight Cherry Espresso","items":[{"q":null,"u":"oz","n":"Café espresso"},{"q":null,"u":"oz","n":"Cereza"},{"q":null,"u":"oz","n":"Vainilla"},{"q":null,"u":"oz","n":"Espuma fría"}]},{"name":"Coconut Coffee Cooler","items":[{"q":null,"u":"oz","n":"Cold brew de café"},{"q":null,"u":"oz","n":"Coco"},{"q":null,"u":"oz","n":"Piña"},{"q":null,"u":"oz","n":"Crema de coco"}]}]},{"name":"Midnight Mixology · Espresso Lounge","drinks":[{"name":"Midnight Tonic Bloom","items":[{"q":null,"u":"oz","n":"Café espresso"},{"q":null,"u":"oz","n":"Tónica"},{"q":null,"u":"oz","n":"Flores comestibles"},{"q":null,"u":"oz","n":"Limón"}]},{"name":"Velvet Coffee Citrus","items":[{"q":null,"u":"oz","n":"Café espresso"},{"q":null,"u":"oz","n":"Cítricos"},{"q":null,"u":"oz","n":"Vainilla"},{"q":null,"u":"oz","n":"Espuma sedosa"}]},{"name":"Golden Moon Spritz","items":[{"q":null,"u":"oz","n":"Cold brew de café"},{"q":null,"u":"oz","n":"Durazno"},{"q":null,"u":"oz","n":"Limón"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Nocturne Berry Fizz","items":[{"q":null,"u":"oz","n":"Cold brew de café"},{"q":null,"u":"oz","n":"Frutos rojos"},{"q":null,"u":"oz","n":"Limón"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Matcha Night Cloud","items":[{"q":null,"u":"oz","n":"Matcha"},{"q":null,"u":"oz","n":"Café"},{"q":null,"u":"oz","n":"Leche vegetal"},{"q":null,"u":"oz","n":"Vainilla"},{"q":null,"u":"oz","n":"Espuma fría"}]},{"name":"Dark Cacao Whisper","items":[{"q":null,"u":"oz","n":"Café"},{"q":null,"u":"oz","n":"Cacao"},{"q":null,"u":"oz","n":"Avellana"},{"q":null,"u":"oz","n":"Espuma de cacao"}]}]},{"name":"Midnight Mixology · Matcha","drinks":[{"name":"Matcha Citrus Spritz","items":[{"q":null,"u":"oz","n":"Matcha"},{"q":null,"u":"oz","n":"Limón"},{"q":null,"u":"oz","n":"Naranja"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Coconut Matcha Cooler","items":[{"q":null,"u":"oz","n":"Matcha"},{"q":null,"u":"oz","n":"Coco"},{"q":null,"u":"oz","n":"Piña"},{"q":null,"u":"oz","n":"Leche de coco"}]},{"name":"Berry Matcha Fizz","items":[{"q":null,"u":"oz","n":"Matcha"},{"q":null,"u":"oz","n":"Frutos rojos"},{"q":null,"u":"oz","n":"Limón"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Matcha Tonic Bloom","items":[{"q":null,"u":"oz","n":"Matcha"},{"q":null,"u":"oz","n":"Tónica"},{"q":null,"u":"oz","n":"Flores comestibles"},{"q":null,"u":"oz","n":"Limón"}]},{"name":"Matcha Vanilla Cloud","items":[{"q":null,"u":"oz","n":"Matcha"},{"q":null,"u":"oz","n":"Vainilla"},{"q":null,"u":"oz","n":"Leche vegetal"},{"q":null,"u":"oz","n":"Espuma fría"}]}]},{"name":"Midnight Mixology · Yerba mate","drinks":[{"name":"Mate Citrus Spritz","items":[{"q":null,"u":"oz","n":"Yerba mate"},{"q":null,"u":"oz","n":"Naranja"},{"q":null,"u":"oz","n":"Limón"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Berry Mate Fizz","items":[{"q":null,"u":"oz","n":"Yerba mate"},{"q":null,"u":"oz","n":"Frutos rojos"},{"q":null,"u":"oz","n":"Limón"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Tropical Mate Cooler","items":[{"q":null,"u":"oz","n":"Yerba mate"},{"q":null,"u":"oz","n":"Piña"},{"q":null,"u":"oz","n":"Maracuyá"},{"q":null,"u":"oz","n":"Limón"}]},{"name":"Ginger Mate Mule","items":[{"q":null,"u":"oz","n":"Yerba mate"},{"q":null,"u":"oz","n":"Ginger beer"},{"q":null,"u":"oz","n":"Limón"},{"q":null,"u":"oz","n":"Hierbabuena"}]},{"name":"Mate Vanilla Cloud","items":[{"q":null,"u":"oz","n":"Yerba mate"},{"q":null,"u":"oz","n":"Vainilla"},{"q":null,"u":"oz","n":"Leche vegetal"},{"q":null,"u":"oz","n":"Espuma fría"}]}]},{"name":"Midnight Mixology · Edición especial","drinks":[{"name":"Miami Coffee Spritz 0.0","items":[{"q":null,"u":"oz","n":"Cold brew de café"},{"q":null,"u":"oz","n":"Naranja"},{"q":null,"u":"oz","n":"Frutos rojos"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Ocean Brew Cooler","items":[{"q":null,"u":"oz","n":"Café"},{"q":null,"u":"oz","n":"Piña"},{"q":null,"u":"oz","n":"Coco"},{"q":null,"u":"oz","n":"Lima"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Tropical Espresso Martini 0.0","items":[{"q":null,"u":"oz","n":"Café espresso"},{"q":null,"u":"oz","n":"Maracuyá"},{"q":null,"u":"oz","n":"Vainilla"},{"q":null,"u":"oz","n":"Espuma fría"}]},{"name":"Sunset Cold Brew","items":[{"q":null,"u":"oz","n":"Cold brew de café"},{"q":null,"u":"oz","n":"Naranja"},{"q":null,"u":"oz","n":"Granadina natural"},{"q":null,"u":"oz","n":"Soda"}]},{"name":"Midnight Piña Colada 0.0","items":[{"q":null,"u":"oz","n":"Café"},{"q":null,"u":"oz","n":"Piña"},{"q":null,"u":"oz","n":"Coco"},{"q":null,"u":"oz","n":"Espuma de coco"}]},{"name":"Blood Orange Tonic","items":[{"q":null,"u":"oz","n":"Café"},{"q":null,"u":"oz","n":"Naranja sanguina"},{"q":null,"u":"oz","n":"Tónica"},{"q":null,"u":"oz","n":"Romero"}]}]}];
+let MX=null,MXM=0,MXU="oz",MXsaveT=null,MXIMG=null;
+const mxId=()=>Math.random().toString(36).slice(2,9);
+const r2=n=>Math.round(n*100)/100;
+const fmtV=ml=>MXU==="oz"?r2(ml/OZ)+" oz":Math.round(ml)+" ml";
+function mxSeed(){const garn=/^(naranja|limón|lima|hierbabuena|cereza|romero|flores comestibles|naranja sanguina|piel de naranja)$/i;
+  return {menus:MX_SEED.map(m=>({id:mxId(),name:m.name,drinks:m.drinks.map(d=>{const ice=d.items.some(i=>/^hielo$/i.test(i.n));
+    return {id:mxId(),name:d.name,glass:/martini|espresso martini|velvet|cherry/i.test(d.name)?"Coupe":/mule/i.test(d.name)?"Taza mule":"Highball",ice:ice||!/cloud|whisper|cherry|velvet|martini/i.test(d.name),method:"",garnish:"",items:d.items.filter(i=>!/^hielo$/i.test(i.n)).map(i=>garn.test(i.n)?{q:1,u:"garnish",n:i.n}:{q:null,u:"oz",n:i.n})}})}))}}
+async function mxStart(){const L=$("mx-lock");
+  let st;try{st=await api("mix_status")}catch(e){L.innerHTML='<div class="empty">No se pudo cargar. Revisa que el archivo api.php del panel esté actualizado.</div>';return}
+  if(st.open)return mxOpen();
+  $("mx-app").hidden=true;L.hidden=false;
+  if(!st.set){L.innerHTML=BOOT.role==="admin"?`<div class="big">🍸</div><h2>Tu laboratorio de mixología</h2><p class="note">Crea una clave solo para esta sección. Es distinta a la del panel: aunque alguien entre al panel, no podrá ver tus recetas.</p><input id="mx-k1" type="password" placeholder="Nueva clave (6+ caracteres)" autocomplete="new-password"><input id="mx-k2" type="password" placeholder="Repite la clave" autocomplete="new-password"><button class="btn" type="button" onclick="mxSetKey()">Crear clave y entrar</button>`:'<div class="empty">Esta sección es privada.</div>';return}
+  if(!st.mine){L.innerHTML='<div class="empty">🔒 Esta sección es privada.</div>';return}
+  L.innerHTML=`<div class="big">🔒</div><h2>Mixología</h2><p class="note">Escribe tu clave de Mixología.</p><input id="mx-k" type="password" placeholder="Clave de Mixología" autocomplete="current-password" onkeydown="if(event.key==='Enter')mxUnlock()"><button class="btn" type="button" onclick="mxUnlock()">Entrar</button>`;setTimeout(()=>$("mx-k")&&$("mx-k").focus(),50)}
+async function mxSetKey(){const a=$("mx-k1").value,b=$("mx-k2").value;if(a!==b)return toast("Las claves no coinciden");try{await api("mix_setkey",{key:a});toast("Clave creada");mxOpen()}catch(e){toast(e.message)}}
+async function mxUnlock(){try{await api("mix_unlock",{key:$("mx-k").value});mxOpen()}catch(e){toast(e.message)}}
+async function mxLock(){try{await api("mix_lock")}catch(e){}MX=null;mxStart()}
+async function mxOpen(){try{const r=await api("mix_load");MX=r.data&&r.data.menus?r.data:mxSeed();if(!r.data)mxSave()}catch(e){return mxStart()}
+  $("mx-lock").hidden=true;$("mx-app").hidden=false;MXM=Math.min(MXM,MX.menus.length-1);mxRender()}
+function mxSave(){clearTimeout(MXsaveT);$("mx-saved").textContent="Guardando…";MXsaveT=setTimeout(async()=>{try{await api("mix_save",{data:MX});$("mx-saved").textContent="✓ Guardado · respaldo automático cada hora"}catch(e){$("mx-saved").textContent="⚠️ No se guardó: "+(e.message==="mixlock"?"la sesión se cerró, vuelve a entrar":"revisa la conexión")}},700)}
+function mxCheck(d){
+  const A=[];let liq=0,miss=0,odd=0,coffee=0;
+  d.items.forEach(i=>{const u=UNITS[i.u]||UNITS.oz;if(i.q==null||i.q===""||isNaN(+i.q)){if(i.u!=="garnish")miss++;return}
+    if(u.ml){const ml=+i.q*u.ml;liq+=ml;if(/caf|espresso|cold brew/i.test(i.n))coffee+=ml;
+      if(i.u==="oz"&&Math.abs(+i.q*4-Math.round(+i.q*4))>0.01)odd++}});
+  const cap=(GLASS[d.glass]||0)*OZ;const dil=d.method==="batido"?1.25:d.method==="revuelto"?1.2:d.ice?1.1:1;const fin=liq*dil;
+  const lim=cap?(d.ice?cap*0.62:cap*0.92):0;
+  let lvl="ok";
+  if(!d.items.length){A.push(["b","Sin ingredientes"]);lvl="bad"}
+  if(miss){A.push(["w",`${miss} ingrediente${miss>1?"s":""} sin cantidad`]);lvl="warn"}
+  if(!cap&&d.glass)A.push(["w",`No conozco la capacidad de «${d.glass}». Elige un vaso de la lista para revisar el volumen.`]);
+  if(!d.glass){A.push(["w","Elige el vaso para revisar el volumen"]);lvl="warn"}
+  if(cap&&liq){if(fin>cap*0.98){A.push(["b",`Se desborda: ${fmtV(fin)} con dilución en un vaso de ${fmtV(cap)}`]);lvl="bad"}
+    else if(fin>lim){A.push(["w",`Muy lleno: ${fmtV(fin)} final. Con ${d.ice?"hielo":"servido sin hielo"} lo ideal es hasta ${fmtV(lim)} de líquido final`]);if(lvl==="ok")lvl="warn"}
+    else if(fin<lim*0.45){A.push(["w",`Se ve vacío: ${fmtV(fin)} final en un vaso de ${fmtV(cap)}. Sube el volumen o usa un vaso más pequeño`]);if(lvl==="ok")lvl="warn"}
+    else A.push(["o",`Volumen correcto para ${d.glass} (${fmtV(fin)} final de ${fmtV(lim)} recomendado)`])}
+  if(odd)A.push(["w",`${odd} medida${odd>1?"s":""} difícil${odd>1?"es":""} de servir con jigger: usa cuartos de onza (0.25, 0.5, 0.75…)`]);
+  return {A,lvl,liq,fin,cap,lim,coffee};
+}
+function mxRender(){
+  const M=MX.menus[MXM];if(!M){MXM=0;return}
+  $("mx-menus").innerHTML=MX.menus.map((m,i)=>`<button type="button" class="${i===MXM?"on":""}" onclick="MXM=${i};mxRender()">${esc(m.name)} <small>(${m.drinks.length})</small></button>`).join("");
+  const q=($("mx-q").value||"").toLowerCase(),only=$("mx-onlybad").checked;
+  const all=M.drinks.map(d=>({d,c:mxCheck(d)}));
+  const nb=all.filter(x=>x.c.lvl==="bad").length,nw=all.filter(x=>x.c.lvl==="warn").length;
+  $("mx-sum").innerHTML=`<div class="kpi"><span>Bebidas</span><b>${all.length}</b></div><div class="kpi"><span>Listas</span><b style="color:var(--ok)">${all.length-nb-nw}</b></div><div class="kpi"><span>Revisar</span><b style="color:var(--warn)">${nw}</b></div><div class="kpi"><span>Con error</span><b style="color:var(--bad)">${nb}</b></div>`;
+  const glassOpts=g=>`<option value="">Vaso…</option>`+Object.keys(GLASS).map(k=>`<option ${k===g?"selected":""}>${k}</option>`).join("")+(g&&!GLASS[g]?`<option selected>${esc(g)}</option>`:"");
+  const unitOpts=u=>Object.entries(UNITS).map(([k,v])=>`<option value="${k}" ${k===u?"selected":""}>${v.l}</option>`).join("");
+  $("mx-list").innerHTML=all.filter(({d,c})=>(!only||c.lvl!=="ok")&&(!q||d.name.toLowerCase().includes(q)||d.items.some(i=>i.n.toLowerCase().includes(q)))).map(({d,c})=>{
+    const di=M.drinks.indexOf(d);const pct=c.cap?Math.min(100,c.fin/c.cap*100):0,lp=c.cap?c.lim/c.cap*100:0;
+    return `<div class="mx-d ${c.lvl==="ok"?"":c.lvl}">
+      <div class="mx-dh"><input class="nm" value="${esc(d.name)}" onchange="mxSet(${di},'name',this.value)"></div>
+      <div class="mx-meta"><label>Vaso <select onchange="mxSet(${di},'glass',this.value)">${glassOpts(d.glass)}</select></label>
+        <label><input type="checkbox" ${d.ice?"checked":""} onchange="mxSet(${di},'ice',this.checked)"> Con hielo</label>
+        <label>Método <select onchange="mxSet(${di},'method',this.value)">${["","batido","revuelto","construido","licuado"].map(m=>`<option value="${m}" ${m===d.method?"selected":""}>${m||"—"}</option>`).join("")}</select></label>
+        <label>Decoración <input value="${esc(d.garnish||"")}" placeholder="opcional" onchange="mxSet(${di},'garnish',this.value)" style="width:140px"></label></div>
+      <div class="mx-its">${d.items.map((it,ii)=>{const u=UNITS[it.u]||UNITS.oz;const ok=it.q!=null&&it.q!==""&&!isNaN(+it.q);const alt=ok&&u.ml?(it.u==="ml"?r2(+it.q/OZ)+" oz":Math.round(+it.q*u.ml)+" ml"):"";
+        return `<div class="mx-it ${!ok&&it.u!=="garnish"?"miss":""}"><input class="q" type="number" step="0.25" min="0" inputmode="decimal" value="${ok?it.q:""}" placeholder="?" onchange="mxItem(${di},${ii},'q',this.value)"><select onchange="mxItem(${di},${ii},'u',this.value)">${unitOpts(it.u)}</select><input value="${esc(it.n)}" onchange="mxItem(${di},${ii},'n',this.value)"><span class="alt">${alt}</span><button type="button" class="del" title="Quitar" onclick="mxDelItem(${di},${ii})">×</button></div>`}).join("")}</div>
+      ${c.cap?`<div class="mx-bar" title="Llenado del vaso"><i class="l" style="left:${lp}%;right:0"></i><i style="width:${pct}%"></i></div>`:""}
+      <div class="mx-tot"><span>Líquido <b>${fmtV(c.liq)}</b></span><span>Con dilución <b>${fmtV(c.fin)}</b></span>${c.cap?`<span>Vaso <b>${fmtV(c.cap)}</b></span>`:""}${c.coffee&&c.liq?`<span>Café <b>${Math.round(c.coffee/c.liq*100)}%</b></span>`:""}</div>
+      <ul class="mx-al">${c.A.map(([t,m])=>`<li class="${t}">${m}</li>`).join("")}</ul>
+      <div class="mx-ft"><button type="button" onclick="mxAddItem(${di})">+ Ingrediente</button><button type="button" onclick="mxBatch(${di})">Batch</button><button type="button" onclick="mxCopy(${di})">Copiar receta</button><span class="sp"></span><button type="button" onclick="mxDup(${di})">Duplicar</button><button type="button" style="color:var(--bad)" onclick="mxDel(${di})">Eliminar</button></div>
+      <div class="mx-batch" id="mxb-${d.id}" hidden></div></div>`}).join("")||'<div class="empty">No hay bebidas con ese filtro.</div>';
+}
+function mxSet(di,k,v){MX.menus[MXM].drinks[di][k]=v;mxSave();mxRender()}
+function mxItem(di,ii,k,v){const it=MX.menus[MXM].drinks[di].items[ii];it[k]=k==="q"?(v===""?null:+v):v;mxSave();mxRender()}
+function mxAddItem(di){MX.menus[MXM].drinks[di].items.push({q:null,u:"oz",n:"Nuevo ingrediente"});mxSave();mxRender()}
+function mxDelItem(di,ii){MX.menus[MXM].drinks[di].items.splice(ii,1);mxSave();mxRender()}
+let mxDelArm=null;function mxDel(di){const d=MX.menus[MXM].drinks[di];if(mxDelArm!==d.id){mxDelArm=d.id;toast("Toca Eliminar otra vez para borrar «"+d.name+"»");setTimeout(()=>mxDelArm=null,4000);return}MX.menus[MXM].drinks.splice(di,1);mxSave();mxRender()}
+function mxDup(di){const d=JSON.parse(JSON.stringify(MX.menus[MXM].drinks[di]));d.id=mxId();d.name+=" (copia)";MX.menus[MXM].drinks.splice(di+1,0,d);mxSave();mxRender()}
+function mxNewDrink(){MX.menus[MXM].drinks.push({id:mxId(),name:"Nueva bebida",glass:"",ice:true,method:"",garnish:"",items:[{q:null,u:"oz",n:"Ingrediente"}]});mxSave();mxRender();setTimeout(()=>{const l=$("mx-list").lastElementChild;l&&l.scrollIntoView({block:"center"})},50)}
+function mxNewMenu(){const n=prompt("Nombre del nuevo menú");if(!n)return;MX.menus.push({id:mxId(),name:n.trim(),drinks:[]});MXM=MX.menus.length-1;mxSave();mxRender()}
+function mxBatch(di){const d=MX.menus[MXM].drinks[di],box=$("mxb-"+d.id);if(!box.hidden){box.hidden=true;return}
+  const n=+prompt("¿Para cuántas bebidas preparas el batch?","10");if(!n)return;
+  const lines=d.items.filter(i=>i.q!=null&&i.u!=="garnish").map(i=>{const u=UNITS[i.u]||UNITS.oz;const tot=+i.q*n;return u.ml?`${i.n}: ${r2(tot)} ${u.l} = ${r2(tot*u.ml/OZ)} oz = ${tot*u.ml>=1000?r2(tot*u.ml/1000)+" L":Math.round(tot*u.ml)+" ml"}`:`${i.n}: ${r2(tot)} ${u.l}`});
+  box.innerHTML=`<b style="color:var(--gold-hi)">Batch × ${n}</b><br>`+lines.map(esc).join("<br>");box.hidden=false}
+function mxCopy(di){const d=MX.menus[MXM].drinks[di];const t=`${d.name}\nVaso: ${d.glass||"—"}${d.ice?" con hielo":""}${d.method?" · "+d.method:""}\n`+d.items.map(i=>`• ${i.q??"?"} ${(UNITS[i.u]||UNITS.oz).l} ${i.n}`).join("\n")+(d.garnish?`\nDecoración: ${d.garnish}`:"");
+  try{navigator.clipboard.writeText(t).then(()=>toast("Receta copiada"))}catch(e){toast("No se pudo copiar")}}
+function mxImportOpen(){MXIMG=null;$("mx-prev").hidden=true;$("mx-img").value="";$("mx-txt").value="";$("mx-dest").innerHTML=MX.menus.map((m,i)=>`<option value="${i}" ${i===MXM?"selected":""}>${esc(m.name)}</option>`).join("")+'<option value="new">+ Menú nuevo</option>';$("mx-imp").hidden=false}
+function mxPickImg(inp){const f=inp.files[0];if(!f)return;const img=new Image();img.onload=()=>{const s=Math.min(1,1600/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=img.width*s;c.height=img.height*s;c.getContext("2d").drawImage(img,0,0,c.width,c.height);const u=c.toDataURL("image/jpeg",.82);MXIMG=u.split(",")[1];$("mx-prev").src=u;$("mx-prev").hidden=false;URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f)}
+async function mxImport(){const b=$("mx-go");b.disabled=true;b.textContent="Leyendo el menú…";
+  try{const r=await api("mix_ai_import",{image:MXIMG||"",mime:"image/jpeg",text:$("mx-txt").value});
+    let di=$("mx-dest").value;if(di==="new"){const n=prompt("Nombre del menú","Menú importado")||"Menú importado";MX.menus.push({id:mxId(),name:n,drinks:[]});di=MX.menus.length-1}
+    const M=MX.menus[+di];(r.drinks||[]).forEach(d=>M.drinks.push({id:mxId(),name:d.name||"Sin nombre",glass:d.glass||"",ice:d.ice!==false,method:d.method||"",garnish:d.garnish||"",items:(d.items||[]).map(i=>({q:i.q==null||i.q===""?null:+i.q,u:UNITS[i.u]?i.u:"oz",n:i.n||""}))}));
+    MXM=+di;mxSave();mxRender();$("mx-imp").hidden=true;toast(`${(r.drinks||[]).length} bebidas agregadas. Revisa las alertas.`)}
+  catch(e){toast(e.message==="mixlock"?"Tu sesión de Mixología se cerró. Vuelve a entrar.":e.message)}
+  b.disabled=false;b.textContent="Convertir con IA"}
 
 /* ===== Inicio ===== */
 async function boot(){
