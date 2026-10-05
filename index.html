@@ -2300,11 +2300,26 @@ $("inv-pub").onclick=async()=>{
    Cuando una orden o solicitud sale hacia WhatsApp, se envía también una copia
    a notify.php en midnightcgo.com, que avisa a la dueña por notificación y correo. */
 const NOTIFY_ON=/(^|\.)midnightcgo\.com$/i.test(location.hostname);
+/* ===== Origen de la visita (Marketing: qué red trae visitas y compradores). Solo fecha + red, sin datos personales ===== */
+const SRC_MAP={ig:"Instagram",instagram:"Instagram",tt:"TikTok",tiktok:"TikTok",fb:"Facebook",facebook:"Facebook",yt:"YouTube",youtube:"YouTube",wa:"WhatsApp",whatsapp:"WhatsApp",google:"Google",qr:"QR",email:"Email",mail:"Email"};
+function mdSrcDetect(){let s="";try{const q=new URLSearchParams(location.search),v=(q.get("src")||q.get("utm_source")||"").toLowerCase();if(v)s=SRC_MAP[v]||"Otro"}catch(e){}
+  if(!s){const ua=navigator.userAgent||"",r=document.referrer||"";
+    if(/Instagram/i.test(ua)||/instagram\.com/i.test(r))s="Instagram";else if(/FBAN|FBAV|FB_IAB/i.test(ua)||/facebook\.com|fb\.com|fb\.me/i.test(r))s="Facebook";
+    else if(/musical_ly|BytedanceWebview|TikTok/i.test(ua)||/tiktok\.com/i.test(r))s="TikTok";else if(/youtube\.com|youtu\.be/i.test(r))s="YouTube";
+    else if(/whatsapp|wa\.me/i.test(r))s="WhatsApp";else if(/google\./i.test(r))s="Google"}
+  return s}
+const MD_SRC=(()=>{const now=Date.now(),s=mdSrcDetect();let o=null;try{o=JSON.parse(localStorage.getItem("midnight-src")||"null")}catch(e){}
+  if(s){o={s,t:now};try{localStorage.setItem("midnight-src",JSON.stringify(o))}catch(e){}}
+  if(NOTIFY_ON){let seen=null;try{seen=sessionStorage.getItem("midnight-visit");sessionStorage.setItem("midnight-visit","1")}catch(e){}
+    if(!seen){const b=JSON.stringify({s:s||"Directo"});try{if(!(navigator.sendBeacon&&navigator.sendBeacon("/visita.php",new Blob([b],{type:"application/json"}))))fetch("/visita.php",{method:"POST",headers:{"Content-Type":"application/json"},body:b,keepalive:true}).catch(()=>{})}catch(e){}}}
+  return o&&now-o.t<30*864e5?o.s:"Directo"})();
+function withSrc(t){return /Origen:/.test(t)?t:t+"\n📣 Origen: "+MD_SRC}
 document.addEventListener("click",e=>{
   if(!NOTIFY_ON||e.defaultPrevented)return;
   const a=e.target.closest&&e.target.closest('a[href^="https://wa.me/'+WA_NUMBER+'"]');if(!a)return;
   let text="";try{text=new URL(a.href).searchParams.get("text")||""}catch(err){return}
   if(!/\b(MC|DST|CLB|FRQ|ACD|CNS|CUS)-\d{6}-\d{6}\b/.test(text))return;
+  text=withSrc(text);
   const body=JSON.stringify({text,lang:document.documentElement.lang||"",ua:navigator.userAgent.slice(0,160)});
   try{if(!(navigator.sendBeacon&&navigator.sendBeacon("/notify.php",new Blob([body],{type:"application/json"}))))fetch("/notify.php",{method:"POST",headers:{"Content-Type":"application/json"},body,keepalive:true}).catch(()=>{})}catch(err){}
 });

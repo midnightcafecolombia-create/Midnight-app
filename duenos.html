@@ -423,6 +423,97 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .cmd-res{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:10px}
 .cmd-a{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer}
 .cmd-a input{margin-top:3px;width:auto}.cmd-a>span{display:flex;flex-direction:column;gap:3px;font-size:14px}.cmd-a small{color:var(--gold-hi);font-size:11.5px;letter-spacing:.04em}
+/* ===== MARKETING ===== */
+.mk-head{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:space-between}
+.mk-h{font-family:inherit;font-size:20px;letter-spacing:.06em;color:var(--gold);margin:0;font-weight:600}
+.mk-sub{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.mk-per{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.mk-per button{padding:6px 12px;border:1px solid var(--line);border-radius:18px;font-size:12.5px;color:var(--cream);background:none;cursor:pointer}
+.mk-per button.on{background:var(--gold);color:#120d07;border-color:var(--gold)}
+.mk-per .mk-sync{border-color:var(--gold);color:var(--gold)}
+.mk-tabs{margin:4px 0 2px}
+#mk-root{display:flex;flex-direction:column;gap:12px}
+#mk-body{display:flex;flex-direction:column;gap:12px}
+.mk-note{border:1px dashed var(--gold);border-radius:12px;padding:10px 14px;font-size:13.5px;color:var(--cream);line-height:1.45}
+.mk-note a{color:var(--gold)}
+.mk-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.mk-kpi{display:flex;flex-direction:column;gap:2px}
+.mk-kpi small{font-size:11px;color:var(--muted)}
+.mk-up{color:#5bc489!important}.mk-dn{color:#e07a6b!important}
+.mk-card{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--panel);display:flex;flex-direction:column;gap:10px;min-width:0}
+.mk-ct{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.mk-ct b{font-size:15px;color:var(--cream)}
+.mk-ct small{font-size:12px;color:var(--muted);flex-basis:100%}
+.mk-small{font-size:12.5px;color:var(--muted);margin:0;line-height:1.45}
+.mk-fun{display:flex;flex-direction:column;gap:2px}
+.mk-fs{display:grid;grid-template-columns:minmax(120px,170px) 1fr 64px;gap:10px;align-items:center;font-size:13px}
+.mk-fs b{text-align:right;font-variant-numeric:tabular-nums}
+.mk-bar{height:14px;border-radius:8px;background:rgba(127,127,127,.15);overflow:hidden}
+.mk-bar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--gold),var(--gold-hi,#e8c77a))}
+.mk-fc{font-size:11px;color:var(--muted);padding-left:12px}
+.mk-svg{width:100%;height:auto;max-height:230px}
+.mk-rb{fill:rgba(201,162,86,.35)}
+.mk-ln{fill:none;stroke:var(--gold);stroke-width:2.5}
+.mk-dt{fill:var(--gold)}
+.mk-tx{font-size:11px;fill:var(--muted)}
+.mk-chs{display:flex;flex-direction:column;gap:8px}
+.mk-ch{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.mk-ch:first-child{border-top:0}
+.mk-chn{display:flex;flex-direction:column;min-width:0}.mk-chn small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mk-chm{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
+.mk-ab{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;font-weight:700;font-size:13px;color:#fff;flex:none}
+.mk-ig{background:linear-gradient(45deg,#f09433,#dc2743,#bc1888)}.mk-tt{background:#111;box-shadow:inset 2px 0 #25f4ee,inset -2px 0 #fe2c55}.mk-fb{background:#1877f2}.mk-yt{background:#ff0000}
+.mk-st{font-size:11.5px;padding:3px 9px;border-radius:12px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.mk-st.auto{color:#5bc489;border-color:#5bc489}.mk-st.manual{color:var(--gold);border-color:var(--gold)}
+.mk-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.mk-in{flex:1;min-width:180px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--cream);font:inherit;font-size:14px}
+.mk-hdl{flex:1;min-width:120px;max-width:260px;padding:6px 9px;font-size:13px}
+.mk-steps{margin:0;padding-left:20px;font-size:13.5px;line-height:1.6;color:var(--cream)}
+.mk-steps a{color:var(--gold)}
+.mk-acc{font-size:13px;border-top:1px solid var(--line);padding-top:8px}
+.mk-accs{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px}
+.mk-accs label{display:flex;gap:6px;align-items:center}
+.mk-accs input{width:auto}
+.mk-err{color:#e07a6b;font-size:12px}
+.mk-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:6px}
+.mk-mini div{border:1px solid var(--line);border-radius:9px;padding:7px 9px;display:flex;flex-direction:column}
+.mk-mini span{font-size:11px;color:var(--muted)}.mk-mini b{font-size:16px;font-variant-numeric:tabular-nums}
+.mk-add summary{cursor:pointer;font-size:13px;color:var(--gold)}
+.mk-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}
+.mk-form label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--muted)}
+.mk-form input,.mk-form select{padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--cream);font:inherit;font-size:14px;width:100%;min-width:0}
+.mk-form select option{color:#111}
+.mk-form .mk-w2{grid-column:span 2}
+.mk-form .btn{align-self:end}
+.mk-hist{list-style:none;margin:10px 0 0;padding:0;font-size:12.5px}
+.mk-hist li{display:flex;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding:6px 0;flex-wrap:wrap}
+.mk-hist button,.mk-pa button{border:0;background:none;color:var(--muted);font-size:17px;cursor:pointer;padding:2px 6px}
+.mk-posts{display:flex;flex-direction:column}
+.mk-post{display:grid;grid-template-columns:auto auto 1fr auto;gap:6px 10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.mk-rk{font-size:13px;color:var(--gold);font-weight:700;width:20px;text-align:center}
+.mk-pt{display:flex;flex-direction:column;min-width:0}.mk-pt a{color:var(--cream)}.mk-pt small{font-size:11.5px;color:var(--muted)}
+.mk-pm{grid-column:3/-1;display:flex;flex-wrap:wrap;gap:3px 12px;font-size:12px;color:var(--muted)}
+.mk-pa{grid-column:4;grid-row:1}
+.mk-tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mk-tb{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+.mk-tb th{text-align:left;font-weight:500;font-size:11.5px;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.mk-tb td{padding:8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.mk-tb small{color:var(--muted)}
+.mk-links{display:flex;flex-direction:column;gap:6px}
+.mk-link{display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center;font-size:13px}
+.mk-link code{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.mk-ords{display:flex;flex-direction:column}
+.mk-ord{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.mk-ord div{display:flex;flex-direction:column;min-width:0}.mk-ord small{color:var(--muted);font-size:11.5px}
+.mk-ord select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--cream);font:inherit;font-size:12.5px}
+.mk-ord select option{color:#111}
+.mk-ins{margin:0;padding-left:4px;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.5;color:var(--cream)}
+.mk-aio{font-size:14px;line-height:1.6;color:var(--cream)}
+.mk-aio b{color:var(--gold)}
+@media (max-width:560px){.mk-fs{grid-template-columns:110px 1fr 52px;font-size:12px}.mk-form .mk-w2{grid-column:1/-1}.mk-link{grid-template-columns:1fr auto}.mk-link code{grid-column:1/-1;grid-row:2}.mk-ord{grid-template-columns:1fr auto}.mk-ord select{grid-column:1/-1}}
+html[data-theme="light"] .mk-rb{fill:rgba(150,110,40,.3)}
+html[data-theme="light"] .mk-ct b,html[data-theme="light"] .mk-note,html[data-theme="light"] .mk-steps,html[data-theme="light"] .mk-ins,html[data-theme="light"] .mk-aio,html[data-theme="light"] .mk-in,html[data-theme="light"] .mk-form input,html[data-theme="light"] .mk-form select,html[data-theme="light"] .mk-pt a{color:#111}
+/* ===== FIN MARKETING ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -451,6 +542,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <button type="button" data-v="mix">Mixología 🔒</button>
     <button type="button" data-v="sal">Distribución 🔒</button>
     <button type="button" data-v="equipo">Equipo</button>
+    <button type="button" data-v="mkt">📣 Marketing</button>
   </nav>
 </header>
 <main>
@@ -595,6 +687,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
           <button class="chip" type="submit">Cambiar</button></form></div>
       </details></div>
   </section>
+  <section class="view" id="v-mkt" hidden><div id="mk-root"></div></section>
 </main>
 <div class="toast" id="toast"></div>
 <script>
@@ -610,7 +703,7 @@ async function api(action,body={}){
 }
 let D=null;
 /* ===== Pestañas ===== */
-let PREVV="ordenes";function showView(v){if(v!=="sal")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart()}
+let PREVV="ordenes";function showView(v){if(v!=="sal")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="mkt"&&!MK)mkStart()}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 
 /* ===== Órdenes ===== */
@@ -640,7 +733,7 @@ function renderOrders(){
   const list=all.filter(o=>{const s=stOf(o.ref);return OF==="todas"||(OF==="hoy"&&isToday(o))||(OF==="nueva"&&s==="nueva")||(OF==="activas"&&!["entregada","cancelada"].includes(s))});
   $("o-list").innerHTML=list.length?list.map(o=>{const s=stOf(o.ref),st=D.status[o.ref]||{};
     return `<article class="order s-${s}"><div class="o-head"><div><b>${esc(o.client||o.kind)}</b> <span class="chip">${o.kind}</span><div class="o-ref">${o.ref} · ${o.at.toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</div></div>${o.total?`<div class="o-total">${o.total}</div>`:""}</div>
-    <div class="o-meta">${o.tel?`<span>📞 ${esc(o.tel)}</span>`:""}${o.mode?`<span>${esc(o.mode)}</span>`:""}${o.date?`<span>Para el ${esc(o.date)}</span>`:""}</div>
+    <div class="o-meta">${o.tel?`<span>📞 ${esc(o.tel)}</span>`:""}${o.mode?`<span>${esc(o.mode)}</span>`:""}${(o.text||"").match(/Origen:\s*(\S+)/)?`<span>📣 ${esc((o.text.match(/Origen:\s*(\S+)/)||[])[1])}</span>`:""}${o.date?`<span>Para el ${esc(o.date)}</span>`:""}</div>
     ${o.items.length?`<ul class="o-items">${o.items.map(i=>`<li>${i.n} × ${esc(i.name)}</li>`).join("")}</ul>`:""}
     ${o.conf?`<div class="o-pay">Zelle reportado · Conf. <b>${esc(o.conf)}</b>${o.payer?` · pagó ${esc(o.payer)}`:""}${s==="nueva"?" · <b>revisa tu banco</b>":""}</div>`:""}
     <div class="o-act">${ST.map(([k,l])=>`<button type="button" class="${s===k?"on":""}" onclick="setSt('${o.ref}','${k}')">${l}</button>`).join("")}<span class="sp"></span>${o.items.some(i=>i.sku)?(st.stock?'<span class="chip ok">Descontada del stock</span>':`<button type="button" onclick="discount('${o.ref}')">Descontar del stock</button>`):""}</div>
@@ -1885,6 +1978,198 @@ async function tgSave(){const o=$("tg-o").value,n=$("tg-n").value,r=$("tg-r").va
   try{await api("passwd",{old:o,pw:n});toast("¡Listo! Ya tienes tu contraseña");document.querySelector(".tg").remove();D.me.temp=false}catch(e){toast(e.message)}}
 
 
+/* ===== MARKETING ===== (todas las redes, embudo y ventas por red en un solo botón) */
+let MK=null,MKA={},MKV={},MKW=false,MKADM=false,MKT="ini",MKP=30,MKSV=null,MKCF="ventas",MKAI="";
+const MKC=[{k:"ig",n:"Instagram",ab:"IG",src:"Instagram",h:"Midnight Café"},{k:"tt",n:"TikTok",ab:"TT",src:"TikTok",h:"@midnightcaffecolombia"},{k:"fb",n:"Facebook",ab:"f",src:"Facebook",h:"Midnight Café"},{k:"yt",n:"YouTube",ab:"YT",src:"YouTube",h:"Midnight Café"}];
+const MKO=["Instagram","TikTok","Facebook","YouTube","WhatsApp","Google","QR","Email","Directo","Otro"];
+const MKSRC={Instagram:"ig",TikTok:"tt",Facebook:"fb",YouTube:"yt",WhatsApp:"wa",Google:"google",QR:"qr",Email:"email"};
+const MKF=[["views","Vistas"],["reach","Alcance"],["likes","Likes"],["comments","Comentarios"],["shares","Compartidos"],["saves","Guardados"],["clicks","Clics (enlace/perfil)"],["leads","Mensajes / leads"],["followers","Seguidores nuevos"]];
+const mkN=n=>(+n||0).toLocaleString("en-US",{maximumFractionDigits:0});
+const mkK=n=>{n=+n||0;return n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e4?(n/1e3).toFixed(1)+"K":mkN(n)};
+const mkPct=(a,b)=>b>0?(a/b*100):0;
+const mkPf=x=>(x>=10?x.toFixed(0):x.toFixed(1))+"%";
+const mkDay=o=>{const d=new Date();d.setDate(d.getDate()-o);return d.toLocaleDateString("en-CA")};
+const mkNum=v=>{v=String(v??"").replace(/[$\s]/g,"");if(/^\d{1,3}(\.\d{3})+$/.test(v))v=v.replace(/\./g,"");v=v.replace(/,/g,"");return +v||0};
+function mkRange(p=MKP){return {a:mkDay(p-1),b:mkDay(0),pa:mkDay(2*p-1),pb:mkDay(p)}}
+
+async function mkStart(){
+  $("mk-root").innerHTML='<div class="empty">Cargando marketing…</div>';
+  try{const r=await api("mkt_load");MK=Array.isArray(r.mk)||!r.mk?{}:r.mk;MKA=r.auto||{};MKV=r.visits||{};MKW=!!r.windsor;MKADM=!!r.admin}
+  catch(e){MK=null;$("mk-root").innerHTML='<div class="empty">No se pudo abrir Marketing. Sube el archivo api.php nuevo a la carpeta duenos y recarga.</div>';return}
+  MK.cfg=MK.cfg||{};MK.cfg.h=MK.cfg.h||{};MK.cfg.acc=MK.cfg.acc||{};MK.manual=MK.manual||[];MK.posts=MK.posts||[];MK.ordsrc=MK.ordsrc||{};
+  try{MKT=localStorage.getItem("mk-tab")||"ini";MKP=+localStorage.getItem("mk-p")||30}catch(e){}
+  mkRender();
+}
+function mkSave(){clearTimeout(MKSV);MKSV=setTimeout(async()=>{try{await api("mkt_save",{mk:MK})}catch(e){toast("No se guardó: "+e.message)}},500)}
+function mkTab(t){MKT=t;try{localStorage.setItem("mk-tab",t)}catch(e){}mkRender()}
+function mkPer(p){MKP=p;try{localStorage.setItem("mk-p",p)}catch(e){}mkRender()}
+
+/* ---- números ---- */
+function mkRows(k){const R=(MKA.rows||{})[k]||[],sel=MK.cfg.acc[k]||[];return sel.length?R.filter(r=>sel.includes(r.acc)):R}
+function mkChan(k,a,b){
+  const o={views:0,reach:0,likes:0,comments:0,shares:0,saves:0,clicks:0,leads:0,followers:0,inter:0,src:"none"};
+  const R=mkRows(k);
+  if(R.length){o.src="auto";R.forEach(r=>{if(r.d>=a&&r.d<=b)["views","reach","likes","comments","shares","saves","clicks","followers","inter"].forEach(f=>o[f]+=+r[f]||0)})}
+  MK.manual.filter(m=>m.ch===k&&(m.to||m.d)>=a&&(m.to||m.d)<=b).forEach(m=>{if(o.src!=="auto")o.src="manual";MKF.forEach(([f])=>{if(o.src==="manual"||f==="leads")o[f]+=+m[f]||0})});
+  const sum=o.likes+o.comments+o.shares+o.saves;o.inter=Math.max(o.inter,sum);
+  return o}
+function mkOrdSrc(o){return MK.ordsrc[o.ref]||((o.text||"").match(/Origen:\s*([A-Za-zÁ-ú]+)/)||[])[1]||"Sin dato"}
+function mkOrders(a,b){
+  if(!D||!D.orders)return [];
+  return D.orders.map(parseOrder).filter(o=>{const d=o.at.toLocaleDateString("en-CA");return d>=a&&d<=b&&stOf(o.ref)!=="cancelada"})
+    .map(o=>({...o,src:mkOrdSrc(o),sale:o.ref.startsWith("MC-"),paid:["pagada","preparada","entregada"].includes(stOf(o.ref))}))}
+function mkVis(a,b){const o={};Object.keys(MKV).forEach(d=>{if(d>=a&&d<=b)Object.entries(MKV[d]).forEach(([s,n])=>o[s]=(o[s]||0)+(+n||0))});return o}
+function mkTot(a,b){
+  const t={views:0,reach:0,likes:0,comments:0,shares:0,saves:0,clicks:0,leads:0,followers:0,inter:0},ch={};
+  MKC.forEach(c=>{const m=mkChan(c.k,a,b);ch[c.k]=m;Object.keys(t).forEach(f=>t[f]+=m[f])});
+  const O=mkOrders(a,b),V=mkVis(a,b),sales=O.filter(o=>o.sale),req=O.filter(o=>!o.sale);
+  t.visits=Object.values(V).reduce((s,n)=>s+n,0);t.req=req.length;t.leadsAll=t.leads+req.length;
+  t.orders=sales.length;t.rev=sales.filter(o=>o.paid).reduce((s,o)=>s+o.totalN,0);t.revAll=sales.reduce((s,o)=>s+o.totalN,0);
+  t.eng=mkPct(t.inter,t.reach||t.views);
+  const by={};MKO.concat(["Sin dato"]).forEach(s=>by[s]={vis:V[s]||0,req:0,ord:0,rev:0,revAll:0});
+  O.forEach(o=>{const b=by[o.src]||(by[o.src]={vis:0,req:0,ord:0,rev:0,revAll:0});if(o.sale){b.ord++;b.revAll+=o.totalN;if(o.paid)b.rev+=o.totalN}else b.req++});
+  return {t,ch,by,O,V}}
+function mkDelta(c,p){if(!p)return c?'<small class="mk-up">nuevo</small>':'<small>Sin período comparativo</small>';const d=(c-p)/p*100;return `<small class="${d>=0?"mk-up":"mk-dn"}">${d>=0?"▲":"▼"} ${Math.abs(d).toFixed(0)}% vs. período anterior</small>`}
+
+/* ---- pantalla ---- */
+function mkRender(){
+  if(!MK)return;
+  const tabs=[["ini","Inicio"],["redes","Redes"],["cont","Contenido"],["ventas","Ventas por red"],["ia","✨ Analizar"]];
+  $("mk-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">Panorama de marketing</h2><p class="mk-sub">Midnight Café · todas las plataformas</p></div>
+    <div class="mk-per">${[7,30,90].map(p=>`<button type="button" class="${MKP===p?"on":""}" onclick="mkPer(${p})">${p} días</button>`).join("")}${MKW?`<button type="button" class="mk-sync" onclick="mkSync(this)">↻ Sincronizar</button>`:""}</div></div>
+    <nav class="mx-tabs mk-tabs">${tabs.map(([k,l])=>`<button type="button" class="${MKT===k?"on":""}" onclick="mkTab('${k}')">${l}</button>`).join("")}</nav><div id="mk-body"></div>`;
+  ({ini:mkIni,redes:mkRedes,cont:mkCont,ventas:mkVentas,ia:mkIA})[MKT]()}
+
+function mkIni(){
+  const r=mkRange(),C=mkTot(r.a,r.b),P=mkTot(r.pa,r.pb),t=C.t,p=P.t;
+  const has=MKC.some(c=>C.ch[c.k].src!=="none"||P.ch[c.k].src!=="none");
+  const K=(l,v,pv,sub,fmt=mkK,hi)=>`<div class="kpi mk-kpi${hi?" hi":""}"><span>${l}</span><b>${fmt(v)}</b>${pv===null?`<small>${sub}</small>`:mkDelta(v,pv)}</div>`;
+  const steps=[["👁️ Vistas",t.views],["❤️ Interacciones",t.inter],["🔗 Clics",t.clicks],["📱 Visitas a la app",t.visits],["💬 Leads",t.leadsAll],["🛒 Compras",t.orders]];
+  const mx=Math.max(...steps.map(s=>s[1]),1);
+  $("mk-body").innerHTML=`${has?"":`<div class="mk-note">📡 Panel listo para recibir datos. Conecta las redes en <a href="#" onclick="mkTab('redes');return false">Redes</a> (automático) o escribe los números a mano. Las <b>visitas a la app</b> y las <b>ventas por red</b> se cuentan solas desde midnightcgo.com.</div>`}
+   <div class="mk-kpis">
+    ${K("Vistas",t.views,p.views)}${K("Alcance",t.reach,p.reach)}${K("Engagement",t.eng,p.eng?p.eng:0,"",mkPf)}${K("Leads",t.leadsAll,p.leadsAll)}
+    ${K("Likes",t.likes,p.likes)}${K("Comentarios",t.comments,p.comments)}${K("Compartidos + guardados",t.shares+t.saves,p.shares+p.saves)}${K("Clics",t.clicks,p.clicks)}
+    ${K("Visitas a la app",t.visits,p.visits)}${K("Compras desde la app",t.orders,p.orders)}${K("Ventas verificadas",t.rev,p.rev,"",money,1)}${K("Seguidores nuevos",t.followers,p.followers)}</div>
+   <div class="mk-card"><div class="mk-ct"><b>Embudo</b><small>de la persona que te ve en redes → a la que te compra</small></div>
+    <div class="mk-fun">${steps.map(([l,v],i)=>{const nx=steps[i+1];return `<div class="mk-fs"><span>${l}</span><div class="mk-bar"><i style="width:${Math.max(2,Math.sqrt(v/mx)*100)}%"></i></div><b>${mkK(v)}</b></div>${nx?`<div class="mk-fc">${!v?"↓":nx[1]>v?"↓ aquí también entran visitas directas y de enlaces":`↓ ${mkPf(mkPct(nx[1],v))} pasa al siguiente paso`}</div>`:""}`}).join("")}</div>
+    ${t.revAll?`<p class="mk-small">Cada compra vale en promedio <b>${money(t.revAll/Math.max(1,t.orders))}</b>. ${t.visits?`Cada visita a la app vale <b>${money(t.revAll/t.visits)}</b>.`:""}</p>`:""}</div>
+   <div class="mk-card"><div class="mk-ct"><b>Rendimiento general</b><small>últimas 8 semanas · barras = vistas · línea dorada = ventas</small></div>${mkChart()}</div>
+   <div class="mk-card"><div class="mk-ct"><b>Canales</b><small>estado de las cuentas en este período</small></div>
+    <div class="mk-chs">${MKC.map(c=>{const m=C.ch[c.k],b=C.by[c.src]||{};return `<div class="mk-ch"><span class="mk-ab mk-${c.k}">${c.ab}</span><div class="mk-chn"><b>${c.n}</b><small>${esc(MK.cfg.h[c.k]||c.h)}</small></div>
+      <span class="mk-st ${m.src}">${m.src==="auto"?"● Automático":m.src==="manual"?"● Manual":"Sin datos"}</span>
+      <div class="mk-chm"><span>${mkK(m.views)} vistas</span><span>${mkPf(mkPct(m.inter,m.reach||m.views))} eng.</span><span>${mkN(b.vis)} visitas</span><span><b>${money(b.revAll||0)}</b> en ventas</span></div></div>`}).join("")}</div></div>`}
+
+function mkChart(){
+  const W=[];for(let i=7;i>=0;i--){const a=mkDay(i*7+6),b=mkDay(i*7);const C=mkTot(a,b);W.push({l:new Date(a+"T12:00").toLocaleDateString("es-US",{day:"numeric",month:"short"}),v:C.t.views,s:C.t.revAll})}
+  const mv=Math.max(...W.map(w=>w.v),1),ms=Math.max(...W.map(w=>w.s),1),w=640,h=180,bw=w/8;
+  const pts=W.map((x,i)=>`${i*bw+bw/2},${h-20-(x.s/ms)*(h-40)}`).join(" ");
+  return `<svg class="mk-svg" viewBox="0 0 ${w} ${h+18}" preserveAspectRatio="none" role="img" aria-label="Vistas y ventas por semana">
+   ${W.map((x,i)=>`<rect x="${i*bw+bw*.22}" y="${h-20-(x.v/mv)*(h-40)}" width="${bw*.56}" height="${Math.max(1,(x.v/mv)*(h-40))}" rx="4" class="mk-rb"><title>${x.l}: ${mkN(x.v)} vistas · ${money(x.s)}</title></rect><text x="${i*bw+bw/2}" y="${h+10}" text-anchor="middle" class="mk-tx">${x.l}</text>`).join("")}
+   <polyline points="${pts}" class="mk-ln"/>${W.map((x,i)=>`<circle cx="${i*bw+bw/2}" cy="${h-20-(x.s/ms)*(h-40)}" r="3.5" class="mk-dt"><title>${money(x.s)}</title></circle>`).join("")}</svg>`}
+
+/* ---- Redes ---- */
+function mkRedes(){
+  const r=mkRange(),acc=MKA.accs||{},err=MKA.err||{};
+  const auto=MKW?`<div class="mk-card mk-auto"><div class="mk-ct"><b>🔌 Conexión automática</b><small>Windsor.ai trae los números de Instagram, Facebook, TikTok y YouTube</small></div>
+     <p class="mk-small">✅ Conectado${MKA.at?` · última sincronización ${new Date(MKA.at).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}`:" · todavía no se ha sincronizado"}</p>
+     <div class="mk-row"><button type="button" class="btn" onclick="mkSync(this)">↻ Sincronizar ahora</button>${MKADM?`<button type="button" class="chip" onclick="mkKey('')">Desconectar</button>`:""}</div>
+     ${MKC.map(c=>{const A=acc[c.k]||[],sel=MK.cfg.acc[c.k]||[];return `<div class="mk-acc"><b>${c.n}</b>${err[c.k]?` <span class="mk-err">${esc(err[c.k])}</span>`:""}
+       ${A.length?`<div class="mk-accs">${A.map(n=>`<label><input type="checkbox" ${!sel.length||sel.includes(n)?"checked":""} onchange="mkAcc('${c.k}',${esc(JSON.stringify(n))},this.checked)"> ${esc(n)}</label>`).join("")}</div>${A.length>1?'<small>Marca solo las cuentas de Midnight.</small>':""}`:(err[c.k]?"":" <small>sin cuentas</small>")}</div>`}).join("")}</div>`
+   :`<div class="mk-card mk-auto"><div class="mk-ct"><b>🔌 Conectar todas las redes en automático</b><small>una sola vez · luego se actualiza con un botón</small></div>
+     <ol class="mk-steps"><li>Entra a <a href="https://windsor.ai" target="_blank" rel="noopener">windsor.ai</a> con el correo de Midnight.</li>
+     <li>Conecta <b>Instagram</b>, <b>Facebook</b>, <b>TikTok</b> y <b>YouTube</b> de Midnight Café (elige las cuentas de la empresa, no las personales).</li>
+     <li>Copia tu <b>API key</b> (en windsor.ai, menú de tu cuenta → API key).</li><li>Pégala aquí. Se guarda solo en tu servidor.</li></ol>
+     ${MKADM?`<div class="mk-row"><input id="mk-key" type="text" autocomplete="off" spellcheck="false" placeholder="API key de Windsor.ai" class="mk-in"><button type="button" class="btn" onclick="mkKey($('mk-key').value)">Conectar</button></div>`:'<p class="mk-small">Pide a un administrador que la conecte.</p>'}
+     <p class="mk-small">Mientras tanto puedes escribir los números a mano abajo (los ves en las estadísticas de cada app).</p></div>`;
+  $("mk-body").innerHTML=auto+MKC.map(c=>{const m=mkChan(c.k,r.a,r.b),L=MK.manual.filter(x=>x.ch===c.k).sort((x,y)=>(y.to||"").localeCompare(x.to||"")).slice(0,6);
+    return `<div class="mk-card"><div class="mk-ct"><span class="mk-ab mk-${c.k}">${c.ab}</span><b>${c.n}</b><input class="mk-in mk-hdl" value="${esc(MK.cfg.h[c.k]||c.h)}" onchange="MK.cfg.h['${c.k}']=this.value;mkSave()" aria-label="Cuenta de ${c.n}"><span class="mk-st ${m.src}">${m.src==="auto"?"● Automático":m.src==="manual"?"● Manual":"Sin datos"}</span></div>
+     <div class="mk-mini">${MKF.map(([f,l])=>`<div><span>${l}</span><b>${mkK(m[f])}</b></div>`).join("")}</div>
+     <details class="mk-add"${m.src==="none"?" open":""}><summary>✍️ Escribir números a mano</summary><form class="mk-form" onsubmit="mkAddMan(event,'${c.k}')">
+      <label>Desde<input type="date" name="d" value="${mkDay(6)}"></label><label>Hasta<input type="date" name="to" value="${mkDay(0)}"></label>
+      ${MKF.map(([f,l])=>`<label>${l}<input name="${f}" inputmode="numeric" placeholder="0"></label>`).join("")}<button class="btn" type="submit">Guardar</button></form>
+      ${L.length?`<ul class="mk-hist">${L.map(x=>`<li><span>${esc(x.d)} → ${esc(x.to)}</span><span>${mkK(x.views)} vistas · ${mkK(+x.likes+ +x.comments+ +x.shares+ +x.saves)} inter. · ${mkN(x.leads)} leads</span><button type="button" onclick="mkDelMan('${x.id}')" aria-label="Borrar">×</button></li>`).join("")}</ul>`:""}</details></div>`}).join("")}
+function mkAddMan(e,k){e.preventDefault();const f=new FormData(e.target),o={id:"m"+Date.now().toString(36),ch:k,d:f.get("d"),to:f.get("to")||f.get("d")};MKF.forEach(([x])=>o[x]=mkNum(f.get(x)));
+  if(!o.d||!MKF.some(([x])=>o[x]))return toast("Escribe al menos un número");if(o.to<o.d)[o.d,o.to]=[o.to,o.d];MK.manual.push(o);mkSave();toast("Guardado");mkRender()}
+function mkDelMan(id){if(!confirm("¿Borrar estos números?"))return;MK.manual=MK.manual.filter(x=>x.id!==id);mkSave();mkRender()}
+function mkAcc(k,n,on){const A=(MKA.accs||{})[k]||[];let s=MK.cfg.acc[k]&&MK.cfg.acc[k].length?MK.cfg.acc[k]:A.slice();s=on?[...new Set([...s,n])]:s.filter(x=>x!==n);MK.cfg.acc[k]=s.length===A.length?[]:s;mkSave();mkRender()}
+async function mkKey(k){if(!k&&!confirm("¿Desconectar Windsor.ai? Los números automáticos se borran del panel."))return;
+  try{const r=await api("mkt_key",{key:k});MKW=r.windsor;if(!k)MKA={};toast(k?"Conectado. Sincronizando…":"Desconectado");mkRender();if(k)mkSync()}catch(e){toast(e.message)}}
+async function mkSync(btn){if(btn){btn.disabled=true;btn.textContent="Sincronizando…"}
+  try{const r=await api("mkt_sync");MKA=r.auto||{};const e=Object.keys(MKA.err||{}).length;toast(e?`Listo · ${4-e} de 4 redes con datos`:"Redes actualizadas")}catch(e){toast(e.message)}mkRender()}
+
+/* ---- Contenido ---- */
+function mkScore(p){const i=(+p.likes||0)+(+p.comments||0)+(+p.shares||0)+(+p.saves||0);return {i,eng:mkPct(i,+p.views||0)}}
+function mkCont(){
+  const sorts={ventas:p=>+p.sales||0,leads:p=>+p.leads||0,eng:p=>mkScore(p).eng,views:p=>+p.views||0,fecha:p=>p.d||""};
+  const L=MK.posts.slice().sort((a,b)=>{const x=sorts[MKCF](a),y=sorts[MKCF](b);return x<y?1:x>y?-1:0});
+  const ty=["Reel","Post","Carrusel","Story","Video","Live","Short"];
+  $("mk-body").innerHTML=`<div class="mk-card"><div class="mk-ct"><b>Agregar publicación</b><small>anota cada reel o post para saber qué contenido vende</small></div>
+   <form class="mk-form" id="mk-pf" onsubmit="mkAddPost(event)"><input type="hidden" name="id">
+    <label>Fecha<input type="date" name="d" value="${mkDay(0)}"></label><label>Red<select name="ch">${MKC.map(c=>`<option value="${c.k}">${c.n}</option>`).join("")}</select></label>
+    <label>Tipo<select name="t">${ty.map(x=>`<option>${x}</option>`).join("")}</select></label><label class="mk-w2">Tema o gancho<input name="tit" placeholder="Ej.: Cómo preparar un espresso perfecto en casa"></label>
+    <label class="mk-w2">Enlace<input name="url" type="url" placeholder="https://"></label>
+    ${[["views","Vistas"],["likes","Likes"],["comments","Comentarios"],["shares","Compartidos"],["saves","Guardados"],["clicks","Clics"],["leads","Mensajes/leads"],["sales","Ventas ($)"]].map(([f,l])=>`<label>${l}<input name="${f}" inputmode="decimal" placeholder="0"></label>`).join("")}
+    <button class="btn" type="submit">Guardar</button></form></div>
+   <div class="mk-card"><div class="mk-ct"><b>Ranking de contenido</b><small>${L.length} publicaciones</small></div>
+    <div class="mk-per mk-sort">Ordenar por ${[["ventas","Ventas"],["leads","Leads"],["eng","Engagement"],["views","Vistas"],["fecha","Fecha"]].map(([k,l])=>`<button type="button" class="${MKCF===k?"on":""}" onclick="MKCF='${k}';mkCont()">${l}</button>`).join("")}</div>
+    ${L.length?`<div class="mk-posts">${L.map((p,i)=>{const s=mkScore(p),c=MKC.find(x=>x.k===p.ch)||MKC[0];return `<div class="mk-post"><span class="mk-rk">${i+1}</span><span class="mk-ab mk-${c.k}">${c.ab}</span>
+      <div class="mk-pt"><b>${p.url?`<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.tit||p.t)}</a>`:esc(p.tit||p.t)}</b><small>${esc(p.t)} · ${esc(p.d)}</small></div>
+      <div class="mk-pm"><span>${mkK(p.views)} vistas</span><span>${mkPf(s.eng)} eng.</span><span>${mkN(p.leads)} leads</span><span><b>${money(p.sales)}</b></span></div>
+      <span class="mk-pa"><button type="button" onclick="mkEditPost('${p.id}')" aria-label="Editar">✎</button><button type="button" onclick="mkDelPost('${p.id}')" aria-label="Borrar">×</button></span></div>`}).join("")}</div>`:'<div class="empty">Todavía no hay publicaciones. Agrega la primera arriba.</div>'}</div>`}
+function mkAddPost(e){e.preventDefault();const f=new FormData(e.target),id=f.get("id")||"p"+Date.now().toString(36);
+  const o={id,d:f.get("d"),ch:f.get("ch"),t:f.get("t"),tit:(f.get("tit")||"").trim(),url:(f.get("url")||"").trim()};["views","likes","comments","shares","saves","clicks","leads","sales"].forEach(x=>o[x]=mkNum(f.get(x)));
+  if(!o.tit&&!o.views)return toast("Escribe el tema o las vistas");MK.posts=MK.posts.filter(p=>p.id!==id);MK.posts.push(o);mkSave();toast("Guardado");mkCont()}
+function mkEditPost(id){const p=MK.posts.find(x=>x.id===id),F=$("mk-pf");if(!p||!F)return;Object.entries(p).forEach(([k,v])=>{if(F.elements[k])F.elements[k].value=v});F.scrollIntoView({behavior:"smooth",block:"start"})}
+function mkDelPost(id){if(!confirm("¿Borrar esta publicación?"))return;MK.posts=MK.posts.filter(x=>x.id!==id);mkSave();mkCont()}
+
+/* ---- Ventas por red ---- */
+function mkVentas(){
+  const r=mkRange(),C=mkTot(r.a,r.b),rows=Object.entries(C.by).filter(([,b])=>b.vis||b.req||b.ord).sort((a,b)=>b[1].revAll-a[1].revAll||b[1].vis-a[1].vis);
+  const best=rows.find(([,b])=>b.revAll>0);
+  $("mk-body").innerHTML=`${best?`<div class="mk-note">🏆 En los últimos ${MKP} días, <b>${esc(best[0])}</b> es la red que más vende: <b>${money(best[1].revAll)}</b> en ${best[1].ord} compra${best[1].ord===1?"":"s"}.</div>`:""}
+   <div class="mk-card"><div class="mk-ct"><b>¿De dónde vienen los que compran?</b><small>visitas y órdenes de midnightcgo.com</small></div>
+    ${rows.length?`<div class="mk-tw"><table class="mk-tb"><thead><tr><th>Red</th><th>Visitas</th><th>Solicitudes</th><th>Compras</th><th>Ventas</th><th>Conversión</th><th>Ticket prom.</th></tr></thead><tbody>
+    ${rows.map(([s,b])=>`<tr><td><b>${esc(s)}</b></td><td>${mkN(b.vis)}</td><td>${b.req}</td><td>${b.ord}</td><td><b>${money(b.revAll)}</b>${b.rev!==b.revAll?`<small> (${money(b.rev)} verif.)</small>`:""}</td><td>${b.vis?mkPf(mkPct(b.ord,b.vis)):"—"}</td><td>${b.ord?money(b.revAll/b.ord):"—"}</td></tr>`).join("")}</tbody></table></div>`
+    :'<div class="empty">Todavía no hay visitas ni órdenes con origen en este período.</div>'}
+    <p class="mk-small">La app reconoce sola si la persona llegó desde Instagram, Facebook, TikTok o YouTube. Para que sea exacto, usa los enlaces de abajo en cada bio y en cada publicación.</p></div>
+   <div class="mk-card"><div class="mk-ct"><b>🔗 Enlaces con rastreo</b><small>pon cada uno en su red: así sabes quién compra desde dónde</small></div>
+    <div class="mk-links">${MKO.filter(s=>MKSRC[s]).map(s=>{const u="https://midnightcgo.com/?src="+MKSRC[s];return `<div class="mk-link"><b>${s}</b><code>${u}</code><button type="button" class="chip" onclick="mkCopy('${u}')">Copiar</button></div>`}).join("")}</div></div>
+   <div class="mk-card"><div class="mk-ct"><b>Órdenes y solicitudes del período</b><small>si alguien te compró por un DM, corrige la red aquí</small></div>
+    ${C.O.length?`<div class="mk-ords">${C.O.slice().reverse().map(o=>`<div class="mk-ord"><div><b>${esc(o.client||o.kind)}</b><small>${o.ref} · ${o.at.toLocaleDateString("es-US",{day:"numeric",month:"short"})}</small></div><span>${o.total||o.kind}</span>
+      <select onchange="mkSetSrc('${o.ref}',this.value)" aria-label="Red de origen">${MKO.concat(["Sin dato"]).map(s=>`<option ${o.src===s?"selected":""}>${s}</option>`).join("")}</select></div>`).join("")}</div>`:'<div class="empty">No hay órdenes en este período.</div>'}</div>`}
+function mkSetSrc(ref,s){if(s==="Sin dato")delete MK.ordsrc[ref];else MK.ordsrc[ref]=s;mkSave();toast("Origen actualizado")}
+function mkCopy(u){(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast("Enlace copiado"),()=>prompt("Copia el enlace:",u))}
+
+/* ---- Analizar ---- */
+function mkInsights(){
+  const r=mkRange(),C=mkTot(r.a,r.b),P=mkTot(r.pa,r.pb),t=C.t,o=[];
+  const ch=MKC.map(c=>({...c,m:C.ch[c.k],b:C.by[c.src]||{}}));
+  const topV=ch.slice().sort((a,b)=>b.m.views-a.m.views)[0],topS=ch.slice().sort((a,b)=>(b.b.revAll||0)-(a.b.revAll||0))[0];
+  if(topV&&topV.m.views)o.push(`👁️ <b>${topV.n}</b> es la red con más vistas (${mkK(topV.m.views)}).`);
+  if(topS&&topS.b.revAll)o.push(`💰 <b>${topS.n}</b> es la que más vende (${money(topS.b.revAll)}).${topV&&topV.k!==topS.k?" Ojo: no es la que más vistas tiene. Mueve presupuesto y tiempo hacia la que convierte.":""}`);
+  if(t.views&&t.clicks/t.views<.005)o.push("🔗 Muy pocos clics por vista (menos de 0.5%). Falta una llamada a la acción clara: «Pide en el enlace de la bio» y el enlace con rastreo.");
+  if(t.visits&&!t.orders)o.push("📱 Hay visitas a la app pero ninguna compra: revisa precios visibles, foto principal y que el botón de pedir se vea al entrar.");
+  if(t.eng)o.push(`❤️ Engagement de ${mkPf(t.eng)}${t.eng>=3?" — está sano, la audiencia conecta.":" — bajo. Prueba ganchos emocionales en los primeros 2 segundos y preguntas que inviten a comentar."}`);
+  if(P.t.views&&t.views)o.push(`${t.views>=P.t.views?"📈":"📉"} Las vistas ${t.views>=P.t.views?"subieron":"bajaron"} ${Math.abs(mkPct(t.views-P.t.views,P.t.views)).toFixed(0)}% contra los ${MKP} días anteriores.`);
+  const tp=MK.posts.slice().sort((a,b)=>(+b.sales||0)-(+a.sales||0)||(+b.leads||0)-(+a.leads||0))[0];if(tp&&(+tp.sales||+tp.leads))o.push(`🏆 El contenido que más vendió: «${esc(tp.tit||tp.t)}». Haz 3 variaciones de ese mismo gancho esta semana.`);
+  return {o,C,P}}
+function mkIA(){
+  const {o}=mkInsights();
+  $("mk-body").innerHTML=`<div class="mk-card"><div class="mk-ct"><b>Lo que dicen tus números</b><small>últimos ${MKP} días</small></div>
+    ${o.length?`<ul class="mk-ins">${o.map(x=>`<li>${x}</li>`).join("")}</ul>`:'<div class="empty">Cuando haya números de redes o ventas, aquí verás el análisis.</div>'}</div>
+   <div class="mk-card"><div class="mk-ct"><b>✨ Director de marketing con IA</b><small>diagnóstico, dónde se pierde la gente y plan de 7 días</small></div>
+    <textarea id="mk-q" class="mk-in" rows="2" placeholder="Pregunta opcional: ¿qué publico esta semana para vender más café a restaurantes?"></textarea>
+    <div class="mk-row"><button type="button" class="btn" id="mk-aib" onclick="mkAI()">✨ Analizar mi marketing</button></div><div id="mk-aio" class="mk-aio">${MKAI}</div></div>`}
+async function mkAI(){
+  const r=mkRange(),{C,P}=mkInsights(),b=$("mk-aib");b.disabled=true;b.textContent="Analizando…";
+  const red={};MKC.forEach(c=>{const m=C.ch[c.k];red[c.n]={cuenta:MK.cfg.h[c.k]||c.h,fuente:m.src,vistas:m.views,alcance:m.reach,likes:m.likes,comentarios:m.comments,compartidos:m.shares,guardados:m.saves,clics:m.clicks,leads:m.leads,seguidores_nuevos:m.followers}});
+  const res={periodo:`${r.a} a ${r.b} (${MKP} días)`,redes:red,totales:C.t,periodo_anterior:P.t,ventas_por_origen:C.by,
+    top_contenido:MK.posts.slice().sort((a,b)=>(+b.sales||0)-(+a.sales||0)||(+b.views||0)-(+a.views||0)).slice(0,12).map(p=>({red:p.ch,tipo:p.t,tema:p.tit,fecha:p.d,vistas:p.views,likes:p.likes,comentarios:p.comments,compartidos:p.shares,guardados:p.saves,clics:p.clicks,leads:p.leads,ventas:p.sales}))};
+  try{const j=await api("mkt_ai",{resumen:JSON.stringify(res),q:$("mk-q").value});
+    MKAI=esc(j.text).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^\s*[-•]\s+/gm,"• ").replace(/\n/g,"<br>");$("mk-aio").innerHTML=MKAI}
+  catch(e){toast(e.message)}b.disabled=false;b.textContent="✨ Analizar otra vez"}
+/* ===== FIN MARKETING ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
