@@ -1641,7 +1641,7 @@ function slRep(){const A=slAgg(),T=A.T;const B=$("sl-body");
     ${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(x.tax)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont+x.emp))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")||'<tr><td colspan="8"><div class="mx-empty">Sin entradas en este periodo.</div></td></tr>'}</tbody></table></div>`;
   const P=Object.values(A.people).sort((a,b)=>b.v-a.v);
   B.innerHTML=`<div class="mx-row">${slMonthPick()}<label class="sl-ck note" style="margin:0"><input type="checkbox" ${SLYR?"checked":""} onchange="SLYR=this.checked;slRender()"> Todo el año</label><span class="sp"></span><button type="button" class="mx-btn gold" onclick="slRepPrint()">🖨 Reporte para socios (PDF)</button></div>
-   <div class="sl-final-big"><span>Resultado final · ${slPeriod()}</span><b class="${A.final<0?"neg":""}">${$$(A.final)}</b><small>Todas las ramas y cuentas, después de costos, comisiones, pagos al personal y nómina</small></div>
+   ${slDemoBar()}<div class="sl-final-big"><span>Resultado final · ${slPeriod()}</span><b class="${A.final<0?"neg":""}">${$$(A.final)}</b><small>Todas las ramas y cuentas, después de costos, comisiones, pagos al personal y nómina</small></div>
    <div class="mx-box"><h3>De las ventas al resultado final</h3><table class="mx-tbl sl-wf"><tbody>
     <tr class="sl-tot"><td>Monto bruto entrante, con taxes (${A.E.length} entradas)</td><td class="n">${$$(rd(T.v+T.tax))}</td></tr>
     <tr><td>− Taxes ${SL.rules.tax??7}% (se pagan al estado)</td><td class="n neg">${$$(-T.tax)}</td></tr>
@@ -1672,10 +1672,19 @@ function slRepPrint(){const A=slAgg(),T=A.T;const w=window.open("","_blank");if(
    <h2>Por rama</h2>${tb(A.byR,"Rama")}<h2>Por cuenta / sucursal</h2>${tb(A.byC,"Cuenta")}
    <h2>Reparto</h2><table><tr><th>Persona</th><th>Rol</th><th class="n">Monto</th></tr>${Object.values(A.people).sort((a,b)=>b.v-a.v).map(x=>`<tr><td>${esc(x.n)}</td><td>${x.role}</td><td class="n">${$$(x.v)}</td></tr>`).join("")}</table>
    <script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close()}
+/* ===== EJEMPLO: 3 entradas de muestra (se borran con un toque) ===== */
+function slDemo(){const d=(SLM||new Date().toISOString().slice(0,7))+"-15",R=SL.rules,snap=()=>({rules:JSON.parse(JSON.stringify(R))});
+  const vela=(R.products||[]).find(x=>/vela/i.test(x.n));
+  const E=[{...slBlank("Café"),fecha:d,cuenta:"Sushi Único (ejemplo)",items:[vela?{t:"Café",prod:vela.id,ch:"Directo",q:"10",up:"",uc:"",com:true}:{t:"Café",prod:"",ch:"Directo",q:"10",up:"22.99",uc:"10.25",com:true}],ds:[{n:"Carlos (ejemplo)",p:"30"}]},
+    {...slBlank("Consulting"),fecha:d,cuenta:"Hotel Brisas (ejemplo)",venta:"15000",insumos:"3000",gx:[{cat:"Marketing",m:"1000"}]},
+    {...slBlank("Mixología"),fecha:d,cuenta:"Hotel Brisas (ejemplo)",st:[{role:"Mixólogo",n:"Andrés (ejemplo)",pt:"hora",rate:"35",qty:"6"}]}];
+  E.forEach(e=>{e.demo=true;e.snap=snap();SL.entries.push(e)});slSave();toast("Ejemplo cargado: 3 entradas");slRender()}
+function slDemoDel(){if(!confirm("¿Borrar las entradas de ejemplo?"))return;SL.entries=SL.entries.filter(e=>!e.demo);slSave();toast("Ejemplo borrado");slRender()}
+function slDemoBar(){return SL.entries.some(e=>e.demo)?`<div class="mx-demo"><span>👀 Estás viendo <b>entradas de ejemplo</b> (Sushi Único, Hotel Brisas). No son datos reales.</span><button type="button" class="mx-btn" onclick="slDemoDel()">🗑 Borrar ejemplo</button></div>`:`<div class="mx-row" style="justify-content:flex-end;margin:0 0 8px"><button type="button" class="mx-btn" onclick="slDemo()">✨ Ver un ejemplo con números</button></div>`}
 /* ===== EMPLEADOS QUE COBRAN % (ej. General Manager): % de la entrada neta en todas las ramas y cuentas ===== */
 function slEmp(){const R=SL.rules;R.emps=R.emps||[];const M={};slMonthEntries().forEach(e=>{const k=slCalcSnap(e);k.L.filter(x=>x.k==="emp").forEach(x=>{M[x.id]=rd((M[x.id]||0)+x.v)})});
   const tot=rd(R.emps.reduce((a,x)=>a+(+slNum(x.p)||0),0));
-  $("sl-body").innerHTML=`<div class="mx-box"><h3>Empleados que cobran porcentaje</h3>
+  $("sl-body").innerHTML=`${slDemoBar()}<div class="mx-box"><h3>Empleados que cobran porcentaje</h3>
    <p class="note" style="margin:0">Cada uno cobra su % de la <b>entrada neta</b> de cada venta o consultoría (después de costos, distribuidores y contadora), en <b>todas las ramas y cuentas</b>. Se descuenta antes de Midnight Operaciones y el reparto.</p>
    <div class="sl-items" style="margin-top:8px">${R.emps.map((x,i)=>`<div class="sl-grow" style="grid-template-columns:minmax(160px,1fr) minmax(140px,1fr) 120px 30px">
      <input placeholder="Nombre" value="${esc(x.n||"")}" onchange="SL.rules.emps[${i}].n=this.value;slSave()">
