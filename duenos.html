@@ -357,6 +357,15 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 @media(max-width:1000px){.sl-irow.sl-rent{grid-template-columns:1fr 1fr}}
 .sl-taxbox{margin:0 0 12px;padding:12px 16px;border:1px dashed #e6a08a;border-radius:12px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
 .sl-taxbox span{color:#e6a08a;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase}.sl-taxbox b{font-size:22px;font-weight:500;color:var(--cream)}.sl-taxbox small{flex-basis:100%;color:var(--muted)}
+.sl-pct{position:relative;display:block}.sl-pct:after{content:"%";position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--gold-hi);pointer-events:none}.sl-pct input{width:100%;padding-right:26px!important;text-align:right}
+#sl-lock[hidden]{display:none!important}
+#sl-lock.sl-modal{position:fixed;inset:0;width:auto;max-width:none;min-height:0;border-radius:0;z-index:90;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;margin:0;border:0}
+#sl-lock .sl-card{position:relative;width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:18px;padding:26px 22px 22px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#sl-lock .sl-card input{width:100%;box-sizing:border-box}
+.sl-close{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
+/* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
 .u-x{background:none;border:1px solid rgba(224,106,90,.5);color:#e06a5a;width:30px;height:30px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;flex:none}.u-x:hover{background:rgba(224,106,90,.15)}
@@ -371,13 +380,6 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .tg-c{width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px}.tg-c h2{margin:0;color:var(--gold-hi);font-weight:500}
 .tg-c input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit;margin-top:3px}
 .mx-demo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:10px;border:1px dashed var(--gold);border-radius:12px;color:var(--cream);font-size:14px}
-#sl-lock[hidden]{display:none!important}
-#sl-lock.sl-modal{position:fixed;inset:0;width:auto;max-width:none;min-height:0;border-radius:0;z-index:90;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;margin:0;border:0}
-#sl-lock .sl-card{position:relative;width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:18px;padding:26px 22px 22px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-#sl-lock .sl-card input{width:100%;box-sizing:border-box}
-.sl-close{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
-.quick{display:flex;gap:6px;flex-wrap:wrap}
-.quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -501,7 +503,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
     <div id="sl-app" hidden>
       <div class="mx-head"><div class="mx-brand"><b>DISTRIBUCIÓN DE LA COMPAÑÍA</b><small>Comisiones · Midnight Operaciones · socios · nómina · confidencial</small></div>
         <div class="mx-venue"><button type="button" class="chip" onclick="slLock()">🔒 Cerrar</button></div></div>
-      <nav class="mx-tabs" id="sl-tabs"><button type="button" data-t="calc">Calcular</button><button type="button" data-t="reg">Registro</button><button type="button" data-t="rep">📊 Reporte final</button><button type="button" data-t="res">Resumen por persona</button><button type="button" data-t="pay">Nómina</button><button type="button" data-t="rules">Reglas</button></nav>
+      <nav class="mx-tabs" id="sl-tabs"><button type="button" data-t="calc">Calcular</button><button type="button" data-t="reg">Registro</button><button type="button" data-t="rep">📊 Reporte final</button><button type="button" data-t="res">Resumen por persona</button><button type="button" data-t="pay">Nómina</button><button type="button" data-t="rules">Reglas</button><button type="button" data-t="emp">👔 Empleados %</button></nav>
       <div id="sl-body" class="mx-body"></div>
       <p class="note" id="sl-saved">Los datos se guardan solo en tu servidor · respaldo automático cada hora.</p>
     </div>
@@ -1423,7 +1425,7 @@ const rd=n=>Math.round(n*100)/100;
 /* cálculo de una entrada */
 function slCalc(e){const R=SL.rules;const L=[];
   if(e.rama==="Mixología"){let pay=0;(e.st||[]).forEach((x,j)=>{const t=rd(slNum(x.rate)*slNum(x.qty));if(!t)return;pay=rd(pay+t);L.push({k:"st",id:((x.n||"")+"|"+x.role).toLowerCase(),n:(x.n||"Sin nombre")+" · "+x.role,t:`${x.pt==="dia"?"Por día":"Por hora"} · ${slNum(x.qty)} × ${$$(slNum(x.rate))}`,v:t})});
-    return {staff:true,pay,v:0,c:0,i:0,base:0,cBase:0,dist:0,op:0,comp:0,cont:0,net:0,ops:0,fund:0,FD:[],L,sumP:100,AX:[],PE:{list:[],fund:0,none:true},tax:0}}let v,c=0,i=0,dist=0,op=0;
+    return {staff:true,pay,v:0,c:0,i:0,base:0,cBase:0,dist:0,op:0,comp:0,cont:0,net:0,net0:0,emp:0,ops:0,fund:0,FD:[],L,sumP:100,AX:[],PE:{list:[],fund:0,none:true},tax:0}}let v,c=0,i=0,dist=0,op=0;
   v=slNum(e.venta);const AX=[];
   let cb=null;
   if(e.rama==="Café"&&e.items&&e.items.length){v=0;cb=0;e.items.forEach(it=>{const pr=slPrice(it,R),co=slCost(it,R);if(!pr&&!co)return;v+=pr;c+=co;if(co)AX.push({n:slIsCat(it)?`Costo · ${(slProd(it,R)||{}).n} × ${slNum(it.q)} (${$$(slUC(it,R))} c/u)`:it.t==="Café"&&slNum(it.lb)?`Costo café · ${slNum(it.lb)} lb × ${$$(slCpl(it,R))}`:"Costo · "+(it.t)+(it.d?" ("+it.d+")":"")+(slIsRent(it)&&slRentTxt(it)?" · "+slRentTxt(it):""),v:co});if(it.com)cb+=pr-co});cb=Math.max(0,cb)}
@@ -1434,13 +1436,14 @@ function slCalc(e){const R=SL.rules;const L=[];
   if(e.rama==="Café"&&e.ds&&e.ds.length){e.ds.forEach((d,j)=>{const nm=(d.n||"").trim();const p=d.p===""||d.p==null?R.dist:slNum(d.p);if(!nm&&!slNum(d.p)&&d.p!=="0")return;const m=rd(cBase*p/100);dist=rd(dist+m);L.push({k:"dist",id:(nm||"Distribuidor "+(j+1)).toLowerCase(),n:nm||"Distribuidor "+(j+1),t:`${p}% de ${$$(cBase)}`,v:m})})}
   else if(e.rama==="Café"&&e.dist){const d=R.distributors.find(x=>x.id===e.dist);const p=d&&d.p!=null?+d.p:R.dist;dist=rd(base*p/100);L.push({k:"dist",id:e.dist,n:(d?d.n:"Distribuidor"),t:`Comisión distribuidor ${p}% de la base neta`,v:dist})}
   const comp=rd(base-dist-op);let cont=0;if(e.cont&&+R.cont){cont=rd(comp*R.cont/100);L.push({k:"cont",id:"cont",n:"Contadora",t:`${R.cont}% de la utilidad neta de la cuenta`,v:cont})}
-  const net=rd(comp-cont);const PE=slPartners(e,R);const ops=rd(net*R.ops/100);const ptot=PE.list.reduce((t,p)=>t+(p.on?rd(net*p.pe/100):0),0);const fund=PE.fund>0?rd(net-ops-ptot):0;
+  const net0=rd(comp-cont);let emp=0;(R.emps||[]).forEach(x=>{const p=slNum(x.p);if(!p)return;const m=rd(net0*p/100);emp=rd(emp+m);L.push({k:"emp",id:x.id,n:x.n||"Empleado",t:`${p}% de la entrada neta${x.r?" · "+x.r:""}`,v:m})});
+  const net=rd(net0-emp);const PE=slPartners(e,R);const ops=rd(net*R.ops/100);const ptot=PE.list.reduce((t,p)=>t+(p.on?rd(net*p.pe/100):0),0);const fund=PE.fund>0?rd(net-ops-ptot):0;
   L.push({k:"ops",id:"ops",n:R.ops_name,t:`Retención ${R.ops}% de la entrada neta de la compañía`,v:ops});
   const FD=slFund(R,fund);FD.forEach(f=>L.push(f));
   PE.list.forEach(p=>{if(p.on)L.push({k:"p",id:p.id,n:p.n,t:`${rd(p.pe)}% de la entrada neta`,v:rd(net*p.pe/100),pe:p.pe})});
   const sumP=rd(R.ops+PE.fund+PE.list.reduce((s,p)=>s+(p.on?p.pe:0),0));
   const tax=e.rama==="Café"&&e.tax!==false?rd(v*(R.tax??7)/100):0;
-  return {v,c,i,base,cBase,dist,op,comp,cont,net,ops,fund,FD,L,sumP,AX,PE,tax}}
+  return {net0,emp,v,c,i,base,cBase,dist,op,comp,cont,net,ops,fund,FD,L,sumP,AX,PE,tax}}
 /* reparto del fondo Midnight entre personas (por defecto 3, partes iguales o % propio) */
 function slFund(R,amt){if(!(amt>0))return [];const P=(R.fund||[]);if(!P.length)return [{k:"fd",id:"fondo",n:"Fondo Midnight",t:"Sin reparto",v:amt,pe:100}];
   const man=P.filter(x=>x.p!=null&&x.p!==""),ms=man.reduce((s,x)=>s+slNum(x.p),0),au=P.length-man.length,each=au?Math.max(0,(100-ms)/au):0;
@@ -1457,7 +1460,7 @@ function slPartners(e,R){const o=e.pp||{};const pool=100-R.ops;if(e.rama==="Caf�
   const used=inc.reduce((s,p)=>s+p.pe,0);return {list,fund:Math.max(0,rd(pool-used)),over:used>pool+0.001}}
 function slPP(id,k,val){SLE.pp=SLE.pp||{};SLE.pp[id]=SLE.pp[id]||{};SLE.pp[id][k]=val;SLsocOpen=true;slOut()}
 let SLsocOpen=false;
-function slRender(){document.querySelectorAll("#sl-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===SLT));({calc:slCalcView,reg:slReg,res:slRes,rep:slRep,pay:slPay,rules:slRules})[SLT]()}
+function slRender(){document.querySelectorAll("#sl-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===SLT));({calc:slCalcView,reg:slReg,res:slRes,rep:slRep,pay:slPay,rules:slRules,emp:slEmp})[SLT]()}
 /* costo del café por libra: fijo en Reglas ($11), se puede mover por orden */
 const slCpl=(it,R)=>it.cpl!=null&&it.cpl!==""?slNum(it.cpl):(R.lb??11);
 const slProd=(it,R)=>(R.products||[]).find(p=>p.id===it.prod);
@@ -1571,7 +1574,8 @@ function slOut(){const k=slCalc(SLE),R=SL.rules,e=SLE;
   W.push(`<tr class="sl-tot"><td>= Base neta</td><td></td><td class="n">${$$(k.base)}</td></tr>`);
   k.L.filter(x=>x.k==="dist"||x.k==="op").forEach(x=>step(x.n+" ("+x.t+")",x.v));
   k.L.filter(x=>x.k==="cont").forEach(x=>step("Contadora "+R.cont+"%",x.v));
-  if(run!==k.base)W.push(`<tr class="sl-tot"><td>= Entrada neta de la compañía</td><td></td><td class="n">${$$(k.net)}</td></tr>`);
+  if(run!==k.base)W.push(`<tr class="sl-tot"><td>= Entrada neta de la compañía</td><td></td><td class="n">${$$(k.net0)}</td></tr>`);
+  k.L.filter(x=>x.k==="emp").forEach(x=>step(x.n+" ("+x.t+")",x.v));
   step(R.ops_name+" "+R.ops+"%",k.ops);
   const P=k.L.filter(x=>x.k==="p"),pt=rd(P.reduce((s,x)=>s+x.v,0));const pp=R.partners.reduce((s,x)=>s+(+x.p||0),0);
   
@@ -1623,18 +1627,18 @@ function slPrint(){const {T,venta,base,net}=slTotals();const rows=Object.values(
    <p class="s" style="margin-top:20px">Las comisiones se calculan sobre la base neta (venta − materia prima − insumos), no sobre la venta bruta.</p><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close()}
 /* ===== REPORTE FINAL CONSOLIDADO: todas las ramas y cuentas → un solo número ===== */
 const SL_FREQ={Mensual:1,Quincenal:2,Semanal:52/12};
-function slAgg(){const E=slMonthEntries();const z=()=>({n:0,v:0,tax:0,cost:0,base:0,com:0,cont:0,staff:0,net:0,ops:0,fund:0,soc:0});
+function slAgg(){const E=slMonthEntries();const z=()=>({n:0,v:0,tax:0,cost:0,base:0,com:0,cont:0,emp:0,staff:0,net:0,ops:0,fund:0,soc:0});
   const T=z(),byR={},byC={},people={};const addP=(k,n,role,v)=>{if(!v)return;people[k]=people[k]||{n,role,v:0};people[k].v=rd(people[k].v+v)};
   E.forEach(e=>{const k=slCalcSnap(e);const r=RAMA_LBL[e.rama]||e.rama,c=(e.cuenta||"Sin cuenta").trim();
-    const row={n:1,v:k.v,tax:k.tax||0,cost:k.c+k.i,base:k.base,com:k.dist+k.op,cont:k.cont,staff:k.staff?k.pay:0,net:k.staff?-k.pay:k.net,ops:k.ops,fund:k.fund||0,soc:k.L.filter(x=>x.k==="p").reduce((a,x)=>a+x.v,0)};
+    const row={n:1,v:k.v,tax:k.tax||0,cost:k.c+k.i,base:k.base,com:k.dist+k.op,cont:k.cont,emp:k.emp||0,staff:k.staff?k.pay:0,net:k.staff?-k.pay:k.net,ops:k.ops,fund:k.fund||0,soc:k.L.filter(x=>x.k==="p").reduce((a,x)=>a+x.v,0)};
     [T,byR[r]=byR[r]||z(),byC[c]=byC[c]||z()].forEach(o=>Object.keys(row).forEach(f=>o[f]=rd(o[f]+row[f])));
-    k.L.forEach(x=>addP(x.k+":"+x.id,x.n,{dist:"Distribuidor",op:"Consulting",cont:"Contadora",ops:"Midnight Operaciones",p:"Socio",fd:"Fondo Midnight",st:"Personal (pago)"}[x.k]||"",x.v))});
+    k.L.forEach(x=>addP(x.k+":"+x.id,x.n,{dist:"Distribuidor",op:"Consulting",cont:"Contadora",ops:"Midnight Operaciones",p:"Socio",fd:"Fondo Midnight",st:"Personal (pago)",emp:"Empleado (%)"}[x.k]||"",x.v))});
   const months=SLYR?12:1;const nom=rd(SL.payroll.reduce((a,p)=>a+(+p.m||0)*(SL_FREQ[p.f]||1),0)*months);
   const final=rd(T.net-nom);return {E,T,byR,byC,people,nom,final}}
 function slPeriod(){if(!SLYR)return new Date(SLM+"-15").toLocaleDateString("es",{month:"long",year:"numeric"});return "Año "+SLM.slice(0,4)}
 function slRep(){const A=slAgg(),T=A.T;const B=$("sl-body");
   const tbl=(o,h)=>`<div class="mx-scroll"><table class="mx-tbl"><thead><tr><th>${h}</th><th class="n">Entradas</th><th class="n">Ventas (sin taxes)</th><th class="n">Taxes</th><th class="n">Costos</th><th class="n">Comisiones</th><th class="n">Personal</th><th class="n">Neto</th></tr></thead><tbody>
-    ${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(x.tax)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")||'<tr><td colspan="8"><div class="mx-empty">Sin entradas en este periodo.</div></td></tr>'}</tbody></table></div>`;
+    ${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(x.tax)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont+x.emp))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")||'<tr><td colspan="8"><div class="mx-empty">Sin entradas en este periodo.</div></td></tr>'}</tbody></table></div>`;
   const P=Object.values(A.people).sort((a,b)=>b.v-a.v);
   B.innerHTML=`<div class="mx-row">${slMonthPick()}<label class="sl-ck note" style="margin:0"><input type="checkbox" ${SLYR?"checked":""} onchange="SLYR=this.checked;slRender()"> Todo el año</label><span class="sp"></span><button type="button" class="mx-btn gold" onclick="slRepPrint()">🖨 Reporte para socios (PDF)</button></div>
    <div class="sl-final-big"><span>Resultado final · ${slPeriod()}</span><b class="${A.final<0?"neg":""}">${$$(A.final)}</b><small>Todas las ramas y cuentas, después de costos, comisiones, pagos al personal y nómina</small></div>
@@ -1646,6 +1650,7 @@ function slRep(){const A=slAgg(),T=A.T;const B=$("sl-body");
     <tr class="sl-tot"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
     <tr><td>− Comisiones de distribuidores</td><td class="n neg">${$$(-T.com)}</td></tr>
     <tr><td>− Contadora</td><td class="n neg">${$$(-T.cont)}</td></tr>
+    <tr><td>− Empleados con porcentaje</td><td class="n neg">${$$(-T.emp)}</td></tr>
     <tr><td>− Pagos al personal (Mixología y Barismo)</td><td class="n neg">${$$(-T.staff)}</td></tr>
     <tr><td>− Nómina fija ${SLYR?"del año":"del mes"}</td><td class="n neg">${$$(-A.nom)}</td></tr>
     <tr class="sl-tot"><td>= Resultado final</td><td class="n">${$$(A.final)}</td></tr></tbody></table>
@@ -1656,17 +1661,32 @@ function slRep(){const A=slAgg(),T=A.T;const B=$("sl-body");
    <div class="mx-box"><h3>Reparto: a quién le corresponde</h3><table class="mx-tbl"><tbody>${P.map(x=>`<tr><td>${esc(x.n)}</td><td style="color:var(--muted)">${x.role}</td><td class="n">${$$(x.v)}</td></tr>`).join("")||'<tr><td><div class="mx-empty">Sin datos.</div></td></tr>'}</tbody></table>
    ${A.nom?`<p class="note">La nómina fija (${$$(A.nom)}) se descuenta del resultado final; no está incluida en el reparto por entrada.</p>`:""}</div>`}
 function slRepPrint(){const A=slAgg(),T=A.T;const w=window.open("","_blank");if(!w)return toast("Permite ventanas emergentes");
-  const tb=(o,h)=>`<table><tr><th>${h}</th><th class="n">Entradas</th><th class="n">Ventas (sin taxes)</th><th class="n">Taxes</th><th class="n">Costos</th><th class="n">Comisiones</th><th class="n">Personal</th><th class="n">Neto</th></tr>${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(x.tax)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")}</table>`;
+  const tb=(o,h)=>`<table><tr><th>${h}</th><th class="n">Entradas</th><th class="n">Ventas (sin taxes)</th><th class="n">Taxes</th><th class="n">Costos</th><th class="n">Comisiones</th><th class="n">Personal</th><th class="n">Neto</th></tr>${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(x.tax)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont+x.emp))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")}</table>`;
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Reporte ${slPeriod()}</title><style>body{font:13px/1.5 Helvetica,Arial;color:#1a140d;margin:32px}h1{font:600 22px Georgia;margin:0}h2{font:600 15px Georgia;margin:22px 0 6px;border-bottom:2px solid #d4ab5f;padding-bottom:3px}.s{color:#7a6c5c}table{width:100%;border-collapse:collapse}th{background:#0b0907;color:#f1d48f;text-align:left;padding:6px}td{padding:5px 6px;border-bottom:1px solid #e3d8c4}.n{text-align:right}.big{margin:16px 0;padding:14px 18px;border:2px solid #d4ab5f;border-radius:10px;display:flex;justify-content:space-between;align-items:center}.big b{font:600 28px Georgia}.t td{font-weight:600}</style></head><body>
    <h1>Reporte de resultados · ${slPeriod()}</h1><div class="s">Midnight Consulting Global LLC · Confidencial · Generado ${new Date().toLocaleDateString("es")}</div>
    <div class="big"><span>Resultado final (todas las ramas y cuentas)</span><b>${$$(A.final)}</b></div>
    <h2>De las ventas al resultado final</h2><table>
    <tr class="t"><td>Monto bruto entrante, con taxes (${A.E.length} entradas)</td><td class="n">${$$(rd(T.v+T.tax))}</td></tr><tr><td>− Taxes ${SL.rules.tax??7}% (se pagan al estado)</td><td class="n">${$$(-T.tax)}</td></tr><tr class="t"><td>= Ventas sin taxes</td><td class="n">${$$(T.v)}</td></tr><tr><td>− Costos</td><td class="n">${$$(-T.cost)}</td></tr><tr class="t"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
-   <tr><td>− Comisiones de distribuidores</td><td class="n">${$$(-T.com)}</td></tr><tr><td>− Contadora</td><td class="n">${$$(-T.cont)}</td></tr><tr><td>− Pagos al personal</td><td class="n">${$$(-T.staff)}</td></tr><tr><td>− Nómina fija</td><td class="n">${$$(-A.nom)}</td></tr>
+   <tr><td>− Comisiones de distribuidores</td><td class="n">${$$(-T.com)}</td></tr><tr><td>− Contadora</td><td class="n">${$$(-T.cont)}</td></tr><tr><td>− Empleados con porcentaje</td><td class="n">${$$(-T.emp)}</td></tr><tr><td>− Pagos al personal</td><td class="n">${$$(-T.staff)}</td></tr><tr><td>− Nómina fija</td><td class="n">${$$(-A.nom)}</td></tr>
    <tr class="t"><td>= Resultado final</td><td class="n">${$$(A.final)}</td></tr></table><p><b>Taxes a pagar al estado: ${$$(T.tax)}</b> <span class="s">(descontados; el reparto se calcula sin taxes)</span></p>
    <h2>Por rama</h2>${tb(A.byR,"Rama")}<h2>Por cuenta / sucursal</h2>${tb(A.byC,"Cuenta")}
    <h2>Reparto</h2><table><tr><th>Persona</th><th>Rol</th><th class="n">Monto</th></tr>${Object.values(A.people).sort((a,b)=>b.v-a.v).map(x=>`<tr><td>${esc(x.n)}</td><td>${x.role}</td><td class="n">${$$(x.v)}</td></tr>`).join("")}</table>
    <script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close()}
+/* ===== EMPLEADOS QUE COBRAN % (ej. General Manager): % de la entrada neta en todas las ramas y cuentas ===== */
+function slEmp(){const R=SL.rules;R.emps=R.emps||[];const M={};slMonthEntries().forEach(e=>{const k=slCalcSnap(e);k.L.filter(x=>x.k==="emp").forEach(x=>{M[x.id]=rd((M[x.id]||0)+x.v)})});
+  const tot=rd(R.emps.reduce((a,x)=>a+(+slNum(x.p)||0),0));
+  $("sl-body").innerHTML=`<div class="mx-box"><h3>Empleados que cobran porcentaje</h3>
+   <p class="note" style="margin:0">Cada uno cobra su % de la <b>entrada neta</b> de cada venta o consultoría (después de costos, distribuidores y contadora), en <b>todas las ramas y cuentas</b>. Se descuenta antes de Midnight Operaciones y el reparto.</p>
+   <div class="sl-items" style="margin-top:8px">${R.emps.map((x,i)=>`<div class="sl-grow" style="grid-template-columns:minmax(160px,1fr) minmax(140px,1fr) 120px 30px">
+     <input placeholder="Nombre" value="${esc(x.n||"")}" onchange="SL.rules.emps[${i}].n=this.value;slSave()">
+     <input placeholder="Puesto (ej. General Manager)" value="${esc(x.r||"")}" onchange="SL.rules.emps[${i}].r=this.value;slSave()">
+     <span class="sl-pct"><input type="text" inputmode="decimal" placeholder="0" value="${esc(x.p??"")}" onchange="SL.rules.emps[${i}].p=this.value;slSave();slEmp()"></span>
+     <button type="button" class="sl-x" title="Quitar" onclick="if(confirm('¿Quitar a ${esc(x.n||"este empleado")}?')){SL.rules.emps.splice(${i},1);slSave();slEmp()}">×</button></div>`).join("")||'<p class="note" style="margin:0">Todavía no hay empleados con porcentaje.</p>'}
+   <div class="sl-add"><button type="button" class="mx-btn gold" onclick="SL.rules.emps.push({id:slId(),n:'',r:'',p:''});slEmp()">+ Agregar empleado</button></div></div>
+   ${tot?`<p class="note">Total asignado a empleados: <b>${tot}%</b> de la entrada neta.</p>`:""}</div>
+   <div class="mx-box"><div class="mx-row" style="margin:0"><h3 style="margin:0">Lo que lleva ganado</h3><span class="sp"></span>${slMonthPick()}<label class="sl-ck note" style="margin:0"><input type="checkbox" ${SLYR?"checked":""} onchange="SLYR=this.checked;slEmp()"> Todo el año</label></div>
+   <table class="mx-tbl"><tbody>${R.emps.map(x=>`<tr><td>${esc(x.n||"Empleado")}</td><td style="color:var(--muted)">${esc(x.r||"")}</td><td class="n">${x.p?esc(x.p)+"%":"—"}</td><td class="n"><b>${$$(M[x.id]||0)}</b></td></tr>`).join("")||'<tr><td class="note">—</td></tr>'}</tbody></table>
+   <p class="note" style="margin:0">Suma lo de todas las entradas registradas en ${slPeriod()}. Los cambios de % aplican a las entradas nuevas.</p></div>`}
 /* nómina */
 function slPay(){const B=$("sl-body");const tot=SL.payroll.reduce((s,p)=>s+(+p.m||0),0);
   B.innerHTML=`<div class="mx-box"><h3>Nómina y pagos fijos</h3><p class="note" style="margin:0">Salarios, retiros fijos o pagos mensuales (aparte de la distribución de utilidades).</p>
@@ -1704,7 +1724,7 @@ async function slAcc(u,on){let r;try{r=await api("sal_access",u?{user:u,on:on?1:
   const nm=x=>(r.users.find(y=>y.user===x)||{name:x}).name;
   B.innerHTML=`<h3>Quién puede entrar</h3><p class="note" style="margin:0">Principal: <b>${esc(nm(r.owner))}</b>. Cada persona entra con su propia clave.</p><table class="mx-tbl"><tbody>${r.users.map(x=>{const al=r.allow.includes(x.user),own=x.user===r.owner;return `<tr><td>${esc(x.name)}</td><td style="color:var(--muted)">${own?"Principal":al?(r.haskey.includes(x.user)?"Tiene acceso":"Acceso dado · falta que cree su clave"):"Sin acceso"}</td><td class="n">${r.isOwner&&!own?`<button type="button" class="mx-btn" onclick="slAcc('${esc(x.user)}',${al?0:1})">${al?"Quitar":"Dar acceso"}</button>`:""}</td></tr>`}).join("")}</tbody></table>${r.isOwner?"":'<p class="note">Solo el principal puede dar o quitar acceso.</p>'}`}
 
-
+/* ===== Inicio ===== */
 /* ===== Acceso por WhatsApp + contraseña provisoria ===== */
 function waAccessMsg(name,user,pw,sal){const url=location.origin+"/duenos/";return `Hola ${name||""} 👋\nTe di acceso a Midnight Accounting.\n\nEntra aquí: ${url}\nUsuario: ${user}\nContraseña provisoria: ${pw}\n\nAl entrar te va a pedir que crees tu propia contraseña.`+(sal?`\n\n🔒 También tienes acceso a Distribución: la primera vez que la abras, crea tu clave personal para esa sección.`:"")}
 function waShow(name,user,pw,sal){const b=$("u-wa");b.hidden=false;b.dataset.msg=waAccessMsg(name,user,pw,sal);b.dataset.n=name||"";b.dataset.u=user;b.dataset.p=pw;
@@ -1729,7 +1749,7 @@ async function tgSave(){const o=$("tg-o").value,n=$("tg-n").value,r=$("tg-r").va
   if(r?n!==r:$("tg-n").type==="password")return toast(r?"Las contraseñas nuevas no coinciden":"Repite la nueva contraseña");
   try{await api("passwd",{old:o,pw:n});toast("¡Listo! Ya tienes tu contraseña");document.querySelector(".tg").remove();D.me.temp=false}catch(e){toast(e.message)}}
 
-/* ===== Inicio ===== */
+
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
