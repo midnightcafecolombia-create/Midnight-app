@@ -364,6 +364,11 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .ai-cfg summary{list-style:none;cursor:pointer;font-size:12px;color:var(--muted);padding:4px 8px;border:1px solid var(--line);border-radius:999px}.ai-cfg summary::-webkit-details-marker{display:none}
 .ai-cfg[open] summary{color:var(--gold-hi);border-color:var(--gold)}
 .ai-pop{position:absolute;right:0;top:34px;z-index:20;width:min(320px,90vw);padding:10px;background:var(--ink);border:1px solid var(--gold);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.wa-box{margin-top:10px;padding:12px;border:1px solid #25D366;border-radius:12px;background:rgba(37,211,102,.06)}.wa-h{color:var(--cream)}.mono{font-family:ui-monospace,Menlo,monospace}
+.wa-box input{background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit}
+.tg{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:16px}
+.tg-c{width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px}.tg-c h2{margin:0;color:var(--gold-hi);font-weight:500}
+.tg-c input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit;margin-top:3px}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -500,10 +505,11 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
     <div class="users" id="u-list"></div>
     <div id="u-admin">
       <span class="lbl" style="margin-bottom:8px">Agregar dueño o socio</span>
+      <div id="u-wa" class="wa-box" hidden></div>
       <form class="form" id="u-form" autocomplete="off">
         <label>Nombre<input id="u-name" required></label>
         <label>Usuario<input id="u-user" autocapitalize="none" required></label>
-        <label>Contraseña (10+ caracteres)<span class="pw-row"><input id="u-pw" type="password" autocomplete="new-password" required><button type="button" class="chip" title="Crear una contraseña segura" onclick="pwGen('u-pw')">🎲 Crear</button><button type="button" class="chip" title="Copiar" onclick="pwCopy('u-pw')">📋</button></span><small class="note" id="u-pw-tip" style="margin:4px 0 0" hidden>Cópiala y pásasela a la persona. Después puede cambiarla en «🔑 Mi contraseña».</small></label>
+        <label>Contraseña provisoria (10+ caracteres)<span class="pw-row"><input id="u-pw" type="password" autocomplete="new-password" required><button type="button" class="chip" title="Crear una contraseña segura" onclick="pwGen('u-pw')">🎲 Crear</button><button type="button" class="chip" title="Copiar" onclick="pwCopy('u-pw')">📋</button></span><small class="note" id="u-pw-tip" style="margin:4px 0 0" hidden>Al tocar Agregar te sale el botón para enviársela por WhatsApp. Al entrar, la persona crea la suya.</small></label>
         <label>Permiso<select id="u-role"><option value="socio">Socio: ve y actualiza</option><option value="admin">Administrador: también maneja el equipo</option></select></label>
         <button class="btn" type="submit">Agregar</button>
       </form>
@@ -604,12 +610,12 @@ $("s-save").onclick=async()=>{
 /* ===== Equipo ===== */
 function renderUsers(){
   const admin=BOOT.role==="admin";$("u-admin").hidden=!admin;
-  $("u-list").innerHTML=D.users.map(u=>`<div class="user"><div><b style="font-weight:500">${esc(u.name)}</b><small>${esc(u.user)} · ${u.role==="admin"?"Administrador":"Socio"}${u.user===BOOT.user?" · tú":""}</small></div>${admin&&u.user!==BOOT.user?`<button type="button" class="chip out" onclick="delUser('${esc(u.user)}')">Quitar acceso</button>`:""}</div>`).join("");
+  $("u-list").innerHTML=D.users.map(u=>`<div class="user"><div><b style="font-weight:500">${esc(u.name)}</b><small>${esc(u.user)} · ${u.role==="admin"?"Administrador":"Socio"}${u.user===BOOT.user?" · tú":""}</small></div>${admin&&u.user!==BOOT.user?`<span class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end"><button type="button" class="chip" title="Crear contraseña provisoria y enviarla por WhatsApp" onclick="resetPw('${esc(u.user)}','${esc(u.name)}')">📲 Enviar acceso</button><button type="button" class="chip out" onclick="delUser('${esc(u.user)}')">Quitar acceso</button></span>`:""}</div>`).join("");
 }
 let delArm=null;
 async function delUser(u){if(delArm!==u){delArm=u;toast("Toca otra vez «Quitar acceso» para confirmar");setTimeout(()=>delArm=null,4000);return}
   try{const r=await api("del_user",{user:u});D.users=r.users;renderUsers();toast("Acceso quitado")}catch(e){toast(e.message)}}
-$("u-form").onsubmit=async e=>{e.preventDefault();try{const r=await api("add_user",{name:$("u-name").value,user:$("u-user").value,pw:$("u-pw").value,role:$("u-role").value});D.users=r.users;renderUsers();e.target.reset();$("u-pw").type="password";$("u-pw-tip").hidden=true;toast("Acceso creado. Comparte el usuario y la contraseña en persona")}catch(err){toast(err.message)}};
+$("u-form").onsubmit=async e=>{e.preventDefault();try{const nm=$("u-name").value.trim(),us=$("u-user").value.trim().toLowerCase(),pw=$("u-pw").value;const r=await api("add_user",{name:nm,user:us,pw,role:$("u-role").value});D.users=r.users;renderUsers();e.target.reset();$("u-pw").type="password";$("u-pw-tip").hidden=true;waShow(nm,us.replace(/[^a-zA-Z0-9._@-]/g,"").toLowerCase(),pw);toast("Acceso creado")}catch(err){toast(err.message)}};
 function pwGen(id){const A="ABCDEFGHJKLMNPQRSTUVWXYZ",a="abcdefghijkmnpqrstuvwxyz",n="23456789",y="!@#$%*?";const all=A+a+n+y;const r=m=>{const u=new Uint32Array(1);crypto.getRandomValues(u);return u[0]%m};
   let c=[A[r(A.length)],a[r(a.length)],n[r(n.length)],y[r(y.length)]];while(c.length<14)c.push(all[r(all.length)]);for(let i=c.length-1;i>0;i--){const j=r(i+1);[c[i],c[j]]=[c[j],c[i]]}
   const el=$(id);el.type="text";el.value=c.join("");el.focus();el.select();const t=$(id+"-tip");if(t)t.hidden=false;toast("Contraseña creada: cópiala antes de guardar")}
@@ -1661,11 +1667,35 @@ async function slAcc(u,on){let r;try{r=await api("sal_access",u?{user:u,on:on?1:
   const nm=x=>(r.users.find(y=>y.user===x)||{name:x}).name;
   B.innerHTML=`<h3>Quién puede entrar</h3><p class="note" style="margin:0">Principal: <b>${esc(nm(r.owner))}</b>. Cada persona entra con su propia clave.</p><table class="mx-tbl"><tbody>${r.users.map(x=>{const al=r.allow.includes(x.user),own=x.user===r.owner;return `<tr><td>${esc(x.name)}</td><td style="color:var(--muted)">${own?"Principal":al?(r.haskey.includes(x.user)?"Tiene acceso":"Acceso dado · falta que cree su clave"):"Sin acceso"}</td><td class="n">${r.isOwner&&!own?`<button type="button" class="mx-btn" onclick="slAcc('${esc(x.user)}',${al?0:1})">${al?"Quitar":"Dar acceso"}</button>`:""}</td></tr>`}).join("")}</tbody></table>${r.isOwner?"":'<p class="note">Solo el principal puede dar o quitar acceso.</p>'}`}
 
+
+/* ===== Acceso por WhatsApp + contraseña provisoria ===== */
+function waAccessMsg(name,user,pw){const url=location.origin+"/duenos/";return `Hola ${name||""} 👋\nTe di acceso al panel de dueños de Midnight.\n\nEntra aquí: ${url}\nUsuario: ${user}\nContraseña provisoria: ${pw}\n\nAl entrar te va a pedir que crees tu propia contraseña.`}
+function waShow(name,user,pw){const b=$("u-wa");b.hidden=false;b.dataset.msg=waAccessMsg(name,user,pw);
+  b.innerHTML=`<div class="wa-h">✅ Acceso listo para <b>${esc(name||user)}</b></div><p class="note" style="margin:4px 0 8px">Usuario <b>${esc(user)}</b> · contraseña provisoria <b class="mono">${esc(pw)}</b>. Al entrar, el sistema le pide crear la suya.</p>
+   <div class="pw-row"><input id="u-wa-tel" type="tel" inputmode="tel" placeholder="WhatsApp (ej. 305 555 1234)"><button type="button" class="btn" style="width:auto;padding:10px 14px" onclick="waSend()">📲 Enviar por WhatsApp</button></div>
+   <div class="row" style="margin-top:6px;gap:6px"><button type="button" class="chip" onclick="waCopyMsg()">📋 Copiar mensaje</button><button type="button" class="chip" style="opacity:.7" onclick="$('u-wa').hidden=true">Cerrar</button></div>`;
+  b.scrollIntoView({behavior:"smooth",block:"center"})}
+function waSend(){let t=($("u-wa-tel").value||"").replace(/\D/g,"");if(t.length===10)t="1"+t;const u="https://wa.me/"+(t.length>=11?t:"")+"?text="+encodeURIComponent($("u-wa").dataset.msg);window.open(u,"_blank")}
+function waCopyMsg(){const m=$("u-wa").dataset.msg;(navigator.clipboard?navigator.clipboard.writeText(m):Promise.reject()).then(()=>toast("Mensaje copiado")).catch(()=>toast("No se pudo copiar"))}
+function pwMake(){const A="ABCDEFGHJKLMNPQRSTUVWXYZ",a="abcdefghijkmnpqrstuvwxyz",n="23456789",y="!@#$%*?";const all=A+a+n+y;const r=m=>{const u=new Uint32Array(1);crypto.getRandomValues(u);return u[0]%m};let c=[A[r(24)],a[r(24)],n[r(8)],y[r(7)]];while(c.length<14)c.push(all[r(all.length)]);for(let i=c.length-1;i>0;i--){const j=r(i+1);[c[i],c[j]]=[c[j],c[i]]}return c.join("")}
+let rpArm=null;
+async function resetPw(user,name){if(rpArm!==user){rpArm=user;toast("Toca otra vez para crearle una contraseña provisoria nueva");setTimeout(()=>rpArm=null,4000);return}
+  const pw=pwMake();try{await api("reset_pw",{user,pw});waShow(name,user,pw);toast("Contraseña provisoria creada")}catch(e){toast(e.message)}}
+/* primera entrada: obliga a crear su contraseña */
+function tempGate(){if(!(D&&D.me&&D.me.temp))return;const m=document.createElement("div");m.className="tg";m.innerHTML=`<div class="tg-c"><h2>Crea tu contraseña</h2><p class="note">Entraste con una contraseña provisoria. Crea la tuya para seguir (10 caracteres o más).</p>
+  <label class="note">Contraseña provisoria<input id="tg-o" type="password" autocomplete="current-password"></label>
+  <label class="note">Tu nueva contraseña<span class="pw-row"><input id="tg-n" type="password" autocomplete="new-password"><button type="button" class="chip" onclick="pwGen('tg-n')">🎲</button></span></label>
+  <label class="note">Repite la nueva<input id="tg-r" type="password" autocomplete="new-password"></label>
+  <button class="btn" type="button" onclick="tgSave()">Guardar y entrar</button></div>`;document.body.appendChild(m)}
+async function tgSave(){const o=$("tg-o").value,n=$("tg-n").value,r=$("tg-r").value;
+  if(r?n!==r:$("tg-n").type==="password")return toast(r?"Las contraseñas nuevas no coinciden":"Repite la nueva contraseña");
+  try{await api("passwd",{old:o,pw:n});toast("¡Listo! Ya tienes tu contraseña");document.querySelector(".tg").remove();D.me.temp=false}catch(e){toast(e.message)}}
+
 /* ===== Inicio ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
-  renderOrders();renderStock();renderUsers();setChatBadge(D.chatsUnread||0);loadChats();aiStatus();
+  renderOrders();renderStock();renderUsers();setChatBadge(D.chatsUnread||0);loadChats();aiStatus();tempGate();
   let v="ordenes";try{v=localStorage.getItem("mdn-tab")||v}catch(e){}showView(v);
   setInterval(async()=>{if(document.hidden)return;try{const r=await api("load");const had=new Set(D.orders.map(o=>o.ref));const fresh=r.orders.filter(o=>!had.has(o.ref));D.orders=r.orders;D.status=r.status;if(!sDirty()){D.stock=r.stock;SW=null;renderStock()}renderOrders();if(fresh.length)toast(fresh.length===1?"Nueva orden recibida":fresh.length+" órdenes nuevas")}catch(e){}},60000);
 }
