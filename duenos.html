@@ -371,6 +371,11 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .tg-c{width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px}.tg-c h2{margin:0;color:var(--gold-hi);font-weight:500}
 .tg-c input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit;margin-top:3px}
 .mx-demo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:10px;border:1px dashed var(--gold);border-radius:12px;color:var(--cream);font-size:14px}
+#sl-lock[hidden]{display:none!important}
+#sl-lock.sl-modal{position:fixed;inset:0;width:auto;max-width:none;min-height:0;border-radius:0;z-index:90;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;margin:0;border:0}
+#sl-lock .sl-card{position:relative;width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:18px;padding:26px 22px 22px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#sl-lock .sl-card input{width:100%;box-sizing:border-box}
+.sl-close{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -544,7 +549,7 @@ async function api(action,body={}){
 }
 let D=null;
 /* ===== Pestañas ===== */
-function showView(v){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart()}
+let PREVV="ordenes";function showView(v){if(v!=="sal")PREVV=v;document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart()}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 
 /* ===== Órdenes ===== */
@@ -1393,7 +1398,11 @@ function slNum(x){let s=String(x??"").replace(/[$\s]/g,"");if(!s)return 0;const 
   if(d>-1&&c>-1){const dec=d>c?".":",";s=s.split(dec==="."?",":".").join("").replace(",",".")}
   else{const sep=d>-1?".":c>-1?",":"";if(sep){const parts=s.split(sep);if(parts.length>2||parts[parts.length-1].length===3)s=parts.join("");else s=parts.join(".")}}
   const n=parseFloat(s);return isNaN(n)?0:n}
-async function slStart(){const L=$("sl-lock");
+async function slStart(){await slStart0();const L=$("sl-lock");if(L.hidden){L.classList.remove("sl-modal");return}
+  if(!L.querySelector(".sl-card"))L.innerHTML=`<div class="sl-card"><button type="button" class="sl-close" aria-label="Cerrar" onclick="slModalClose()">×</button>${L.innerHTML}</div>`;
+  L.classList.add("sl-modal");setTimeout(()=>{const i=L.querySelector("input");i&&i.focus()},60)}
+function slModalClose(){$("sl-lock").classList.remove("sl-modal");showView(PREVV||"ordenes")}
+async function slStart0(){const L=$("sl-lock");
   let st;try{st=await api("sal_status")}catch(e){L.hidden=false;L.innerHTML=`<div class="empty">No se pudo cargar. El servidor todavía tiene el api.php viejo.<br><small style="opacity:.6">Detalle: ${esc(e.message||"")}</small></div>`;return}
   if(st.open)return slOpen();$("sl-app").hidden=true;L.hidden=false;
   const H='<div class="big">💼</div><h2>Distribución de la compañía</h2>';
@@ -1406,7 +1415,7 @@ async function slUnlock(){try{await api("sal_unlock",{key:$("sl-k").value});slOp
 async function slLock(){try{await api("sal_lock")}catch(e){}SL=null;slStart()}
 async function slOpen(){try{const r=await api("sal_load");SL=r.data}catch(e){return slStart()}
   SL.rules.consult=SL.rules.consult||[];if(SL.rules.lb==null)SL.rules.lb=11;if(SL.rules.tax==null||(SL.rules.tax===9&&!SL.rules.taxv)){SL.rules.tax=7;SL.rules.taxv=2}if(SL.rules.dv==null)SL.rules.dv=3000;if(!SL.rules.fund)SL.rules.fund=[1,2,3].map(()=>({id:slId(),n:'',p:null}));if(!SL.rules.consult.length)SL.rules.consult=AREAS.map(n=>({id:slId(),n,p:null}));SL.rules.distributors=SL.rules.distributors||[];SL.entries=SL.entries||[];SL.payroll=SL.payroll||[];
-  $("sl-lock").hidden=true;$("sl-app").hidden=false;document.querySelectorAll("#sl-tabs button").forEach(b=>b.onclick=()=>{SLT=b.dataset.t;slRender()});slRender()}
+  $("sl-lock").hidden=true;$("sl-lock").classList.remove("sl-modal");$("sl-app").hidden=false;document.querySelectorAll("#sl-tabs button").forEach(b=>b.onclick=()=>{SLT=b.dataset.t;slRender()});slRender()}
 function slSave(){clearTimeout(SLsaveT);$("sl-saved").textContent="Guardando…";SLsaveT=setTimeout(async()=>{try{await api("sal_save",{data:SL});$("sl-saved").textContent="✓ Guardado en el servidor · respaldo cada hora"}catch(e){$("sl-saved").textContent="⚠️ No se guardó: "+(e.message==="sallock"?"la sesión se cerró, vuelve a entrar":"revisa la conexión")}},600)}
 const $$=n=>n==null||isNaN(n)?"—":(n<0?"-":"")+"$"+Math.abs(+n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const rd=n=>Math.round(n*100)/100;
