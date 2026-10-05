@@ -353,6 +353,8 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 @media(max-width:900px){.sl-strow{grid-template-columns:1fr 1fr}}
 .sl-final-big{margin:12px 0;padding:18px 20px;border:2px solid var(--gold);border-radius:14px;background:linear-gradient(135deg,rgba(212,171,95,.12),transparent);display:flex;flex-direction:column;gap:2px}
 .sl-final-big span{color:var(--gold-hi);font-size:13px;letter-spacing:.06em;text-transform:uppercase}.sl-final-big b{font:500 38px/1.1 Georgia,serif;color:var(--cream)}.sl-final-big b.neg{color:var(--bad)}.sl-final-big small{color:var(--muted)}
+.sl-irow.sl-rent{grid-template-columns:150px minmax(150px,1.3fr) 100px 120px 90px 140px 110px auto 30px}
+@media(max-width:1000px){.sl-irow.sl-rent{grid-template-columns:1fr 1fr}}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -1370,7 +1372,7 @@ function slCalc(e){const R=SL.rules;const L=[];
     return {staff:true,pay,v:0,c:0,i:0,base:0,cBase:0,dist:0,op:0,comp:0,cont:0,net:0,ops:0,fund:0,FD:[],L,sumP:100,AX:[],PE:{list:[],fund:0,none:true},tax:0}}let v,c=0,i=0,dist=0,op=0;
   v=slNum(e.venta);const AX=[];
   let cb=null;
-  if(e.rama==="Café"&&e.items&&e.items.length){v=0;cb=0;e.items.forEach(it=>{const pr=slPrice(it,R),co=slCost(it,R);if(!pr&&!co)return;v+=pr;c+=co;if(co)AX.push({n:slIsCat(it)?`Costo · ${(slProd(it,R)||{}).n} × ${slNum(it.q)} (${$$(slUC(it,R))} c/u)`:it.t==="Café"&&slNum(it.lb)?`Costo café · ${slNum(it.lb)} lb × ${$$(slCpl(it,R))}`:"Costo · "+(it.t)+(it.d?" ("+it.d+")":""),v:co});if(it.com)cb+=pr-co});cb=Math.max(0,cb)}
+  if(e.rama==="Café"&&e.items&&e.items.length){v=0;cb=0;e.items.forEach(it=>{const pr=slPrice(it,R),co=slCost(it,R);if(!pr&&!co)return;v+=pr;c+=co;if(co)AX.push({n:slIsCat(it)?`Costo · ${(slProd(it,R)||{}).n} × ${slNum(it.q)} (${$$(slUC(it,R))} c/u)`:it.t==="Café"&&slNum(it.lb)?`Costo café · ${slNum(it.lb)} lb × ${$$(slCpl(it,R))}`:"Costo · "+(it.t)+(it.d?" ("+it.d+")":"")+(slIsRent(it)&&slRentTxt(it)?" · "+slRentTxt(it):""),v:co});if(it.com)cb+=pr-co});cb=Math.max(0,cb)}
   else if(e.rama==="Café"){c=slNum(e.costo);i=slNum(e.insumos)}
   else if(e.rama==="Consulting"){i=slNum(e.insumos);(e.gx||[]).forEach(g=>{const m=slNum(g.m);if(m){AX.push({n:g.cat||"Gasto",v:m});c+=m}});R.consult.forEach(o=>{const m=slNum((e.areas||{})[o.id]);if(m){AX.push({n:o.n,v:m});c+=m}})}
   else i=slNum(e.insumos);
@@ -1409,7 +1411,11 @@ const SL_CH=["Directo","TikTok","Distribuidor"];
 function slUP(it,R){if(it.up!=null&&it.up!=="")return slNum(it.up);const p=slProd(it,R);if(!p)return 0;const v=it.ch==="TikTok"?p.pt:it.ch==="Distribuidor"?p.pdist:p.pd;return v==null?0:+v}
 function slUC(it,R){if(it.uc!=null&&it.uc!=="")return slNum(it.uc);const p=slProd(it,R);if(!p)return 0;return p.c==null||p.c===""?(R.lb??11):+p.c}
 const slIsCat=it=>it.t==="Café"&&it.prod;
-const slPrice=(it,R)=>slIsCat(it)?rd(slNum(it.q)*slUP(it,R)):slNum(it.precio);
+const SL_PER={dia:["día","días"],semana:["semana","semanas"],mes:["mes","meses"]};
+const slIsRent=it=>it.t==="Cafetera · renta";
+function slRentEnd(it){if(!it.desde||!slNum(it.dur))return "";const d=new Date(it.desde+"T12:00");const n=slNum(it.dur);if(it.per==="dia")d.setDate(d.getDate()+n);else if(it.per==="semana")d.setDate(d.getDate()+7*n);else d.setMonth(d.getMonth()+n);return d.toISOString().slice(0,10)}
+const slRentTxt=it=>{const n=slNum(it.dur),u=SL_PER[it.per||"mes"];return n?`${n} ${n===1?u[0]:u[1]}`:""};
+const slPrice=(it,R)=>slIsCat(it)?rd(slNum(it.q)*slUP(it,R)):slIsRent(it)?rd(slNum(it.rp)*slNum(it.dur)):slNum(it.precio);
 const slCost=(it,R)=>slIsCat(it)?rd(slNum(it.q)*slUC(it,R)):it.t==="Café"&&slNum(it.lb)?rd(slNum(it.lb)*slCpl(it,R)):slNum(it.costo);
 /* calculadora */
 const SL_ROLES=["Mixólogo","Barista","Chef","Mesero","Ayudante","Otro"],RAMA_LBL={"Mixología":"Mixología y Barismo"};
@@ -1424,7 +1430,7 @@ const slIn=(lbl,key,ph,cls)=>`<label${cls?` class="${cls}"`:""}>${lbl}<input typ
 function slCalcView(){SLE=SLE||slBlank();SLE.areas=SLE.areas||{};if(!SLE.items)SLE.items=slBlank().items;const e=SLE,R=SL.rules;const B=$("sl-body");
   let f="";
   if(e.rama==="Café")f=`<div class="w4 sl-sub">Lo que lleva la orden <small>(precio = lo que se le cobra · costo = lo que nos cuesta)</small></div>
-    <div class="w4 sl-items">${e.items.map((it,j)=>it.t==="Café"?slCafeRow(it,j,R):`<div class="sl-irow"><select onchange="SLE.items[${j}].t=this.value;SLE.items[${j}].com=SL_COM[this.value];slCalcView()">${SL_IT.map(t=>`<option ${t===it.t?"selected":""}>${t}</option>`).join("")}</select>
+    <div class="w4 sl-items">${e.items.map((it,j)=>it.t==="Café"?slCafeRow(it,j,R):slIsRent(it)?slRentRow(it,j,R):`<div class="sl-irow"><select onchange="SLE.items[${j}].t=this.value;SLE.items[${j}].com=SL_COM[this.value];slCalcView()">${SL_IT.map(t=>`<option ${t===it.t?"selected":""}>${t}</option>`).join("")}</select>
       <input placeholder="${SL_PH[it.t]||"Detalle"}" value="${esc(it.d||"")}" oninput="SLE.items[${j}].d=this.value">
       <label>Precio ($)<input type="text" inputmode="decimal" placeholder="$0" value="${esc(it.precio||"")}" oninput="SLE.items[${j}].precio=this.value;slOut()"></label>
       <label>Costo ($)<input type="text" inputmode="decimal" placeholder="$0" value="${esc(it.costo||"")}" oninput="SLE.items[${j}].costo=this.value;slOut()"></label>
@@ -1466,7 +1472,21 @@ function slCalcView(){SLE=SLE||slBlank();SLE.areas=SLE.areas||{};if(!SLE.items)S
    <div class="mx-row"><button type="button" class="mx-btn gold" onclick="slAdd()">💾 Registrar entrada</button><button type="button" class="mx-btn" onclick="SLE=slBlank(SLE.rama);slCalcView()">Limpiar</button></div></div>
    ${!R.distributors.length&&e.rama==="Café"?'':""}`;
   slOut()}
-function slNewItem(t){return t==="Café"?{t,prod:"",ch:"Directo",q:"",up:"",uc:"",com:true}:{t,d:"",precio:"",costo:"",com:SL_COM[t]}}
+function slNewItem(t){return t==="Café"?{t,prod:"",ch:"Directo",q:"",up:"",uc:"",com:true}:t==="Cafetera · renta"?{t,d:"",per:"mes",rp:"",dur:"",desde:new Date().toISOString().slice(0,10),costo:"",com:false}:{t,d:"",precio:"",costo:"",com:SL_COM[t]}}
+function slRentRow(it,j,R){const set=`SLE.items[${j}]`,u=SL_PER[it.per||"mes"],end=slRentEnd(it),tot=slPrice(it,R),co=slNum(it.costo),g=rd(tot-co);
+  return `<div class="sl-irow sl-rent"><select onchange="${set}.t=this.value;${set}.com=SL_COM[this.value];slCalcView()">${SL_IT.map(t=>`<option ${t===it.t?"selected":""}>${t}</option>`).join("")}</select>
+   <label>Cafetera<input placeholder="Modelo de la cafetera" value="${esc(it.d||"")}" oninput="${set}.d=this.value"></label>
+   <label>Se cobra por<select onchange="${set}.per=this.value;slCalcView()">${Object.keys(SL_PER).map(k=>`<option value="${k}" ${k===(it.per||"mes")?"selected":""}>${SL_PER[k][0][0].toUpperCase()+SL_PER[k][0].slice(1)}</option>`).join("")}</select></label>
+   <label>Precio por ${u[0]}<span class="sl-usd"><input type="text" inputmode="decimal" placeholder="0.00" value="${esc(it.rp||"")}" oninput="${set}.rp=this.value;slRentSum(${j});slOut()"></span></label>
+   <label>Cuántos ${u[1]}<input type="text" inputmode="decimal" placeholder="0" value="${esc(it.dur||"")}" oninput="${set}.dur=this.value;slRentSum(${j});slOut()"></label>
+   <label>Desde<input type="date" value="${esc(it.desde||"")}" onchange="${set}.desde=this.value;slRentSum(${j})"></label>
+   <label>Costo total ($)<input type="text" inputmode="decimal" placeholder="$0" value="${esc(it.costo||"")}" oninput="${set}.costo=this.value;slRentSum(${j});slOut()"></label>
+   <label class="sl-ck" title="Si el distribuidor cobra comisión sobre esta línea"><input type="checkbox" ${it.com?"checked":""} onchange="${set}.com=this.checked;slOut()"> Comisiona</label>
+   <button type="button" title="Quitar" onclick="SLE.items.splice(${j},1);slCalcView()">×</button>
+   <div class="sl-rsum" id="sl-rr${j}">${slRentSumHTML(it,R)}</div></div>`}
+function slRentSumHTML(it,R){const tot=slPrice(it,R),co=slNum(it.costo),g=rd(tot-co),end=slRentEnd(it);
+  return `<span>Periodo <b>${slRentTxt(it)||"—"}</b>${end?` <small>(${new Date(it.desde+"T12:00").toLocaleDateString("es")} → ${new Date(end+"T12:00").toLocaleDateString("es")})</small>`:""}</span><span>Renta total <b>${$$(tot)}</b></span><span>Costo <b>${$$(co)}</b></span><span class="${g<0?"neg":"pos"}">Ganancia <b>${$$(g)}</b></span>`}
+function slRentSum(j){const o=$("sl-rr"+j);if(o)o.innerHTML=slRentSumHTML(SLE.items[j],SL.rules)}
 function slCafeRow(it,j,R){const p=slProd(it,R);const up=slUP(it,R),uc=slUC(it,R);const set=`SLE.items[${j}]`;
   const nopr=p&&!up&&(it.up==null||it.up==="");
   return `<div class="sl-irow sl-cafe"><select onchange="${set}.t=this.value;${set}.com=SL_COM[this.value];slCalcView()">${SL_IT.map(t=>`<option ${t===it.t?"selected":""}>${t}</option>`).join("")}</select>
