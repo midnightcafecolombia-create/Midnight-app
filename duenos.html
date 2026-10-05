@@ -363,8 +363,39 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 #sl-lock .sl-card{position:relative;width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:18px;padding:26px 22px 22px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 #sl-lock .sl-card input{width:100%;box-sizing:border-box}
 .sl-close{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
+/* ===== adaptable a teléfono, tablet y computadora, en vertical u horizontal ===== */
+#v-sal *{box-sizing:border-box}
+#v-sal input,#v-sal select,#v-sal textarea{max-width:100%;min-width:0}
+#v-sal .mx-form>*,.sl-irow>*,.sl-strow>*,.sl-grow>*,.sl-drow>*{min-width:0}
+.sl-irow input,.sl-irow select,.sl-strow input,.sl-strow select,.sl-grow input,.sl-grow select,.sl-drow input{width:100%}
+#v-sal .mx-tbl input{width:100%}
+#v-sal .mx-tbl td{vertical-align:middle}
+#sl-tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}#sl-tabs::-webkit-scrollbar{display:none}#sl-tabs button{flex:none}
+@media(max-width:700px){
+ .sl-irow,.sl-irow.sl-cafe,.sl-irow.sl-rent,.sl-strow{grid-template-columns:1fr 1fr!important}
+ .sl-irow>select:first-child,.sl-strow>label:nth-child(2){grid-column:1/-1}
+ .sl-grow{grid-template-columns:1fr 30px!important}.sl-grow>*:not(.sl-x){grid-column:1}.sl-grow>.sl-x{grid-column:2;grid-row:1}
+ .sl-ramas button{min-width:0;flex:1 1 40%}
+ .sl-row{grid-template-columns:1fr 90px}.sl-row .sl-bar{grid-column:1/-1;grid-row:2}
+ .sl-bill{grid-template-columns:1fr 1fr}.sl-bill>label{grid-column:1/-1}
+ .sl-final-big b{font-size:30px}
+ #v-sal .mx-tbl{font-size:13px}#v-sal .mx-tbl th,#v-sal .mx-tbl td{padding:6px 5px}
+ .sl-pc{width:64px!important}
+}
+@media(max-width:420px){.sl-irow,.sl-irow.sl-cafe,.sl-irow.sl-rent,.sl-strow{grid-template-columns:1fr!important}.sl-drow{flex-wrap:wrap}.sl-drow input[list]{flex-basis:100%}}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
+/* adaptable a cualquier pantalla y orientación */
+@media (orientation:landscape) and (max-height:520px){.top{position:relative}.top .brand{font-size:15px}}
+.top{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.tabs{scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}.tabs::-webkit-scrollbar{display:none}.tabs button{flex:none;scroll-snap-align:center}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:700px){.mx-tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.mx-tabs::-webkit-scrollbar{display:none}.mx-tabs button{flex:none}}
+#v-mix *,#v-equipo *{box-sizing:border-box}
+#v-mix input,#v-mix select,#v-mix textarea{max-width:100%;min-width:0}
+.mx-form>*{min-width:0}.mx-form input,.mx-form select,.mx-form textarea{width:100%}
+@media(max-width:480px){.mx-form{grid-template-columns:1fr!important}.mx-form label.w2,.mx-form .w2,.mx-form .w4,.mx-form label.w4{grid-column:1/-1}}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -552,7 +583,7 @@ async function api(action,body={}){
 }
 let D=null;
 /* ===== Pestañas ===== */
-let PREVV="ordenes";function showView(v){if(v!=="sal")PREVV=v;document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart()}
+let PREVV="ordenes";function showView(v){if(v!=="sal")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart()}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 
 /* ===== Órdenes ===== */
@@ -1460,7 +1491,7 @@ function slPartners(e,R){const o=e.pp||{};const pool=100-R.ops;if(e.rama==="Caf�
   const used=inc.reduce((s,p)=>s+p.pe,0);return {list,fund:Math.max(0,rd(pool-used)),over:used>pool+0.001}}
 function slPP(id,k,val){SLE.pp=SLE.pp||{};SLE.pp[id]=SLE.pp[id]||{};SLE.pp[id][k]=val;SLsocOpen=true;slOut()}
 let SLsocOpen=false;
-function slRender(){document.querySelectorAll("#sl-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===SLT));({calc:slCalcView,reg:slReg,res:slRes,rep:slRep,pay:slPay,rules:slRules,emp:slEmp})[SLT]()}
+function slRender(){setTimeout(()=>{const t=document.querySelector('#sl-tabs button[data-t="'+SLT+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest"})},30);document.querySelectorAll("#sl-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===SLT));({calc:slCalcView,reg:slReg,res:slRes,rep:slRep,pay:slPay,rules:slRules,emp:slEmp})[SLT]()}
 /* costo del café por libra: fijo en Reglas ($11), se puede mover por orden */
 const slCpl=(it,R)=>it.cpl!=null&&it.cpl!==""?slNum(it.cpl):(R.lb??11);
 const slProd=(it,R)=>(R.products||[]).find(p=>p.id===it.prod);

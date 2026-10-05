@@ -19,6 +19,9 @@ html,body{height:100%}
 body{background:#050403;color:var(--cream);font-family:var(--body);font-weight:300;display:flex;justify-content:center;padding-inline:0}
 .phone{position:relative;width:100%;max-width:420px;height:100%;background:var(--ink);overflow:hidden;box-shadow:0 0 0 1px var(--line),0 30px 80px rgba(0,0,0,.6)}
 @media (min-width:600px){body{align-items:center;padding-block:24px}.phone{height:min(860px,calc(100% - 0px));border-radius:44px;border:6px solid #2a2117}}
+/* teléfonos acostados y pantallas bajas: ocupa toda la altura, sin marco */
+@media (min-width:600px) and (max-height:620px){body{padding-block:0}.phone{height:100%!important;border-radius:0;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);max-width:560px}}
+.phone{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 button:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
 .gold-text{background:linear-gradient(180deg,var(--gold-hi),var(--gold) 55%,var(--gold-lo));-webkit-background-clip:text;background-clip:text;color:transparent}
