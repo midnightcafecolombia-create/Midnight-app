@@ -276,6 +276,15 @@ main:has(#v-mix:not([hidden])){max-width:1100px}
 .mx-hist{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
 .mx-hist span b{color:var(--cream);font-weight:500}
 .mx-empty{border:1px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--muted);font-size:13.5px}
+.cr-grid{display:grid;grid-template-columns:minmax(220px,360px) 1fr;gap:16px;align-items:start}
+@media(max-width:700px){.cr-grid{grid-template-columns:1fr}}
+.cr-art{display:flex;flex-direction:column;gap:4px;align-items:center}
+.cr-svg{width:100%;height:auto;border-radius:14px;border:1px solid var(--line)}
+.cr-info{display:flex;flex-direction:column;gap:8px}
+.cr-name{margin:0;font-family:var(--display);color:var(--gold-hi);font-size:26px;letter-spacing:.04em}
+.cr-desc{margin:0;font-size:14.5px;line-height:1.5;color:var(--cream)}
+.cr-steps{margin:4px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13.5px}
+.cr-steps li::marker{color:var(--gold)}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -382,6 +391,7 @@ main:has(#v-mix:not([hidden])){max-width:1100px}
       <nav class="mx-tabs" id="mx-tabs">
         <button type="button" data-t="dash">Dashboard</button>
         <button type="button" data-t="drinks">Bebidas</button>
+        <button type="button" data-t="create">🍸 Creador de tragos</button>
         <button type="button" data-t="inv">Inventario</button>
         <button type="button" data-t="eng">Ingeniería de menú</button>
         <button type="button" data-t="ai">Asistente IA</button>
@@ -737,7 +747,7 @@ function mxRender(){
   $("mx-venue").innerHTML=MX.venues.map((v,i)=>`<option value="${i}" ${i===MXV?"selected":""}>${esc(v.name)}</option>`).join("")+'<option value="new">+ Nuevo local…</option><option value="ren">✎ Renombrar local…</option>';
   $("mx-target").innerHTML=TARGETS.map(t=>`<option value="${t}" ${t===(V().target||20)?"selected":""}>${t}%</option>`).join("");
   document.querySelectorAll("#mx-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===MXT));
-  ({dash:mxDash,drinks:mxDrinks,inv:mxInv,eng:mxEng,ai:mxAI,rep:mxRep})[MXT]();
+  ({dash:mxDash,drinks:mxDrinks,create:mxCreate,inv:mxInv,eng:mxEng,ai:mxAI,rep:mxRep})[MXT]();
 }
 function mxVenue(v){if(v==="new"){const n=prompt("Nombre del restaurante, bar o establecimiento");if(n){MX.venues.push({id:mxId(),name:n.trim(),target:20,menus:[{id:mxId(),name:"Menú principal",drinks:[]}]});MXV=MX.venues.length-1;mxSave()}}
   else if(v==="ren"){const n=prompt("Nuevo nombre del local",V().name);if(n){V().name=n.trim();mxSave()}}else MXV=+v;MXM="all";mxRender()}
@@ -966,6 +976,106 @@ function mxReport(k){const R=REPS.find(r=>r[0]===k);const L=allDrinks().map(x=>(
   if(k==="eng"){const E=mxEngData();body=E?["star","plow","puz","dog"].map(q=>`<h2>${ENG[q][0]} · ${ENG[q][1]}</h2><p>${ENG[q][2]}</p>`+tbl(["Bebida","Ventas/mes","Margen"],E.L.filter(x=>x.k===q).map(x=>[esc(x.d.name),x.c.sales,$m(x.c.margin)]))).join(""):"<p>Faltan ventas por mes para clasificar las bebidas.</p>"}
   const w=window.open("","_blank");if(!w)return toast("Permite las ventanas emergentes para ver el reporte");
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${R[1]} · ${esc(V().name)}</title><style>body{font:14px/1.45 Helvetica,Arial,sans-serif;color:#1a140d;margin:32px}h1{font:600 22px Georgia,serif;letter-spacing:.06em;margin:0}h2{font:600 15px Georgia,serif;margin:22px 0 6px;color:#8a6a31}.sub{color:#7a6c5c;margin:4px 0 18px}table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12.5px}th{text-align:left;background:#0b0907;color:#f1d48f;padding:7px 8px;font-weight:500}td{padding:6px 8px;border-bottom:1px solid #e3d8c4}tr:nth-child(even) td{background:#faf6ee}.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #d4ab5f;padding-bottom:10px;margin-bottom:6px}@media print{body{margin:12mm}}</style></head><body><div class="hd"><div><h1>${R[1]}</h1><div class="sub">${esc(V().name)} · Beverage cost objetivo ${T}% · ${new Date().toLocaleDateString("es-US",{day:"numeric",month:"long",year:"numeric"})}</div></div><div style="text-align:right;font:600 13px Georgia,serif;letter-spacing:.14em;color:#8a6a31">MIDNIGHT<br><span style="font:11px Helvetica;letter-spacing:0;color:#7a6c5c">Consulting Global</span></div></div>${body}<p class="sub" style="margin-top:24px">Generado por Midnight AI Menu Engineer · Midnight Consulting Global LLC</p><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close()}
+/* ---------- creador de tragos con IA ---------- */
+let MXCR=null,MXCRH=[];
+function mxCreate(){const B=$("mx-body");
+  B.innerHTML=`<div class="mx-box"><h3>🍸 Creador de tragos con IA</h3><p class="note" style="margin:0">Escribe los ingredientes que quieres usar y la IA te diseña el trago completo: cantidades, preparación, descripción, garnish y la ilustración con su ficha.</p>
+   <label class="note" style="display:flex;flex-direction:column;gap:4px">Ingredientes base<textarea id="cr-ing" placeholder="Ej.: espresso Midnight, naranja, canela, miel">${MXCR?esc(MXCR.inp.ing):""}</textarea></label>
+   <div class="mx-form">
+    <label>Tipo<select id="cr-type">${["Mocktail (sin alcohol)","Cocktail","Coffee","Sorpréndeme"].map(t=>`<option ${MXCR&&MXCR.inp.type===t?"selected":""}>${t}</option>`).join("")}</select></label>
+    <label>Vaso<select id="cr-glass"><option value="">Que decida la IA</option>${Object.keys(GLASS).map(g=>`<option ${MXCR&&MXCR.inp.glass===g?"selected":""}>${g}</option>`).join("")}</select></label>
+    <label class="w2">Estilo u ocasión (opcional)<input id="cr-style" placeholder="Ej.: refrescante, para brunch, de autor, para Miami" value="${MXCR?esc(MXCR.inp.style):""}"></label>
+    <label class="ck w4"><input type="checkbox" id="cr-inv" ${MX.inv.length?"checked":""}> Usar productos de mi inventario cuando se pueda (para calcular el costo)</label>
+   </div>
+   <div class="mx-row"><button type="button" class="mx-btn gold" id="cr-go" onclick="mxCreateGo()">✨ Crear trago</button>${MXCR&&MXCR.r?`<button type="button" class="mx-btn" onclick="mxCreateGo(true)">🔄 Otra versión</button>`:""}</div></div>
+   <div id="cr-out"></div>
+   ${MXCRH.length>1?`<div class="mx-box"><h3>Creados en esta sesión</h3><div class="mx-chips" style="flex-wrap:wrap">${MXCRH.map((h,i)=>`<button type="button" onclick="MXCR=MXCRH[${i}];mxRender()">${esc(h.r.name)}</button>`).join("")}</div></div>`:""}`;
+  if(MXCR&&MXCR.r)mxCreateShow()}
+async function mxCreateGo(again){const ing=$("cr-ing").value.trim();if(!ing)return toast("Escribe al menos un ingrediente");
+  const inp={ing,type:$("cr-type").value,glass:$("cr-glass").value,style:$("cr-style").value.trim()};const b=$("cr-go");b.disabled=true;b.textContent="Creando tu trago…";
+  const ctx=JSON.stringify({ingredientes_base:ing,tipo:inp.type,vaso_preferido:inp.glass||"el mejor para el trago",estilo:inp.style||"",
+    inventario:$("cr-inv").checked?MX.inv.map(p=>p.name):[],evitar_nombres:again&&MXCR&&MXCR.r?[MXCR.r.name]:[],objetivo_beverage_cost:V().target+"%"});
+  try{const r=await api("mix_ai",{mode:"create",text:ctx});if(!r.name||!Array.isArray(r.items))throw new Error("La IA no devolvió una receta. Intenta otra vez.");
+    r.items=r.items.map(i=>{const it={q:i.q==null?null:+i.q,u:UNITS[i.u]?i.u:"oz",n:i.n||""};const p=MX.inv.find(p=>it.n.length>2&&(p.name.toLowerCase().includes(it.n.toLowerCase())||it.n.toLowerCase().includes(p.name.toLowerCase())));if(p)it.inv=p.id;return it});
+    MXCR={inp,r};MXCRH.push(MXCR);mxRender()}catch(e){toast(e.message);b.disabled=false;b.textContent="✨ Crear trago"}}
+function crDrink(r){return {id:mxId(),name:r.name,cat:/cocktail/i.test(r.cat)?"Cocktails":/coffee/i.test(r.cat)?"Coffee":"Mocktails",desc:r.desc||"",glass:r.glass||"",ice:r.ice!==false,method:(r.method||"").toLowerCase(),garnish:r.garnish||"",price:null,sales:null,items:r.items.map(i=>({...i})),steps:r.steps||[],visual:r.visual||null}}
+function mxCreateShow(){const r=MXCR.r;const d=crDrink(r);const c=mxCalc(d);const svg=mxDrinkSVG(r);
+  $("cr-out").innerHTML=`<div class="mx-box cr-res"><div class="cr-grid"><div class="cr-art">${svg}<small class="note">Ilustración generada a partir de la receta</small></div>
+   <div class="cr-info"><span class="lbl" style="margin:0">${esc(r.cat||"")} · ${esc(r.abv||"")}</span><h2 class="cr-name">${esc(r.name)}</h2><p class="cr-desc">${esc(r.desc||"")}</p>
+    ${r.profile?`<p class="note" style="margin:0"><b>Perfil:</b> ${esc(r.profile)}</p>`:""}
+    <div class="mx-vis"><div>Cristalería<b>${esc(r.glass||"—")}</b></div><div>Método<b>${esc(r.method||"—")}</b></div><div>Hielo<b>${r.ice===false?"Sin hielo":esc((r.visual&&r.visual.ice)||"Sí")}</b></div><div style="grid-column:1/-1">Garnish<b>${esc(r.garnish||"—")}</b></div></div>
+    <table class="mx-tbl"><thead><tr><th class="n">Cant.</th><th>Unidad</th><th>Ingrediente</th><th class="n">ml</th><th class="n">Costo</th></tr></thead><tbody>${d.items.map(i=>{const u=UNITS[i.u]||UNITS.oz;const ic=itemCost(i);return `<tr><td class="n">${i.q??"—"}</td><td>${u.l}</td><td>${esc(i.n)}${i.inv?' <span class="mx-tag o">inventario</span>':""}</td><td class="n">${i.q!=null&&u.ml?Math.round(i.q*u.ml):""}</td><td class="n">${ic!=null?$m(ic):"—"}</td></tr>`}).join("")}</tbody></table>
+    ${c.cost!=null?`<p class="note" style="margin:0">Costo ${c.known?"":"parcial "}: <b>${$m(c.cost)}</b>${c.known&&c.cost>0?` · Precio sugerido (${c.T}%): <b style="color:var(--gold-hi)">${$m(c.cost/(c.T/100))}</b>`:" · Agrega costos en Inventario para el precio sugerido"}</p>`:'<p class="note" style="margin:0">Carga estos ingredientes en Inventario para ver el costo y el precio sugerido.</p>'}
+   </div></div>
+   <div><span class="lbl">Preparación</span><ol class="cr-steps">${(r.steps||[]).map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>
+   ${r.tips?`<p class="note" style="margin:0">💡 ${esc(r.tips)}</p>`:""}
+   <ul class="mx-al">${c.A.filter(a=>a[1]==="PORCIÓN"||/INCONSISTENCY/.test(a[1])).map(a=>`<li class="${a[0]}"><b>${a[1]}</b> · ${a[2]}</li>`).join("")}</ul>
+   <div class="mx-row"><label class="note" style="display:flex;gap:6px;align-items:center">Guardar en <select id="cr-menu">${V().menus.map((m,i)=>`<option value="${i}">${esc(m.name)}</option>`).join("")}</select></label><button type="button" class="mx-btn gold" onclick="mxCreateSave()">💾 Guardar en el menú</button><button type="button" class="mx-btn" onclick="mxCreateCard()">⬇ Descargar ficha</button><button type="button" class="mx-btn" onclick="mxCreateCopy()">Copiar receta</button></div></div>`}
+function mxCreateCopy(){const r=MXCR.r;const t=`${r.name}\n${r.desc||""}\n\nVaso: ${r.glass} · ${r.method}${r.ice===false?"":" · con hielo"}\n`+r.items.map(i=>`• ${i.q??"?"} ${(UNITS[i.u]||UNITS.oz).l} ${i.n}`).join("\n")+`\nGarnish: ${r.garnish||"—"}\n\nPreparación:\n`+(r.steps||[]).map((s,i)=>`${i+1}. ${s}`).join("\n");try{navigator.clipboard.writeText(t).then(()=>toast("Receta copiada"))}catch(e){}}
+function svgToJpeg(svg,w,h){return new Promise((ok,ko)=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.drawImage(img,0,0,w,h);ok(c)};img.onerror=ko;img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg)})}
+async function mxCreateSave(){const r=MXCR.r;const d=crDrink(r);const M=V().menus[+$("cr-menu").value]||V().menus[0];if(!M)return toast("Crea un menú primero");M.drinks.push(d);mxSave();
+  try{const c=await svgToJpeg(mxDrinkSVG(r,true),800,1000);const u=c.toDataURL("image/jpeg",.88);await api("mix_photo_save",{id:d.id,kind:"master",image:u.split(",")[1]});MXPH[d.id+"-master"]=u;d.ph={master:true};mxSave()}catch(e){}
+  toast(`«${r.name}» guardado en ${M.name}`)}
+async function mxCreateCard(){const r=MXCR.r;const d=crDrink(r);const c=mxCalc(d);const W=1080,H=1500;
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
+  x.fillStyle="#0b0907";x.fillRect(0,0,W,H);const g=x.createLinearGradient(0,0,W,0);g.addColorStop(0,"#8a6a31");g.addColorStop(.5,"#f1d48f");g.addColorStop(1,"#8a6a31");
+  try{const art=await svgToJpeg(mxDrinkSVG(r,true),480,600);x.drawImage(art,50,110,480,600)}catch(e){}
+  x.fillStyle=g;x.fillRect(0,0,W,8);x.fillRect(0,H-8,W,8);
+  x.fillStyle="#d4ab5f";x.font="600 26px Georgia";x.fillText("MIDNIGHT MIXOLOGY",50,70);
+  const wrap=(t,X,Y,mw,lh,max=99)=>{const w=String(t).split(" ");let line="",n=0;for(const k of w){const tt=line?line+" "+k:k;if(x.measureText(tt).width>mw&&line){x.fillText(line,X,Y);Y+=lh;line=k;if(++n>=max)return Y}else line=tt}if(line){x.fillText(line,X,Y);Y+=lh}return Y};
+  x.fillStyle="#f1d48f";x.font="600 52px Georgia";let y=wrap(r.name,570,170,460,58,3);
+  x.fillStyle="#a8998a";x.font="24px Helvetica";y=wrap((r.cat||"")+(r.abv?" · "+r.abv:""),570,y+4,460,30);
+  x.fillStyle="#efe6d6";x.font="26px Helvetica";y=wrap(r.desc||"",570,y+16,460,36,6);
+  x.fillStyle="#a8998a";x.font="22px Helvetica";[["Vaso",r.glass],["Método",r.method],["Hielo",r.ice===false?"Sin hielo":(r.visual&&r.visual.ice)||"Sí"],["Garnish",r.garnish]].forEach(([k,v])=>{y+=8;x.fillStyle="#8a6a31";x.fillText(k.toUpperCase(),570,y+22);x.fillStyle="#efe6d6";y=wrap(v||"—",700,y+22,330,30,2)});
+  y=Math.max(y,740)+20;x.fillStyle=g;x.fillRect(50,y,W-100,2);y+=50;
+  x.fillStyle="#d4ab5f";x.font="600 26px Georgia";x.fillText("INGREDIENTES",50,y);x.fillText("PREPARACIÓN",560,y);let y1=y+44,y2=y+44;
+  x.font="25px Helvetica";d.items.forEach(i=>{const u=UNITS[i.u]||UNITS.oz;x.fillStyle="#f1d48f";x.fillText(`${i.q??""} ${u.l}`,50,y1);x.fillStyle="#efe6d6";y1=wrap(i.n,190,y1,320,32,2)+6});
+  x.font="23px Helvetica";(r.steps||[]).forEach((s,k)=>{x.fillStyle="#f1d48f";x.fillText(k+1+".",560,y2);x.fillStyle="#efe6d6";y2=wrap(s,595,y2,440,31,4)+8});
+  let yb=Math.max(y1,y2)+20;if(c.known&&c.cost>0&&yb<H-120){x.fillStyle="#a8998a";x.font="24px Helvetica";x.fillText(`Costo ${$m(c.cost)} · Precio sugerido (${c.T}%) ${$m(c.cost/(c.T/100))}`,50,yb)}
+  x.fillStyle="#8a6a31";x.font="20px Helvetica";x.fillText("Midnight Consulting Global LLC · midnightcgo.com",50,H-40);
+  const a=document.createElement("a");a.href=cv.toDataURL("image/png");a.download=(r.name||"trago").replace(/[^\w\- ]+/g,"")+" - ficha Midnight.png";document.body.appendChild(a);a.click();a.remove();toast("Ficha descargada")}
+/* ilustración del trago (SVG) a partir de la receta */
+function mxDrinkSVG(r,full){const v=r.visual||{};const G=(r.glass||"Rocks");const id="g"+Math.random().toString(36).slice(2,7);
+  const P={ // [y, mediaAnchura] de arriba hacia abajo (interior del vaso)
+    "Rocks":[[120,62],[250,56]],"Highball":[[70,42],[262,40]],"Collins":[[56,34],[266,33]],"Vaso 12 oz":[[90,54],[258,40]],"Vaso 16 oz":[[66,56],[262,40]],"Pinta":[[66,56],[262,42]],
+    "Taza mule":[[110,60],[256,54]],"Taza 8 oz":[[150,64],[180,62],[240,46],[252,30]],"Taza espresso":[[190,44],[214,42],[246,30],[254,18]],
+    "Coupe":[[120,84],[134,80],[148,66],[160,40],[166,8]],"Martini":[[100,88],[190,4]],"Nick & Nora":[[110,52],[150,50],[176,36],[188,8]],
+    "Copa de vino":[[70,48],[110,60],[150,58],[180,40],[196,8]],"Flauta":[[50,24],[150,20],[176,6]],"Hurricane":[[60,46],[110,36],[160,30],[210,46],[250,36],[262,22]]};
+  const prof=P[G]||P.Rocks;const stem=["Coupe","Martini","Nick & Nora","Copa de vino","Flauta"].includes(G);const cx=180;
+  const top=prof[0][0],bot=prof[prof.length-1][0];
+  const path=prof.map(([y,w],i)=>`${i?"L":"M"}${cx-w},${y}`).join(" ")+" "+[...prof].reverse().map(([y,w])=>`L${cx+w},${y}`).join(" ")+" Z";
+  const fillLv=stem?0.78:(r.ice===false?0.82:0.84);const yf=bot-(bot-top)*fillLv;
+  let layers=(v.layers&&v.layers.length?v.layers:[{color:"#6b3a1f",pct:100}]).filter(l=>/^#[0-9a-f]{3,8}$/i.test(l.color));if(!layers.length)layers=[{color:"#6b3a1f",pct:100}];
+  const tot=layers.reduce((s,l)=>s+(+l.pct||0),0)||100;let yy=bot,liq="";layers.forEach(l=>{const h=(bot-yf)*((+l.pct||0)/tot);liq+=`<rect x="0" y="${(yy-h).toFixed(1)}" width="360" height="${(h+1).toFixed(1)}" fill="${l.color}"/>`;yy-=h});
+  const foam=v.foam&&/^#/.test(v.foam)?`<rect x="0" y="${yf-2}" width="360" height="${stem?10:14}" fill="${v.foam}"/>`:"";
+  const ice=r.ice===false||v.ice==="ninguno"?"":v.ice==="esfera"?`<circle cx="${cx}" cy="${(yf+bot)/2}" r="${Math.min(38,(bot-yf)/2.4)}" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.55)" stroke-width="2"/>`:
+    v.ice==="picado"?Array.from({length:26},(_,k)=>`<rect x="${cx-50+(k*37)%100}" y="${yf+6+(k*23)%Math.max(20,(bot-yf-20))}" width="12" height="10" rx="3" fill="rgba(255,255,255,.22)" stroke="rgba(255,255,255,.4)"/>`).join(""):
+    [[-26,yf+10,-8],[14,yf+4,10],[-8,yf+44,6],[22,yf+50,-12],[-30,yf+80,14]].filter(c=>c[1]<bot-20).map(([dx,y,rot])=>`<rect x="${cx+dx-15}" y="${y}" width="30" height="30" rx="5" transform="rotate(${rot} ${cx+dx} ${y+15})" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>`).join("");
+  const rw=prof[0][1];const gx=cx+rw-6,gy=top;
+  const GA={citrus_wheel:`<g transform="translate(${gx},${gy-6}) rotate(-20)"><circle r="26" fill="#f2a531" stroke="#ffd27a" stroke-width="3"/>${[0,45,90,135].map(a=>`<line x1="0" y1="-22" x2="0" y2="22" stroke="#ffe3a8" stroke-width="2" transform="rotate(${a})"/>`).join("")}<circle r="5" fill="#ffe3a8"/></g>`,
+    orange_twist:`<path d="M${gx-30},${gy-4} q20,-30 40,0 q20,30 40,-4" fill="none" stroke="#f08a1c" stroke-width="7" stroke-linecap="round"/>`,
+    lime_wedge:`<g transform="translate(${gx},${gy}) rotate(25)"><path d="M-26,0 A26,26 0 0 1 26,0 Z" fill="#9bd14b" stroke="#5f8f24" stroke-width="3"/></g>`,
+    mint:`<g transform="translate(${gx-30},${gy-8})">${[[-10,-20,-30],[6,-28,0],[20,-16,30],[0,-6,10]].map(([x,y,a])=>`<ellipse cx="${x}" cy="${y}" rx="9" ry="17" fill="#3fa34d" transform="rotate(${a} ${x} ${y})"/>`).join("")}</g>`,
+    rosemary:`<g transform="translate(${gx-10},${gy}) rotate(-15)"><line x1="0" y1="20" x2="0" y2="-70" stroke="#4d6b33" stroke-width="3"/>${Array.from({length:10},(_,k)=>`<ellipse cx="${k%2?6:-6}" cy="${10-k*8}" rx="3" ry="8" fill="#5f8a3c" transform="rotate(${k%2?40:-40} ${k%2?6:-6} ${10-k*8})"/>`).join("")}</g>`,
+    cherry:`<g transform="translate(${gx-20},${gy-6})"><path d="M0,0 q10,-40 30,-50" fill="none" stroke="#4e3b1a" stroke-width="3"/><circle cx="0" cy="4" r="13" fill="#b5121b"/><circle cx="-4" cy="0" r="4" fill="#ff8a8a" opacity=".6"/></g>`,
+    coffee_beans:[[-14,0],[4,-6],[18,2]].map(([dx,dy])=>`<g transform="translate(${cx+dx},${yf+dy+(foam?2:-4)}) rotate(${dx*3})"><ellipse rx="8" ry="11" fill="#3b2314"/><path d="M0,-9 q-4,9 0,18" stroke="#1e110a" stroke-width="2" fill="none"/></g>`).join(""),
+    flower:`<g transform="translate(${gx-20},${gy-12})">${[0,72,144,216,288].map(a=>`<ellipse rx="8" ry="15" cy="-12" fill="#9b6bd6" transform="rotate(${a})"/>`).join("")}<circle r="6" fill="#ffd34d"/></g>`,
+    cinnamon:`<g transform="translate(${gx-16},${gy-30}) rotate(20)"><rect x="-6" y="-40" width="12" height="80" rx="5" fill="#8b4a1f"/><rect x="-6" y="-40" width="5" height="80" fill="#6d3714"/></g>`,
+    berries:`<g transform="translate(${gx-24},${gy-8})"><circle cx="0" cy="0" r="9" fill="#5a1f6e"/><circle cx="14" cy="-6" r="9" fill="#2a1b5e"/><circle cx="8" cy="10" r="10" fill="#c2203a"/></g>`,
+    pineapple:`<g transform="translate(${gx},${gy}) rotate(20)"><path d="M-30,0 L30,0 L0,-34 Z" fill="#f4c430" stroke="#c99a1b" stroke-width="3"/><path d="M0,-34 l-10,-20 M0,-34 l0,-24 M0,-34 l10,-20" stroke="#3f8a3a" stroke-width="5" stroke-linecap="round"/></g>`};
+  const gar=(v.garnish||[]).filter(k=>GA[k]).map(k=>GA[k]).join("");
+  const rim=v.rim&&v.rim!=="ninguno"?`<path d="M${cx-rw},${top} L${cx+rw},${top}" stroke="${v.rim==="sal"?"#f5f5f5":v.rim==="cacao"?"#4a2c1a":"#f3e6c9"}" stroke-width="7" stroke-dasharray="2 3"/>`:"";
+  const stemS=stem?`<rect x="${cx-4}" y="${bot}" width="8" height="${300-bot}" fill="url(#gl${id})"/><ellipse cx="${cx}" cy="302" rx="56" ry="9" fill="url(#gl${id})" stroke="rgba(255,255,255,.45)"/>`:`<path d="M${cx-prof[prof.length-1][1]},${bot} L${cx+prof[prof.length-1][1]},${bot} L${cx+prof[prof.length-1][1]-2},${bot+12} L${cx-prof[prof.length-1][1]+2},${bot+12} Z" fill="rgba(255,255,255,.18)"/>`;
+  const handle=/Taza/.test(G)?`<path d="M${cx+prof[0][1]-4},${top+20} q${G==="Taza espresso"?34:50},${10} 0,${G==="Taza espresso"?36:70}" fill="none" stroke="${G==="Taza mule"?"#c27a3a":"#e9e3d8"}" stroke-width="10"/>`:"";
+  const saucer=/Taza (8|espresso)/.test(G)?`<ellipse cx="${cx}" cy="${bot+12}" rx="${prof[0][1]+40}" ry="12" fill="#e9e3d8"/>`:"";
+  const body=G==="Taza mule"?"#b8692e":/Taza (8|espresso)/.test(G)?"#e9e3d8":null;
+  const bokeh=Array.from({length:9},(_,k)=>`<circle cx="${(k*83)%360}" cy="${20+(k*47)%150}" r="${8+(k*7)%18}" fill="#f1d48f" opacity="${.05+(k%4)*.03}"/>`).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 330" ${full?'width="800" height="733"':'class="cr-svg"'} role="img" aria-label="${esc(r.name)}"><defs><radialGradient id="bg${id}" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#3a2a17"/><stop offset="1" stop-color="#0b0907"/></radialGradient><linearGradient id="gl${id}" x1="0" x2="1"><stop offset="0" stop-color="rgba(255,255,255,.35)"/><stop offset=".5" stop-color="rgba(255,255,255,.08)"/><stop offset="1" stop-color="rgba(255,255,255,.3)"/></linearGradient><clipPath id="c${id}"><path d="${path}"/></clipPath></defs>
+   <rect width="360" height="330" fill="url(#bg${id})"/>${bokeh}<ellipse cx="${cx}" cy="${stem?304:bot+14}" rx="110" ry="10" fill="#000" opacity=".45"/><rect x="0" y="${stem?304:bot+12}" width="360" height="30" fill="#1a120b"/>
+   ${saucer}${handle}<g clip-path="url(#c${id})">${body?`<rect width="360" height="330" fill="${body}"/>`:""}${body&&!/espresso|8 oz/.test(G)?"":liq}${body&&!/espresso|8 oz/.test(G)?"":foam}${body?"":ice}</g>
+   ${body&&/espresso|8 oz/.test(G)?`<ellipse cx="${cx}" cy="${top+4}" rx="${prof[0][1]-4}" ry="8" fill="${v.foam||layers[layers.length-1].color}"/>`:""}${body==="#b8692e"?`<ellipse cx="${cx}" cy="${top}" rx="${prof[0][1]}" ry="8" fill="${v.foam||layers[layers.length-1].color}" stroke="#d99a5b" stroke-width="3"/>`:""}
+   <path d="${path}" fill="${body?"none":"url(#gl"+id+")"}" opacity="${body?1:.55}" stroke="rgba(255,255,255,.55)" stroke-width="2.5"/><path d="M${cx-rw+10},${top+14} L${cx-prof[prof.length-1][1]+10},${bot-14}" stroke="rgba(255,255,255,.35)" stroke-width="4" stroke-linecap="round"/>
+   ${stemS}${rim}${gar}</svg>`}
 
 /* ===== Inicio ===== */
 async function boot(){
