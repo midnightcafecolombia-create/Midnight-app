@@ -513,6 +513,27 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (max-width:560px){.mk-fs{grid-template-columns:110px 1fr 52px;font-size:12px}.mk-form .mk-w2{grid-column:1/-1}.mk-link{grid-template-columns:1fr auto}.mk-link code{grid-column:1/-1;grid-row:2}.mk-ord{grid-template-columns:1fr auto}.mk-ord select{grid-column:1/-1}}
 html[data-theme="light"] .mk-rb{fill:rgba(150,110,40,.3)}
 html[data-theme="light"] .mk-ct b,html[data-theme="light"] .mk-note,html[data-theme="light"] .mk-steps,html[data-theme="light"] .mk-ins,html[data-theme="light"] .mk-aio,html[data-theme="light"] .mk-in,html[data-theme="light"] .mk-form input,html[data-theme="light"] .mk-form select,html[data-theme="light"] .mk-pt a{color:#111}
+.mk-row .btn{flex:none;width:auto}
+.mk-segs button i{font-style:normal;opacity:.65;margin-left:2px}
+.mk-camp{align-self:flex-start}
+.cr-list{display:flex;flex-direction:column}
+.cr-row{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;text-align:left;padding:10px 4px;border:0;border-top:1px solid var(--line);background:none;color:var(--cream);font:inherit;cursor:pointer;width:100%}
+.cr-row:hover{background:rgba(201,162,86,.06)}
+.cr-n{display:flex;flex-direction:column;min-width:0}.cr-n small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr-m{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:3px 12px;font-size:12px;color:var(--muted)}
+.cr-send{grid-template-columns:1fr auto auto;cursor:default}
+.cr-seg{font-size:11px;padding:3px 9px;border-radius:12px;border:1px solid var(--line);white-space:nowrap;color:var(--muted)}
+.cr-seg.s-una{color:#7fb0e6;border-color:#7fb0e6}.cr-seg.s-rec{color:#5bc489;border-color:#5bc489}.cr-seg.s-vip{color:#120d07;background:var(--gold);border-color:var(--gold)}.cr-seg.s-con{color:#c99be8;border-color:#c99be8}
+.cr-modal{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 12px 16px;overflow-y:auto}
+.cr-box{width:min(720px,100%);background:var(--ink);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;margin:auto 0}
+.cr-x{margin-left:auto;border:0;background:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
+.cr-ck{display:flex!important;flex-direction:row!important;gap:8px;align-items:center;font-size:13px;color:var(--cream)}
+.cr-ck input{width:auto!important}
+.cr-full{grid-column:1/-1}
+.mk-form textarea{padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--cream);font:inherit;font-size:14px;width:100%}
+.cr-del{opacity:.6;align-self:flex-start}
+html[data-theme="light"] .cr-box{background:#fff}
+html[data-theme="light"] .cr-row,html[data-theme="light"] .cr-ck,html[data-theme="light"] .mk-form textarea{color:#111}
 /* ===== FIN MARKETING ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
@@ -2034,11 +2055,11 @@ function mkDelta(c,p){if(!p)return c?'<small class="mk-up">nuevo</small>':'<smal
 /* ---- pantalla ---- */
 function mkRender(){
   if(!MK)return;
-  const tabs=[["ini","Inicio"],["redes","Redes"],["cont","Contenido"],["ventas","Ventas por red"],["ia","✨ Analizar"]];
+  const tabs=[["ini","Inicio"],["redes","Redes"],["cont","Contenido"],["ventas","Ventas por red"],["cli","👥 Clientes"],["ia","✨ Analizar"]];
   $("mk-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">Panorama de marketing</h2><p class="mk-sub">Midnight Café · todas las plataformas</p></div>
     <div class="mk-per">${[7,30,90].map(p=>`<button type="button" class="${MKP===p?"on":""}" onclick="mkPer(${p})">${p} días</button>`).join("")}${MKW?`<button type="button" class="mk-sync" onclick="mkSync(this)">↻ Sincronizar</button>`:""}</div></div>
     <nav class="mx-tabs mk-tabs">${tabs.map(([k,l])=>`<button type="button" class="${MKT===k?"on":""}" onclick="mkTab('${k}')">${l}</button>`).join("")}</nav><div id="mk-body"></div>`;
-  ({ini:mkIni,redes:mkRedes,cont:mkCont,ventas:mkVentas,ia:mkIA})[MKT]()}
+  ({ini:mkIni,redes:mkRedes,cont:mkCont,ventas:mkVentas,cli:mkCli,ia:mkIA})[MKT]()}
 
 function mkIni(){
   const r=mkRange(),C=mkTot(r.a,r.b),P=mkTot(r.pa,r.pb),t=C.t,p=P.t;
@@ -2165,10 +2186,127 @@ async function mkAI(){
   const r=mkRange(),{C,P}=mkInsights(),b=$("mk-aib");b.disabled=true;b.textContent="Analizando…";
   const red={};MKC.forEach(c=>{const m=C.ch[c.k];red[c.n]={cuenta:MK.cfg.h[c.k]||c.h,fuente:m.src,vistas:m.views,alcance:m.reach,likes:m.likes,comentarios:m.comments,compartidos:m.shares,guardados:m.saves,clics:m.clicks,leads:m.leads,seguidores_nuevos:m.followers}});
   const res={periodo:`${r.a} a ${r.b} (${MKP} días)`,redes:red,totales:C.t,periodo_anterior:P.t,ventas_por_origen:C.by,
-    top_contenido:MK.posts.slice().sort((a,b)=>(+b.sales||0)-(+a.sales||0)||(+b.views||0)-(+a.views||0)).slice(0,12).map(p=>({red:p.ch,tipo:p.t,tema:p.tit,fecha:p.d,vistas:p.views,likes:p.likes,comentarios:p.comments,compartidos:p.shares,guardados:p.saves,clics:p.clicks,leads:p.leads,ventas:p.sales}))};
+    clientes:(()=>{const L=crAll(),B=L.filter(c=>c.nb);return {contactos:L.length,compradores:B.length,una_compra:L.filter(c=>c.seg==='una').length,recurrentes:L.filter(c=>c.nb>=2).length,vip:L.filter(c=>c.seg==='vip').length,contratos_activos:L.filter(c=>c.conAct).length,por_renovar:L.filter(c=>c.conRen).length,dormidos:L.filter(c=>c.dor).length,cumple_este_mes:L.filter(c=>c.cum).length,vinieron_por_amigo:L.filter(c=>c.reco).length,aceptan_mensajes:L.filter(c=>c.optin).length,valor_promedio_cliente:B.length?B.reduce((s,c)=>s+c.tot,0)/B.length:0}})(),top_contenido:MK.posts.slice().sort((a,b)=>(+b.sales||0)-(+a.sales||0)||(+b.views||0)-(+a.views||0)).slice(0,12).map(p=>({red:p.ch,tipo:p.t,tema:p.tit,fecha:p.d,vistas:p.views,likes:p.likes,comentarios:p.comments,compartidos:p.shares,guardados:p.saves,clics:p.clicks,leads:p.leads,ventas:p.sales}))};
   try{const j=await api("mkt_ai",{resumen:JSON.stringify(res),q:$("mk-q").value});
     MKAI=esc(j.text).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^\s*[-•]\s+/gm,"• ").replace(/\n/g,"<br>");$("mk-aio").innerHTML=MKAI}
   catch(e){toast(e.message)}b.disabled=false;b.textContent="✨ Analizar otra vez"}
+/* ---- CLIENTES (CRM): quién compró una vez, quién repite, contratos, cumpleaños, referidos y mensajes ---- */
+let CRS="todos",CRQ="",CRO=null,CRMSG="",CRINC=false;
+const CRSEG=[["todos","Todos"],["pros","Prospectos"],["una","Una compra"],["rec","Recurrentes"],["vip","VIP"],["con","Contrato"],["ren","Renovar contrato"],["dor","Dormidos"],["cum","Cumpleaños del mes"],["ref","Vinieron por un amigo"],["emb","Recomiendan"],["opt","Aceptan mensajes"]];
+const CRLBL={pros:"Prospecto",una:"Una compra",rec:"Recurrente",vip:"VIP",con:"Contrato"};
+const crTel=t=>{const d=String(t||"").replace(/\D/g,"");return d.length>=10?d.slice(-10):d};
+const crKey=(tel,n)=>{const t=crTel(tel);return t.length>=7?"t"+t:n?"n"+String(n).trim().toLowerCase().replace(/\s+/g," "):""};
+const crWa=t=>{let d=String(t||"").replace(/\D/g,"");if(d.length===10)d="1"+d;return d};
+const crDate=d=>d?new Date(String(d).length<=5?"2000-"+d+"T12:00":String(d).slice(0,10)+"T12:00").toLocaleDateString("es-US",String(d).length<=5?{day:"numeric",month:"long"}:{day:"numeric",month:"short",year:"numeric"}):"—";
+const crBday=d=>{const s=String(d||"");return s.length>=10?s.slice(5,10):s.length===5?s:""};
+function crAll(){
+  const M={},today=mkDay(0),get=(k,base)=>M[k]||(M[k]={k,n:"",tel:"",email:"",bday:"",src:"",reco:"",biz:"",optin:false,buys:[],leads:[],...base});
+  (D&&D.orders||[]).forEach(o=>{const p=parseOrder(o),t=(o.text||"").replace(/\*/g,""),g=re=>((t.match(re)||[])[1]||"").trim();
+    const n=p.client&&p.client!=="—"?p.client:"",k=crKey(p.tel,n);if(!k)return;const c=get(k);
+    c.n=c.n||n;c.tel=c.tel||p.tel;c.biz=c.biz||g(/Negocio:\s*(.+)/);c.email=c.email||g(/Correo:\s*(\S+@\S+)/);c.bday=c.bday||g(/Cumpleaños:\s*([\d-]{5,10})/);
+    c.reco=c.reco||g(/Recomendado por:\s*(.+)/);c.src=c.src||mkOrdSrc(p);if(/Promociones:\s*S[ií]/.test(t))c.optin=true;
+    const st=stOf(o.ref);if(st==="cancelada")return;
+    if(o.ref.startsWith("MC-"))c.buys.push({d:p.at.toLocaleDateString("en-CA"),m:p.totalN,ref:o.ref,paid:["pagada","preparada","entregada"].includes(st)});else c.leads.push({d:p.at.toLocaleDateString("en-CA"),ref:o.ref,kind:p.kind})});
+  (typeof QS!=="undefined"?QS:[]).forEach(q=>{const k=crKey(q.tel,q.name);if(!k)return;const c=get(k);c.n=c.n||q.name;c.tel=c.tel||q.tel;c.cid=q.cid;c.chat=true});
+  Object.values(MK.clients||{}).forEach(s=>{const c=get(s.k);Object.entries(s).forEach(([f,v])=>{if(v!==""&&v!=null&&f!=="buysM")c[f]=v});(s.buysM||[]).forEach(b=>c.buys.push({...b,man:1}))});
+  const L=Object.values(M);
+  L.forEach(c=>{c.buys.sort((a,b)=>a.d.localeCompare(b.d));c.nb=c.buys.length;c.tot=c.buys.reduce((s,b)=>s+(+b.m||0),0);c.first=c.nb?c.buys[0].d:"";c.last=c.nb?c.buys[c.nb-1].d:"";
+    const ct=c.contract;c.conAct=!!(ct&&ct.fin&&ct.fin>=today);c.conRen=c.conAct&&ct.fin<=mkDay(-45);
+    c.seg=c.conAct?"con":c.nb>=5||c.tot>=1000?"vip":c.nb>=2?"rec":c.nb===1?"una":"pros";
+    c.dor=c.nb>0&&!c.conAct&&c.last<mkDay(60);const b=crBday(c.bday);c.cum=!!b&&b.slice(0,2)===today.slice(5,7)});
+  const names=L.map(c=>({c,n:(c.n||"").toLowerCase()}));
+  L.forEach(c=>{if(!c.reco)return;const r=c.reco.toLowerCase(),h=names.find(x=>x.n&&(x.n===r||x.n.split(" ")[0]===r.split(" ")[0]&&r.length>2));if(h){h.c.refs=(h.c.refs||0)+1;c.recoK=h.c.k}});
+  return L}
+function crIn(c,s){return s==="todos"||c.seg===s||(s==="ren"&&c.conRen)||(s==="dor"&&c.dor)||(s==="cum"&&c.cum)||(s==="ref"&&!!c.reco)||(s==="emb"&&c.refs>0)||(s==="opt"&&c.optin)||(s==="con"&&c.conAct)}
+function crSaveC(k,patch){MK.clients=MK.clients||{};MK.clients[k]={...(MK.clients[k]||{k}),...patch,k};mkSave()}
+
+function mkCli(){
+  const L=crAll(),buyers=L.filter(c=>c.nb),rep=buyers.filter(c=>c.nb>=2),q=CRQ.toLowerCase();
+  const cnt=s=>L.filter(c=>crIn(c,s)).length;
+  const list=L.filter(c=>crIn(c,CRS)&&(!q||[c.n,c.tel,c.email,c.biz,c.reco].join(" ").toLowerCase().includes(q))).sort((a,b)=>(b.last||"").localeCompare(a.last||"")||b.tot-a.tot);
+  const ltv=buyers.length?buyers.reduce((s,c)=>s+c.tot,0)/buyers.length:0;
+  $("mk-body").innerHTML=`<div class="mk-kpis">
+    <div class="kpi mk-kpi"><span>Contactos</span><b>${L.length}</b><small>${cnt("pros")} sin comprar todavía</small></div>
+    <div class="kpi mk-kpi"><span>Compradores</span><b>${buyers.length}</b><small>${cnt("una")} de una sola vez</small></div>
+    <div class="kpi mk-kpi hi"><span>Vuelven a comprar</span><b>${buyers.length?mkPf(mkPct(rep.length,buyers.length)):"0%"}</b><small>${rep.length} recurrentes · ${cnt("vip")} VIP</small></div>
+    <div class="kpi mk-kpi"><span>Valor por cliente</span><b>${money(ltv)}</b><small>lo que deja cada comprador</small></div>
+    <div class="kpi mk-kpi"><span>Contratos activos</span><b>${cnt("con")}</b><small>${cnt("ren")} por renovar (45 días)</small></div>
+    <div class="kpi mk-kpi"><span>Dormidos</span><b>${cnt("dor")}</b><small>60+ días sin comprar</small></div>
+    <div class="kpi mk-kpi"><span>Cumpleaños este mes</span><b>${cnt("cum")}</b><small>regalo = recompra</small></div>
+    <div class="kpi mk-kpi"><span>Por un amigo</span><b>${cnt("ref")}</b><small>${cnt("emb")} clientes recomiendan</small></div></div>
+   <div class="mk-card"><div class="mk-row"><input class="mk-in" placeholder="Buscar nombre, teléfono, correo…" value="${esc(CRQ)}" oninput="CRQ=this.value;clearTimeout(window._crq);window._crq=setTimeout(mkCli,300)"><button type="button" class="btn" onclick="crOpen('')">+ Cliente</button><button type="button" class="chip" onclick="crCsv()">⬇ Excel</button></div>
+    <div class="mk-per mk-segs">${CRSEG.map(([k,l])=>`<button type="button" class="${CRS===k?"on":""}" onclick="CRS='${k}';mkCli()">${l} <i>${cnt(k)}</i></button>`).join("")}</div>
+    ${list.length&&CRS!=="todos"?`<button type="button" class="btn mk-camp" onclick="crCamp()">💬 Mandar mensaje a este grupo (${list.length})</button>`:""}
+    ${list.length?`<div class="cr-list">${list.slice(0,300).map(c=>`<button type="button" class="cr-row" onclick="crOpen('${esc(c.k)}')"><div class="cr-n"><b>${esc(c.n||c.tel||"Sin nombre")}</b><small>${esc([c.biz,c.tel,c.email].filter(Boolean).join(" · "))}</small></div>
+      <span class="cr-seg s-${c.seg}">${CRLBL[c.seg]}</span><div class="cr-m"><span>${c.nb} compra${c.nb===1?"":"s"}</span><span><b>${money(c.tot)}</b></span><span>${c.last?"última "+crDate(c.last):c.leads.length?c.leads[0].kind:c.chat?"escribió en la app":""}</span>
+      ${c.src&&c.src!=="Sin dato"?`<span>📣 ${esc(c.src)}</span>`:""}${c.reco?`<span>🤝 por ${esc(c.reco)}</span>`:""}${c.refs?`<span>⭐ trajo ${c.refs}</span>`:""}${c.cum?"<span>🎂 este mes</span>":""}${c.dor?"<span>💤 dormido</span>":""}${c.conRen?"<span>⏰ renovar</span>":""}${c.optin?"<span>✅ acepta mensajes</span>":""}</div></button>`).join("")}</div>`
+    :'<div class="empty">No hay clientes en este grupo todavía. Cada orden y cada persona que escribe en la app se agrega sola.</div>'}</div>`}
+
+function crOpen(k){
+  const L=crAll(),c=L.find(x=>x.k===k)||{k:"",n:"",tel:"",email:"",bday:"",src:"",reco:"",biz:"",optin:false,buys:[],leads:[],nb:0,tot:0,seg:"pros"};CRO=c.k;
+  const ct=c.contract||{},log=c.log||[];
+  const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>${c.k?esc(c.n||"Cliente"):"Nuevo cliente"}</b>${c.k?`<span class="cr-seg s-${c.seg}">${CRLBL[c.seg]}</span>`:""}<button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()" aria-label="Cerrar">×</button></div>
+   ${c.k?`<div class="mk-mini"><div><span>Compras</span><b>${c.nb}</b></div><div><span>Total</span><b>${money(c.tot)}</b></div><div><span>Primera</span><b>${c.first?crDate(c.first):"—"}</b></div><div><span>Última</span><b>${c.last?crDate(c.last):"—"}</b></div></div>`:""}
+   <form class="mk-form" id="cr-f" onsubmit="crSave(event)">
+    <label class="mk-w2">Nombre<input name="n" value="${esc(c.n)}" required></label><label>Negocio<input name="biz" value="${esc(c.biz)}"></label>
+    <label>Teléfono<input name="tel" type="tel" value="${esc(c.tel)}"></label><label class="mk-w2">Correo<input name="email" type="email" value="${esc(c.email)}"></label>
+    <label>Cumpleaños<input name="bday" type="date" value="${String(c.bday).length>=10?esc(c.bday):""}"></label>
+    <label>Vino desde<select name="src">${["",...MKO,"Evento","Referido","Visita en persona"].map(s=>`<option ${c.src===s?"selected":""}>${s}</option>`).join("")}</select></label>
+    <label class="mk-w2">La recomendó / lo recomendó<input name="reco" value="${esc(c.reco)}" placeholder="Nombre del amigo o cliente"></label>
+    <label class="mk-w2 cr-ck"><input type="checkbox" name="optin" ${c.optin?"checked":""}> Aceptó recibir mensajes y promociones</label>
+    <span class="lbl cr-full">📄 Contrato (si tiene)</span>
+    <label class="mk-w2">Qué incluye<input name="ct_d" value="${esc(ct.d||"")}" placeholder="Ej.: café mensual + renta de cafetera"></label><label>Inicio<input name="ct_ini" type="date" value="${esc(ct.ini||"")}"></label><label>Fin<input name="ct_fin" type="date" value="${esc(ct.fin||"")}"></label><label>$ al mes<input name="ct_m" inputmode="decimal" value="${esc(ct.m||"")}"></label>
+    <label class="cr-full">Notas<textarea name="notes" rows="2">${esc(c.notes||"")}</textarea></label>
+    <button class="btn" type="submit">Guardar</button></form>
+   ${c.k?`<div class="mk-row">${c.tel?`<a class="chip" target="_blank" rel="noopener" href="https://wa.me/${crWa(c.tel)}" onclick="crLog('${esc(c.k)}','WhatsApp')">💬 WhatsApp</a>`:""}${c.email?`<a class="chip" href="mailto:${esc(c.email)}" onclick="crLog('${esc(c.k)}','Correo')">✉️ Correo</a>`:""}${c.cid?`<button type="button" class="chip" onclick="this.closest('.cr-modal').remove();showView('preguntas');openChat&&openChat('${c.cid}')">💭 Chat de la app</button>`:""}</div>
+    <details class="mk-add"><summary>➕ Anotar una compra hecha fuera de la app</summary><div class="mk-row" style="margin-top:8px"><input type="date" id="cr-bd" class="mk-in" value="${mkDay(0)}"><input id="cr-bm" class="mk-in" inputmode="decimal" placeholder="$ monto"><input id="cr-bt" class="mk-in" placeholder="Qué compró"><button type="button" class="chip" onclick="crBuy('${esc(c.k)}')">Agregar</button></div></details>
+    ${c.buys.length?`<div><span class="lbl">Compras</span><ul class="mk-hist">${c.buys.slice().reverse().map(b=>`<li><span>${crDate(b.d)}</span><span>${esc(b.ref||b.t||"Compra")}${b.man?" · a mano":""}</span><b>${money(b.m)}</b></li>`).join("")}</ul></div>`:""}
+    ${c.leads.length?`<div><span class="lbl">Solicitudes</span><ul class="mk-hist">${c.leads.map(b=>`<li><span>${crDate(b.d)}</span><span>${esc(b.kind)} · ${esc(b.ref)}</span></li>`).join("")}</ul></div>`:""}
+    ${log.length?`<div><span class="lbl">Contactos</span><ul class="mk-hist">${log.slice(-8).reverse().map(x=>`<li><span>${crDate(x.d)}</span><span>${esc(x.c)}${x.t?" · "+esc(x.t):""}</span></li>`).join("")}</ul></div>`:""}
+    ${MK.clients&&MK.clients[c.k]?`<button type="button" class="chip cr-del" onclick="crDel('${esc(c.k)}')">Borrar mis datos guardados de este cliente</button>`:""}`:""}</div>`;
+  document.body.appendChild(m)}
+function crSave(e){e.preventDefault();const f=new FormData(e.target),n=(f.get("n")||"").trim(),tel=(f.get("tel")||"").trim();
+  const k=CRO||crKey(tel,n);if(!k)return toast("Escribe nombre o teléfono");
+  const ct={d:f.get("ct_d")||"",ini:f.get("ct_ini")||"",fin:f.get("ct_fin")||"",m:mkNum(f.get("ct_m"))};
+  crSaveC(k,{n,tel,biz:f.get("biz")||"",email:(f.get("email")||"").trim(),bday:f.get("bday")||"",src:f.get("src")||"",reco:(f.get("reco")||"").trim(),optin:!!f.get("optin"),notes:f.get("notes")||"",contract:ct.fin||ct.d?ct:null});
+  toast("Cliente guardado");document.querySelector(".cr-modal")?.remove();mkCli()}
+function crBuy(k){const m=mkNum($("cr-bm").value);if(!m)return toast("Escribe el monto");const s=(MK.clients||{})[k]||{};crSaveC(k,{buysM:[...(s.buysM||[]),{d:$("cr-bd").value||mkDay(0),m,t:$("cr-bt").value.trim()}]});toast("Compra anotada");document.querySelector(".cr-modal")?.remove();crOpen(k);mkCli()}
+function crLog(k,c,t){const s=(MK.clients||{})[k]||{};crSaveC(k,{log:[...(s.log||[]),{d:mkDay(0),c,t:t||""}].slice(-40)})}
+function crDel(k){if(!confirm("¿Borrar lo que guardaste a mano de este cliente? Sus órdenes de la app no se borran."))return;delete MK.clients[k];mkSave();document.querySelector(".cr-modal")?.remove();mkCli()}
+function crCsv(){const L=crAll(),q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const rows=[["Nombre","Negocio","Teléfono","Correo","Cumpleaños","Tipo","Compras","Total","Primera","Última","Origen","Recomendado por","Trajo clientes","Acepta mensajes","Contrato hasta"]].concat(L.map(c=>[c.n,c.biz,c.tel,c.email,c.bday,CRLBL[c.seg],c.nb,c.tot.toFixed(2),c.first,c.last,c.src,c.reco,c.refs||0,c.optin?"Sí":"No",c.contract&&c.contract.fin||""]));
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"}));a.download="clientes-midnight-"+mkDay(0)+".csv";a.click()}
+
+/* mensajes a un grupo: uno por uno por WhatsApp (sale de tu número) o correo */
+const CRTPL={cum:"¡Feliz cumpleaños, {nombre}! 🎂 En Midnight Café queremos celebrarte: esta semana tu café va con 15% de regalo. Escríbenos y te lo preparamos.",
+ dor:"Hola {nombre}, te extrañamos en Midnight Café ☕. Llegó un lote nuevo de nuestro café colombiano y te guardamos un precio especial esta semana. ¿Te preparo tu pedido?",
+ una:"Hola {nombre}, gracias por tu primera compra en Midnight Café ☕. ¿Qué tal te pareció el café? Para tu próximo pedido tienes envío gratis esta semana.",
+ rec:"{nombre}, gracias por ser parte de Midnight Café ☕. Como cliente frecuente tienes acceso antes que nadie a nuestro nuevo lote. ¿Te aparto el tuyo?",
+ vip:"{nombre}, eres de nuestros clientes más especiales ✨. Te invitamos a Midnight Club: precios de socio y café reservado cada mes. ¿Te cuento?",
+ con:"Hola {nombre}, gracias por confiar en Midnight. ¿Cómo va todo con el servicio este mes? Si necesitas más café o insumos, aquí estamos.",
+ ren:"Hola {nombre}, tu contrato con Midnight está por cumplir su año 🙌. Queremos renovarlo con un beneficio especial para ti. ¿Cuándo te viene bien hablar 10 minutos?",
+ ref:"{nombre}, gracias por llegar a Midnight por recomendación 🤝. Si traes a un amigo, los dos reciben 10% en su próximo café.",
+ emb:"{nombre}, ¡gracias por recomendarnos! 🙏 Por cada amigo que nos traes, tu próximo café lleva un regalo de Midnight.",
+ pros:"Hola {nombre}, soy de Midnight Café ☕. Vi que te interesó nuestro café: en tu primera compra tienes 15% de descuento. ¿Te ayudo con tu pedido?",
+ opt:"Hola {nombre}, novedades de Midnight Café ☕: …"};
+function crCamp(){
+  const L=crAll().filter(c=>crIn(c,CRS)),okL=L.filter(c=>c.optin||CRINC);CRMSG=CRMSG||CRTPL[CRS]||CRTPL.opt;
+  const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>💬 Mensaje · ${esc((CRSEG.find(x=>x[0]===CRS)||[])[1])}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()" aria-label="Cerrar">×</button><small>{nombre} se cambia por el nombre de cada persona</small></div>
+   <textarea id="cr-msg" class="mk-in" rows="4" oninput="CRMSG=this.value">${esc(CRMSG)}</textarea>
+   <div class="mk-row"><input id="cr-goal" class="mk-in" placeholder="Objetivo para la IA (ej.: vender la bolsa de 12 oz esta semana)"><button type="button" class="chip" onclick="crAI(this)">✨ Escribir con IA</button></div>
+   <label class="cr-ck"><input type="checkbox" ${CRINC?"checked":""} onchange="CRINC=this.checked;this.closest('.cr-modal').remove();crCamp()"> Incluir a quienes no marcaron que aceptan promociones</label>
+   ${CRINC?'<p class="mk-small">⚠️ Para promociones, lo correcto (y la ley en EE. UU.) es escribir solo a quien aceptó. Úsalo para clientes que ya te compran y te conocen.</p>':""}
+   <p class="mk-small">${okL.length} de ${L.length} personas. Toca <b>Enviar</b> en cada una: se abre WhatsApp o tu correo con el mensaje listo.</p>
+   <div class="cr-list">${okL.map(c=>`<div class="cr-row cr-send"><div class="cr-n"><b>${esc(c.n||c.tel)}</b><small>${esc(c.tel||c.email||"sin contacto")}</small></div>
+     ${c.tel?`<button type="button" class="chip" onclick="crSend('${esc(c.k)}','wa',this)">💬 Enviar</button>`:""}${c.email?`<button type="button" class="chip" onclick="crSend('${esc(c.k)}','mail',this)">✉️ Correo</button>`:""}</div>`).join("")||'<div class="empty">Nadie de este grupo aceptó mensajes todavía.</div>'}</div></div>`;
+  document.body.appendChild(m)}
+function crSend(k,how,btn){const c=crAll().find(x=>x.k===k);if(!c)return;const first=(c.n||"").split(" ")[0]||"",t=CRMSG.replace(/\{nombre\}/g,first).replace(/\s+,/g,",");
+  window.open(how==="wa"?`https://wa.me/${crWa(c.tel)}?text=${encodeURIComponent(t)}`:`mailto:${c.email}?subject=${encodeURIComponent("Midnight Café")}&body=${encodeURIComponent(t)}`,"_blank");
+  crLog(k,how==="wa"?"WhatsApp":"Correo",t.slice(0,60));btn.textContent="✓ Enviado";btn.disabled=true}
+async function crAI(b){b.disabled=true;b.textContent="Escribiendo…";const seg=(CRSEG.find(x=>x[0]===CRS)||[])[1];
+  try{const j=await api("mkt_msg",{seg,goal:$("cr-goal").value,base:CRMSG});CRMSG=j.text;$("cr-msg").value=CRMSG}catch(e){toast(e.message)}b.disabled=false;b.textContent="✨ Otra versión"}
 /* ===== FIN MARKETING ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
