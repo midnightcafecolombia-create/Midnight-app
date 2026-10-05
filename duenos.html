@@ -412,6 +412,17 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #v-mix input,#v-mix select,#v-mix textarea{max-width:100%;min-width:0}
 .mx-form>*{min-width:0}.mx-form input,.mx-form select,.mx-form textarea{width:100%}.mx-form input[type=checkbox],.mx-form input[type=radio],.sl-irow input[type=checkbox]{width:auto;flex:none}.mx-form label.ck{display:flex;flex-direction:row;align-items:center;gap:8px}
 @media(max-width:480px){.mx-form{grid-template-columns:1fr!important}.mx-form label.w2,.mx-form .w2,.mx-form .w4,.mx-form label.w4{grid-column:1/-1}}
+.cmd-fab{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:80;width:56px;height:56px;border-radius:50%;border:0;background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#120d07;font-size:24px;box-shadow:0 10px 30px rgba(0,0,0,.45);cursor:pointer}
+.cmd-m{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.cmd-m[hidden]{display:none}
+@media(min-width:700px){.cmd-m{align-items:center}}
+.cmd-c{position:relative;width:min(640px,100%);max-height:92vh;overflow:auto;background:var(--ink);border:1px solid var(--gold);border-radius:18px;padding:20px 18px 16px;display:flex;flex-direction:column;gap:10px}
+.cmd-c h2{margin:0;color:var(--gold-hi);font-weight:500;font-size:20px}
+.cmd-c textarea{width:100%;box-sizing:border-box;background:var(--panel);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;resize:vertical}
+.cmd-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cmd-res{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.cmd-a{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer}
+.cmd-a input{margin-top:3px;width:auto}.cmd-a>span{display:flex;flex-direction:column;gap:3px;font-size:14px}.cmd-a small{color:var(--gold-hi);font-size:11.5px;letter-spacing:.04em}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -1781,6 +1792,68 @@ async function slAcc(u,on){let r;try{r=await api("sal_access",u?{user:u,on:on?1:
   B.innerHTML=`<h3>Quién puede entrar</h3><p class="note" style="margin:0">Principal: <b>${esc(nm(r.owner))}</b>. Cada persona entra con su propia clave.</p><table class="mx-tbl"><tbody>${r.users.map(x=>{const al=r.allow.includes(x.user),own=x.user===r.owner;return `<tr><td>${esc(x.name)}</td><td style="color:var(--muted)">${own?"Principal":al?(r.haskey.includes(x.user)?"Tiene acceso":"Acceso dado · falta que cree su clave"):"Sin acceso"}</td><td class="n">${r.isOwner&&!own?`<button type="button" class="mx-btn" onclick="slAcc('${esc(x.user)}',${al?0:1})">${al?"Quitar":"Dar acceso"}</button>`:""}</td></tr>`}).join("")}</tbody></table>${r.isOwner?"":'<p class="note">Solo el principal puede dar o quitar acceso.</p>'}`}
 
 /* ===== Inicio ===== */
+/* ===== ASISTENTE GENERAL (solo en el panel privado; el cliente nunca lo ve) ===== */
+let CMDF=null,CMDP=null;
+function cmdCtx(){const R=SL&&SL.rules;const c={hoy:new Date().toISOString().slice(0,10),secciones_abiertas:{distribucion:!!SL,mixologia:!!(typeof MX!=="undefined"&&MX)}};
+  if(R){c.productos_cafe=(R.products||[]).map(p=>p.n);c.categorias_consulting=(R.consult||[]).map(x=>x.n);c.distribuidores=(R.distributors||[]).map(x=>x.n);c.socios=(R.partners||[]).map(x=>x.n);c.empleados_pct=(R.emps||[]).map(x=>x.n);c.inversion_dvnova_fija=R.dv??3000}
+  if(D&&D.orders)c.ordenes_recientes=D.orders.slice(-30).map(o=>{const p=parseOrder(o);return {ref:o.ref,cliente:p.name||p.cliente||"",estado:(D.status||{})[o.ref]||"nueva"}});
+  return JSON.stringify(c)}
+function cmdOpen(){let M=$("cmd-m");if(!M){M=document.createElement("div");M.id="cmd-m";M.className="cmd-m";M.onclick=e=>{if(e.target===M)cmdClose()};document.body.appendChild(M)}
+  M.hidden=false;M.innerHTML=`<div class="cmd-c"><button type="button" class="sl-close" onclick="cmdClose()" aria-label="Cerrar">×</button>
+   <h2>✨ Asistente Midnight</h2><p class="note" style="margin:0">Escríbeme o mándame la foto de la comanda y la organizo donde corresponde. Antes de guardar te muestro lo que voy a hacer.</p>
+   <textarea id="cmd-t" rows="4" placeholder="Ej.: Venta a Sushi Único: 10 bolsas 12 oz La Vela directo, distribuidor Carlos 30%. También renta de cafetera 3 meses a $150 al mes."></textarea>
+   <div class="cmd-r"><label class="chip" style="cursor:pointer">📷 Foto o PDF<input type="file" accept="image/*,application/pdf" hidden onchange="cmdFile(this)"></label><span id="cmd-fn" class="note" style="margin:0"></span><span class="sp" style="flex:1"></span><button type="button" class="btn" id="cmd-go" style="width:auto;padding:10px 18px" onclick="cmdGo()">✨ Organizar</button></div>
+   <div id="cmd-out"></div></div>`;setTimeout(()=>$("cmd-t").focus(),60)}
+function cmdClose(){const M=$("cmd-m");if(M)M.hidden=true;CMDF=null;CMDP=null}
+async function cmdFile(inp){const f=inp.files[0];if(!f)return;
+  if(f.type==="application/pdf"){if(f.size>3.5e6)return toast("El PDF es muy pesado (máx. 3.5 MB)");const r=new FileReader();r.onload=()=>{CMDF={data:r.result.split(",")[1],mime:"application/pdf"};$("cmd-fn").textContent="📄 "+f.name};r.readAsDataURL(f);return}
+  const img=new Image();img.onload=()=>{const k=Math.min(1,1600/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=img.width*k;c.height=img.height*k;c.getContext("2d").drawImage(img,0,0,c.width,c.height);CMDF={data:c.toDataURL("image/jpeg",.85).split(",")[1],mime:"image/jpeg"};$("cmd-fn").textContent="🖼 Foto lista";URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f)}
+async function cmdGo(){const t=$("cmd-t").value.trim();if(!t&&!CMDF)return toast("Escribe la comanda o adjunta una foto");const b=$("cmd-go");b.disabled=true;b.textContent="Leyendo…";
+  try{const r=await api("cmd_ai",{text:t,image:CMDF?CMDF.data:"",mime:CMDF?CMDF.mime:"",ctx:cmdCtx()});CMDP=r.plan;cmdShow()}catch(e){toast(e.message)}b.disabled=false;b.textContent="✨ Organizar"}
+const CMD_LBL={venta_cafe:"☕ Venta de café → Distribución",consultoria:"💼 Consultoría → Distribución",pago_personal:"🍸 Pago a personal → Distribución",otro_ingreso:"• Otro ingreso → Distribución",empleado_pct:"👔 Empleado con % → Distribución",inventario_mix:"📦 Ingrediente → Inventario de Mixología",estado_orden:"🧾 Estado de una orden → Órdenes"};
+const cmdNeedSal=a=>["venta_cafe","consultoria","pago_personal","otro_ingreso","empleado_pct"].includes(a.tipo);
+function cmdProd(n){const R=SL.rules;n=(n||"").toLowerCase().trim();if(!n)return null;return (R.products||[]).find(p=>p.n.toLowerCase()===n)||(R.products||[]).find(p=>p.n.toLowerCase().includes(n)||n.includes(p.n.toLowerCase()))||null}
+function cmdEntry(a){const f=a.fecha||new Date().toISOString().slice(0,10),num=v=>v==null||v===""?"":String(v);let e;
+  if(a.tipo==="venta_cafe"){e={...slBlank("Café"),fecha:f,cuenta:a.cuenta||"",items:[],ds:[],tax:a.taxes!==false};
+    (a.items||[]).forEach(it=>{const p=cmdProd(it.producto)||(it.libras?cmdProd("granel"):null);e.items.push({t:"Café",prod:p?p.id:"",ch:it.canal||"Directo",q:num(it.cantidad??it.libras),up:num(it.precio_unit),uc:"",com:true})});
+    (a.cafeteras||[]).forEach(c=>e.items.push(c.tipo==="renta"?{t:"Cafetera · renta",d:c.modelo||"",per:c.periodo||"mes",rp:num(c.precio),dur:num(c.duracion),desde:f,costo:num(c.costo),com:false}:{t:"Cafetera · venta",d:c.modelo||"",precio:num(c.precio),costo:num(c.costo),com:false}));
+    (a.insumos||[]).forEach(i=>e.items.push({t:"Insumos",d:i.detalle||"",precio:num(i.precio),costo:num(i.costo),com:true}));
+    (a.distribuidores||[]).forEach(d=>e.ds.push({n:d.nombre||"",p:num(d.pct)}))}
+  else if(a.tipo==="consultoria")e={...slBlank("Consulting"),fecha:f,cuenta:a.cuenta||"",venta:num(a.total),insumos:num(a.dvnova??SL.rules.dv??3000),gx:(a.gastos||[]).map(g=>({cat:g.categoria||"",m:num(g.monto)}))};
+  else if(a.tipo==="pago_personal")e={...slBlank("Mixología"),fecha:f,cuenta:a.cuenta||"",st:(a.personas||[]).map(x=>({role:x.puesto||"Otro",n:x.nombre||"",pt:x.pago==="dia"?"dia":"hora",rate:num(x.tarifa),qty:num(x.cantidad)}))};
+  else if(a.tipo==="otro_ingreso")e={...slBlank("Otro"),fecha:f,cuenta:a.cuenta||"",venta:num(a.ingreso),insumos:num(a.costos)};
+  return e}
+function cmdDesc(a){const m=v=>v==null?"—":$$(+v);
+  if(cmdNeedSal(a)&&a.tipo!=="empleado_pct"){if(!SL)return `<span class="note" style="margin:0">${esc(a.cuenta||"")} · ${esc(a.fecha||"hoy")}</span>`;const e=cmdEntry(a),k=slCalc(e);
+    const det=a.tipo==="venta_cafe"?(a.items||[]).map(i=>`${i.cantidad??i.libras??"?"} × ${esc(i.producto||"¿producto?")}${i.canal&&i.canal!=="Directo"?" ("+esc(i.canal)+")":""}`).concat((a.cafeteras||[]).map(c=>`Cafetera ${esc(c.tipo)} ${esc(c.modelo||"")}`),(a.insumos||[]).map(i=>"Insumos "+esc(i.detalle||"")),(a.distribuidores||[]).map(d=>`Distribuidor ${esc(d.nombre)} ${d.pct??""}%`)).join(" · "):a.tipo==="consultoria"?`Total ${m(a.total)} · DV Nova ${m(a.dvnova??SL.rules.dv??3000)}${(a.gastos||[]).map(g=>" · "+esc(g.categoria)+" "+m(g.monto)).join("")}`:a.tipo==="pago_personal"?(a.personas||[]).map(x=>`${esc(x.nombre||x.puesto)} ${x.cantidad} ${x.pago==="dia"?"días":"h"} × ${m(x.tarifa)}`).join(" · "):`Ingreso ${m(a.ingreso)} · costos ${m(a.costos)}`;
+    return `<b>${esc(a.cuenta||"Sin cuenta")}</b> · ${esc(a.fecha||"hoy")}<br><span class="note" style="margin:0">${det}</span><br>${k.staff?`Total a pagar <b>${$$(k.pay)}</b>`:`Total ${$$(k.v)}${k.tax?` (+ taxes ${$$(k.tax)})`:""} · base neta <b>${$$(k.base)}</b>`}`}
+  if(a.tipo==="empleado_pct")return `<b>${esc(a.nombre)}</b> · ${esc(a.puesto||"")} · ${a.pct}%`;
+  if(a.tipo==="inventario_mix")return `<b>${esc(a.nombre)}</b> · ${a.tamano||"?"} ${esc(a.unidad||"")} · ${m(a.costo)}${a.proveedor?" · "+esc(a.proveedor):""}`;
+  if(a.tipo==="estado_orden")return `Orden <b>${esc(a.ref)}</b> → ${esc((ST.find(x=>x[0]===a.estado)||[0,a.estado])[1])}`;
+  return esc(JSON.stringify(a))}
+function cmdShow(){const P=CMDP||{},A=(P.acciones||[]).filter(a=>CMD_LBL[a.tipo]);const lockSal=A.some(cmdNeedSal)&&!SL,lockMix=A.some(a=>a.tipo==="inventario_mix")&&!(typeof MX!=="undefined"&&MX);
+  $("cmd-out").innerHTML=`<div class="cmd-res"><p style="margin:0">${esc(P.resumen||"")}</p>
+   ${(P.preguntas||[]).length?`<ul class="mx-al">${P.preguntas.map(q=>`<li class="w">❓ ${esc(q)}</li>`).join("")}</ul>`:""}
+   ${A.length?A.map((a,i)=>`<label class="cmd-a"><input type="checkbox" checked data-i="${i}"><span><small>${CMD_LBL[a.tipo]}</small><span>${cmdDesc(a)}</span></span></label>`).join(""):'<p class="note" style="margin:0">No hay nada que guardar.</p>'}
+   ${lockSal?`<p class="note" style="margin:0">🔒 Para guardar en Distribución, primero ábrela con tu clave. <button type="button" class="chip" onclick="cmdUnlock('sal')">Abrir Distribución</button></p>`:""}
+   ${lockMix?`<p class="note" style="margin:0">🔒 Para guardar en Mixología, primero ábrela con su clave. <button type="button" class="chip" onclick="cmdUnlock('mix')">Abrir Mixología</button></p>`:""}
+   ${A.length?`<div class="cmd-r"><span class="sp" style="flex:1"></span><button type="button" class="chip" onclick="CMDP=null;$('cmd-out').innerHTML=''">Corregir</button><button type="button" class="btn" style="width:auto;padding:10px 18px" onclick="cmdApply()">✓ Guardar lo marcado</button></div>`:""}</div>`;
+  CMDP._A=A}
+function cmdUnlock(w){$("cmd-m").hidden=true;showView(w);const iv=setInterval(()=>{if(w==="sal"?SL:(typeof MX!=="undefined"&&MX)){clearInterval(iv);$("cmd-m").hidden=false;cmdShow()}},700);setTimeout(()=>clearInterval(iv),180000)}
+function cmdApply(){const A=CMDP._A;const sel=[...document.querySelectorAll("#cmd-out .cmd-a input:checked")].map(x=>A[+x.dataset.i]);let n=0,skip=0,salCh=false,mixCh=false;
+  sel.forEach(a=>{try{
+    if(cmdNeedSal(a)){if(!SL){skip++;return}
+      if(a.tipo==="empleado_pct"){SL.rules.emps=SL.rules.emps||[];const ex=SL.rules.emps.find(x=>(x.n||"").toLowerCase()===(a.nombre||"").toLowerCase());if(ex){ex.p=String(a.pct);if(a.puesto)ex.r=a.puesto}else SL.rules.emps.push({id:slId(),n:a.nombre||"",r:a.puesto||"",p:String(a.pct??"")})}
+      else{const e=cmdEntry(a);e.ai=true;(e.ds||[]).forEach(d=>{const nm=(d.n||"").trim();if(nm&&!SL.rules.distributors.some(x=>x.n.toLowerCase()===nm.toLowerCase()))SL.rules.distributors.push({id:slId(),n:nm,p:null})});e.snap={rules:JSON.parse(JSON.stringify(SL.rules))};SL.entries.push(e)}
+      salCh=true;n++}
+    else if(a.tipo==="inventario_mix"){if(!(typeof MX!=="undefined"&&MX)){skip++;return}MX.inv.unshift({id:mxId(),name:a.nombre||"Ingrediente",size:+a.tamano||null,unit:a.unidad||"ml",cost:a.costo==null?null:+a.costo,prov:a.proveedor||"",hist:[]});mixCh=true;n++}
+    else if(a.tipo==="estado_orden"){const o=(D.orders||[]).find(x=>x.ref.toLowerCase()===(a.ref||"").toLowerCase())||(D.orders||[]).find(x=>x.ref.toLowerCase().endsWith((a.ref||"").toLowerCase().slice(-6)));if(!o||!ST.some(x=>x[0]===a.estado)){skip++;return}setSt(o.ref,a.estado);n++}
+  }catch(err){skip++}});
+  if(salCh){slSave();if(typeof slRender==="function"&&$("sl-app")&&!$("sl-app").hidden)slRender()}if(mixCh){mxSave();mxRender()}
+  toast(`✓ ${n} guardado${n===1?"":"s"}${skip?` · ${skip} sin guardar (falta abrir la sección o un dato)`:""}`);if(n){cmdClose()}}
+function cmdFab(){if($("cmd-fab"))return;const b=document.createElement("button");b.id="cmd-fab";b.type="button";b.className="cmd-fab";b.title="Asistente Midnight";b.setAttribute("aria-label","Asistente Midnight");b.innerHTML="✨";b.onclick=cmdOpen;document.body.appendChild(b)}
+setTimeout(cmdFab,300);
+
 /* ===== Pantalla oscura / clara ===== */
 function themeIsLight(){return document.documentElement.dataset.theme==="light"}
 function themeBtns(){document.querySelectorAll(".theme-btn").forEach(b=>{b.textContent=themeIsLight()?"🌙":"☀️";b.title=themeIsLight()?"Pantalla oscura":"Pantalla clara";b.setAttribute("aria-label",b.title)});const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=themeIsLight()?"#f8f3ea":"#0b0907"}
