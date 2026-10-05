@@ -355,6 +355,8 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .sl-final-big span{color:var(--gold-hi);font-size:13px;letter-spacing:.06em;text-transform:uppercase}.sl-final-big b{font:500 38px/1.1 Georgia,serif;color:var(--cream)}.sl-final-big b.neg{color:var(--bad)}.sl-final-big small{color:var(--muted)}
 .sl-irow.sl-rent{grid-template-columns:150px minmax(150px,1.3fr) 100px 120px 90px 140px 110px auto 30px}
 @media(max-width:1000px){.sl-irow.sl-rent{grid-template-columns:1fr 1fr}}
+.sl-taxbox{margin:0 0 12px;padding:12px 16px;border:1px dashed #e6a08a;border-radius:12px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
+.sl-taxbox span{color:#e6a08a;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase}.sl-taxbox b{font-size:22px;font-weight:500;color:var(--cream)}.sl-taxbox small{flex-basis:100%;color:var(--muted)}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -1526,7 +1528,8 @@ function slOut(){const k=slCalc(SLE),R=SL.rules,e=SLE;
     <small>Los taxes se le cobran al cliente y se pagan al estado: no entran en la ganancia ni en el reparto.</small></div>`:"";
   $("sl-out").innerHTML=`${TX}<h3 class="sl-h">Desglose</h3>
    <table class="mx-tbl sl-wf"><thead><tr><th>Concepto</th><th class="n">Monto</th><th class="n">Queda</th></tr></thead><tbody>
-   <tr class="sl-tot"><td>${top}</td><td></td><td class="n">${$$(k.v)}</td></tr>${W.join("")}</tbody></table>
+   ${k.tax?`<tr class="sl-tot"><td>Total cobrado al cliente (con taxes)</td><td></td><td class="n">${$$(rd(k.v+k.tax))}</td></tr><tr><td>− Taxes ${R.tax??9}% (se pagan al estado)</td><td class="n neg">${$$(-k.tax)}</td><td class="n">${$$(k.v)}</td></tr>`:""}
+   <tr class="sl-tot"><td>${k.tax?"= "+top+" sin taxes":top}</td><td></td><td class="n">${$$(k.v)}</td></tr>${W.join("")}</tbody></table>
    ${k.PE.none?"":`<details class="sl-soc" ${SLsocOpen?"open":""} ontoggle="SLsocOpen=this.open"><summary><span>▸ Socios <small>(${P.length} de ${R.partners.length}) · toca para ver y modificar</small></span><b>${$$(pt)}</b></summary>
    <table class="mx-tbl">${k.PE.list.map(x=>`<tr class="${x.on?"":"sl-off"}"><td><label class="sl-ck"><input type="checkbox" ${x.on?"checked":""} onchange="slPP('${x.id}','off',!this.checked)"> ${esc(x.n)}</label></td>
      <td class="n"><input class="sl-pc" type="text" inputmode="decimal" ${x.on?"":"disabled"} value="${x.man!=null?x.man:""}" placeholder="${rd(x.pe)}" onchange="slPP('${x.id}','p',this.value)"> %</td><td class="n">${x.on?$$(rd(k.net*x.pe/100)):"No aplica"}</td></tr>`).join("")}
@@ -1578,13 +1581,15 @@ function slAgg(){const E=slMonthEntries();const z=()=>({n:0,v:0,tax:0,cost:0,bas
   const final=rd(T.net-nom);return {E,T,byR,byC,people,nom,final}}
 function slPeriod(){if(!SLYR)return new Date(SLM+"-15").toLocaleDateString("es",{month:"long",year:"numeric"});return "Año "+SLM.slice(0,4)}
 function slRep(){const A=slAgg(),T=A.T;const B=$("sl-body");
-  const tbl=(o,h)=>`<div class="mx-scroll"><table class="mx-tbl"><thead><tr><th>${h}</th><th class="n">Entradas</th><th class="n">Ventas</th><th class="n">Costos</th><th class="n">Comisiones</th><th class="n">Personal</th><th class="n">Neto</th></tr></thead><tbody>
-    ${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")||'<tr><td colspan="7"><div class="mx-empty">Sin entradas en este periodo.</div></td></tr>'}</tbody></table></div>`;
+  const tbl=(o,h)=>`<div class="mx-scroll"><table class="mx-tbl"><thead><tr><th>${h}</th><th class="n">Entradas</th><th class="n">Ventas (sin taxes)</th><th class="n">Taxes</th><th class="n">Costos</th><th class="n">Comisiones</th><th class="n">Personal</th><th class="n">Neto</th></tr></thead><tbody>
+    ${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(x.tax)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")||'<tr><td colspan="8"><div class="mx-empty">Sin entradas en este periodo.</div></td></tr>'}</tbody></table></div>`;
   const P=Object.values(A.people).sort((a,b)=>b.v-a.v);
   B.innerHTML=`<div class="mx-row">${slMonthPick()}<label class="sl-ck note" style="margin:0"><input type="checkbox" ${SLYR?"checked":""} onchange="SLYR=this.checked;slRender()"> Todo el año</label><span class="sp"></span><button type="button" class="mx-btn gold" onclick="slRepPrint()">🖨 Reporte para socios (PDF)</button></div>
    <div class="sl-final-big"><span>Resultado final · ${slPeriod()}</span><b class="${A.final<0?"neg":""}">${$$(A.final)}</b><small>Todas las ramas y cuentas, después de costos, comisiones, pagos al personal y nómina</small></div>
    <div class="mx-box"><h3>De las ventas al resultado final</h3><table class="mx-tbl sl-wf"><tbody>
-    <tr class="sl-tot"><td>Ventas totales (${A.E.length} entradas)</td><td class="n">${$$(T.v)}</td></tr>
+    <tr class="sl-tot"><td>Monto bruto entrante, con taxes (${A.E.length} entradas)</td><td class="n">${$$(rd(T.v+T.tax))}</td></tr>
+    <tr><td>− Taxes ${SL.rules.tax??9}% (se pagan al estado)</td><td class="n neg">${$$(-T.tax)}</td></tr>
+    <tr class="sl-tot"><td>= Ventas sin taxes</td><td class="n">${$$(T.v)}</td></tr>
     <tr><td>− Costos (café, insumos, DV Nova, gastos)</td><td class="n neg">${$$(-T.cost)}</td></tr>
     <tr class="sl-tot"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
     <tr><td>− Comisiones de distribuidores</td><td class="n neg">${$$(-T.com)}</td></tr>
@@ -1592,20 +1597,21 @@ function slRep(){const A=slAgg(),T=A.T;const B=$("sl-body");
     <tr><td>− Pagos al personal (Mixología y Barismo)</td><td class="n neg">${$$(-T.staff)}</td></tr>
     <tr><td>− Nómina fija ${SLYR?"del año":"del mes"}</td><td class="n neg">${$$(-A.nom)}</td></tr>
     <tr class="sl-tot"><td>= Resultado final</td><td class="n">${$$(A.final)}</td></tr></tbody></table>
-    <p class="note">Taxes cobrados aparte (se pagan al estado): <b>${$$(T.tax)}</b></p></div>
+    </div>
+   <div class="sl-taxbox"><span>Taxes a pagar al estado · ${slPeriod()}</span><b>${$$(T.tax)}</b><small>Ya están descontados: las ganancias y el reparto se calculan sin taxes.</small></div>
    <div class="mx-box"><h3>Por rama</h3>${tbl(A.byR,"Rama")}</div>
    <div class="mx-box"><h3>Por cuenta / sucursal</h3>${tbl(A.byC,"Cuenta")}</div>
    <div class="mx-box"><h3>Reparto: a quién le corresponde</h3><table class="mx-tbl"><tbody>${P.map(x=>`<tr><td>${esc(x.n)}</td><td style="color:var(--muted)">${x.role}</td><td class="n">${$$(x.v)}</td></tr>`).join("")||'<tr><td><div class="mx-empty">Sin datos.</div></td></tr>'}</tbody></table>
    ${A.nom?`<p class="note">La nómina fija (${$$(A.nom)}) se descuenta del resultado final; no está incluida en el reparto por entrada.</p>`:""}</div>`}
 function slRepPrint(){const A=slAgg(),T=A.T;const w=window.open("","_blank");if(!w)return toast("Permite ventanas emergentes");
-  const tb=(o,h)=>`<table><tr><th>${h}</th><th class="n">Entradas</th><th class="n">Ventas</th><th class="n">Costos</th><th class="n">Comisiones</th><th class="n">Personal</th><th class="n">Neto</th></tr>${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")}</table>`;
+  const tb=(o,h)=>`<table><tr><th>${h}</th><th class="n">Entradas</th><th class="n">Ventas (sin taxes)</th><th class="n">Taxes</th><th class="n">Costos</th><th class="n">Comisiones</th><th class="n">Personal</th><th class="n">Neto</th></tr>${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(x.tax)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")}</table>`;
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Reporte ${slPeriod()}</title><style>body{font:13px/1.5 Helvetica,Arial;color:#1a140d;margin:32px}h1{font:600 22px Georgia;margin:0}h2{font:600 15px Georgia;margin:22px 0 6px;border-bottom:2px solid #d4ab5f;padding-bottom:3px}.s{color:#7a6c5c}table{width:100%;border-collapse:collapse}th{background:#0b0907;color:#f1d48f;text-align:left;padding:6px}td{padding:5px 6px;border-bottom:1px solid #e3d8c4}.n{text-align:right}.big{margin:16px 0;padding:14px 18px;border:2px solid #d4ab5f;border-radius:10px;display:flex;justify-content:space-between;align-items:center}.big b{font:600 28px Georgia}.t td{font-weight:600}</style></head><body>
    <h1>Reporte de resultados · ${slPeriod()}</h1><div class="s">Midnight Consulting Global LLC · Confidencial · Generado ${new Date().toLocaleDateString("es")}</div>
    <div class="big"><span>Resultado final (todas las ramas y cuentas)</span><b>${$$(A.final)}</b></div>
    <h2>De las ventas al resultado final</h2><table>
-   <tr class="t"><td>Ventas totales (${A.E.length} entradas)</td><td class="n">${$$(T.v)}</td></tr><tr><td>− Costos</td><td class="n">${$$(-T.cost)}</td></tr><tr class="t"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
+   <tr class="t"><td>Monto bruto entrante, con taxes (${A.E.length} entradas)</td><td class="n">${$$(rd(T.v+T.tax))}</td></tr><tr><td>− Taxes ${SL.rules.tax??9}% (se pagan al estado)</td><td class="n">${$$(-T.tax)}</td></tr><tr class="t"><td>= Ventas sin taxes</td><td class="n">${$$(T.v)}</td></tr><tr><td>− Costos</td><td class="n">${$$(-T.cost)}</td></tr><tr class="t"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
    <tr><td>− Comisiones de distribuidores</td><td class="n">${$$(-T.com)}</td></tr><tr><td>− Contadora</td><td class="n">${$$(-T.cont)}</td></tr><tr><td>− Pagos al personal</td><td class="n">${$$(-T.staff)}</td></tr><tr><td>− Nómina fija</td><td class="n">${$$(-A.nom)}</td></tr>
-   <tr class="t"><td>= Resultado final</td><td class="n">${$$(A.final)}</td></tr></table><p class="s">Taxes cobrados aparte (se pagan al estado): ${$$(T.tax)}</p>
+   <tr class="t"><td>= Resultado final</td><td class="n">${$$(A.final)}</td></tr></table><p><b>Taxes a pagar al estado: ${$$(T.tax)}</b> <span class="s">(descontados; el reparto se calcula sin taxes)</span></p>
    <h2>Por rama</h2>${tb(A.byR,"Rama")}<h2>Por cuenta / sucursal</h2>${tb(A.byC,"Cuenta")}
    <h2>Reparto</h2><table><tr><th>Persona</th><th>Rol</th><th class="n">Monto</th></tr>${Object.values(A.people).sort((a,b)=>b.v-a.v).map(x=>`<tr><td>${esc(x.n)}</td><td>${x.role}</td><td class="n">${$$(x.v)}</td></tr>`).join("")}</table>
    <script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close()}
