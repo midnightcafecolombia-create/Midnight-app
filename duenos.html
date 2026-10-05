@@ -301,7 +301,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .lab-m summary b{color:var(--gold-hi);font-weight:500;font-size:14px}.lab-m summary b::before{content:"▸ ";color:var(--gold)}
 .lab-m[open] summary b::before{content:"▾ "}
 .lab-m summary small{color:var(--muted);font-size:12px}
-.sl-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sl-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
 @media(max-width:600px){.sl-flow{grid-template-columns:1fr 1fr}}
 .sl-flow div{background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11.5px;color:var(--muted)}
 .sl-flow b{display:block;font-size:17px;color:var(--cream);font-weight:500;font-variant-numeric:tabular-nums}
@@ -1300,7 +1300,12 @@ function mxLabGuide(){const g=LABG[LABK];if(!g)return"";
 /* ===== DISTRIBUCIÓN SALARIAL Y DE UTILIDADES (clave aparte; los datos viven solo en el servidor) ===== */
 let SL=null,SLT="calc",SLsaveT=null,SLM=new Date().toISOString().slice(0,7);
 const slId=()=>Math.random().toString(36).slice(2,10);
-const RAMAS=["Café","Consulting","Otro"];
+const RAMAS=["Café","Consulting","Otro"],AREAS=["Mixología","Gerencia","Consulting","Marketing","DV Nova","Café"];
+/* acepta 3.500 · 3,500 · 3500.50 · $1,250.75 */
+function slNum(x){let s=String(x??"").replace(/[$\s]/g,"");if(!s)return 0;const d=s.lastIndexOf("."),c=s.lastIndexOf(",");
+  if(d>-1&&c>-1){const dec=d>c?".":",";s=s.split(dec==="."?",":".").join("").replace(",",".")}
+  else{const sep=d>-1?".":c>-1?",":"";if(sep){const parts=s.split(sep);if(parts.length>2||parts[parts.length-1].length===3)s=parts.join("");else s=parts.join(".")}}
+  const n=parseFloat(s);return isNaN(n)?0:n}
 async function slStart(){const L=$("sl-lock");
   let st;try{st=await api("sal_status")}catch(e){L.hidden=false;L.innerHTML=`<div class="empty">No se pudo cargar. El servidor todavía tiene el api.php viejo.<br><small style="opacity:.6">Detalle: ${esc(e.message||"")}</small></div>`;return}
   if(st.open)return slOpen();$("sl-app").hidden=true;L.hidden=false;
@@ -1313,16 +1318,16 @@ async function slSetKey(){const a=$("sl-k1").value,b=$("sl-k2").value;if(a!==b)r
 async function slUnlock(){try{await api("sal_unlock",{key:$("sl-k").value});slOpen()}catch(e){toast(e.message)}}
 async function slLock(){try{await api("sal_lock")}catch(e){}SL=null;slStart()}
 async function slOpen(){try{const r=await api("sal_load");SL=r.data}catch(e){return slStart()}
-  SL.rules.consult=SL.rules.consult||[];SL.rules.distributors=SL.rules.distributors||[];SL.entries=SL.entries||[];SL.payroll=SL.payroll||[];
+  SL.rules.consult=SL.rules.consult||[];if(!SL.rules.consult.length)SL.rules.consult=AREAS.map(n=>({id:slId(),n,p:null}));SL.rules.distributors=SL.rules.distributors||[];SL.entries=SL.entries||[];SL.payroll=SL.payroll||[];
   $("sl-lock").hidden=true;$("sl-app").hidden=false;document.querySelectorAll("#sl-tabs button").forEach(b=>b.onclick=()=>{SLT=b.dataset.t;slRender()});slRender()}
 function slSave(){clearTimeout(SLsaveT);$("sl-saved").textContent="Guardando…";SLsaveT=setTimeout(async()=>{try{await api("sal_save",{data:SL});$("sl-saved").textContent="✓ Guardado en el servidor · respaldo cada hora"}catch(e){$("sl-saved").textContent="⚠️ No se guardó: "+(e.message==="sallock"?"la sesión se cerró, vuelve a entrar":"revisa la conexión")}},600)}
 const $$=n=>n==null||isNaN(n)?"—":(n<0?"-":"")+"$"+Math.abs(+n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const rd=n=>Math.round(n*100)/100;
 /* cálculo de una entrada */
-function slCalc(e){const R=SL.rules;const v=+e.venta||0,c=+e.costo||0,i=+e.insumos||0;const base=Math.max(0,v-c-i);const L=[];
+function slCalc(e){const R=SL.rules;const v=slNum(e.venta),c=e.rama==="Café"?slNum(e.costo):0,i=slNum(e.insumos);const base=Math.max(0,v-c-i);const L=[];
   let dist=0,op=0;
   if(e.rama==="Café"&&e.dist){const d=R.distributors.find(x=>x.id===e.dist);const p=d&&d.p!=null?+d.p:R.dist;dist=rd(base*p/100);L.push({k:"dist",id:e.dist,n:(d?d.n:"Distribuidor"),t:`Comisión distribuidor ${p}% de la base neta`,v:dist})}
-  if(e.rama==="Consulting"&&e.op){const o=R.consult.find(x=>x.id===e.op);const p=o&&o.p!=null?+o.p:0;op=rd(base*p/100);L.push({k:"op",id:e.op,n:(o?o.n:"Operador"),t:`Comisión operador Consulting ${p}%`,v:op})}
+  if(e.rama==="Consulting"&&e.op){const o=R.consult.find(x=>x.id===e.op);const p=o&&o.p!=null?+o.p:0;op=rd(base*p/100);L.push({k:"op",id:e.op,n:"Consulting · "+(o?o.n:"Área"),t:o&&o.p!=null?`Comisión del área ${p}% de la base neta`:"Área sin % todavía (ponlo en Reglas)",v:op})}
   const comp=rd(base-dist-op);let cont=0;if(e.cont){cont=rd(comp*R.cont/100);L.push({k:"cont",id:"cont",n:"Contadora",t:`${R.cont}% de la utilidad neta de la cuenta`,v:cont})}
   const net=rd(comp-cont);const ops=rd(net*R.ops/100);L.push({k:"ops",id:"ops",n:R.ops_name,t:`Retención ${R.ops}% de la entrada neta de la compañía`,v:ops});
   R.partners.forEach(p=>L.push({k:"p",id:p.id,n:p.n,t:`${p.p}% de la entrada neta`,v:rd(net*p.p/100)}));
@@ -1336,21 +1341,21 @@ function slCalcView(){SLE=SLE||slBlank();const e=SLE,R=SL.rules;const B=$("sl-bo
   B.innerHTML=`<div class="mx-box"><h3>Calcular una entrada</h3>
    <div class="mx-form">
     <label>Fecha<input type="date" value="${e.fecha}" onchange="SLE.fecha=this.value"></label>
-    <label>Rama<select onchange="SLE.rama=this.value;slCalcView()">${RAMAS.map(r=>`<option ${r===e.rama?"selected":""}>${r}</option>`).join("")}</select></label>
+    <label>Rama<select onchange="SLE.rama=this.value;SLE.op='';SLE.dist='';slCalcView()">${RAMAS.map(r=>`<option ${r===e.rama?"selected":""}>${r}</option>`).join("")}</select></label>
     <label class="w2">Cliente o cuenta<input value="${esc(e.cuenta)}" placeholder="Ej.: Restaurante X, Sushi Único" oninput="SLE.cuenta=this.value"></label>
     ${e.rama==="Café"?`<label class="w2">Distribuidor<select onchange="SLE.dist=this.value;slOut()"><option value="">Sin distribuidor (venta directa)</option>${R.distributors.map(d=>`<option value="${d.id}" ${d.id===e.dist?"selected":""}>${esc(d.n)} · ${d.p??R.dist}%</option>`).join("")}</select></label>`:""}
-    ${e.rama==="Consulting"?`<label class="w2">Operador de Consulting<select onchange="SLE.op=this.value;slOut()"><option value="">Sin operador</option>${R.consult.map(o=>`<option value="${o.id}" ${o.id===e.op?"selected":""}>${esc(o.n)} · ${o.p??0}%</option>`).join("")}</select></label>`:""}
-    <label>${e.rama==="Café"?"Venta de café":"Ingreso"} ($)<input type="number" step="0.01" min="0" value="${e.venta}" oninput="SLE.venta=this.value;slOut()"></label>
-    <label>${e.rama==="Café"?"Costo café / materia prima":"Costos directos"} ($)<input type="number" step="0.01" min="0" value="${e.costo}" oninput="SLE.costo=this.value;slOut()"></label>
-    <label>Insumos directos ($)<input type="number" step="0.01" min="0" value="${e.insumos}" oninput="SLE.insumos=this.value;slOut()"></label>
+    ${e.rama==="Consulting"?`<label class="w2">Área de Consulting<select onchange="SLE.op=this.value;slOut()"><option value="">Elige el área…</option>${R.consult.map(o=>`<option value="${o.id}" ${o.id===e.op?"selected":""}>${esc(o.n)}${o.p!=null&&o.p!==""?" · "+o.p+"%":""}</option>`).join("")}</select></label>`:""}
+    <label>${e.rama==="Café"?"Venta de café":"Ingreso"} ($)<input type="text" inputmode="decimal" placeholder="0" value="${esc(e.venta)}" oninput="SLE.venta=this.value;slOut()"></label>
+    ${e.rama==="Café"?`<label>Costo café / materia prima ($)<input type="text" inputmode="decimal" placeholder="0" value="${esc(e.costo)}" oninput="SLE.costo=this.value;slOut()"></label>
+    <label>Insumos directos ($)<input type="text" inputmode="decimal" placeholder="0" value="${esc(e.insumos)}" oninput="SLE.insumos=this.value;slOut()"></label>`:`<label>Inversión ($)<input type="text" inputmode="decimal" placeholder="Escribe el monto" value="${esc(e.insumos)}" oninput="SLE.insumos=this.value;slOut()"></label>`}
     <label class="ck"><input type="checkbox" ${e.cont?"checked":""} onchange="SLE.cont=this.checked;slOut()"> Cuenta manejada por la contadora (${R.cont}%)</label>
     <label class="w4">Nota<input value="${esc(e.nota)}" oninput="SLE.nota=this.value"></label></div>
    <div id="sl-out"></div>
    <div class="mx-row"><button type="button" class="mx-btn gold" onclick="slAdd()">💾 Registrar entrada</button><button type="button" class="mx-btn" onclick="SLE=slBlank();slCalcView()">Limpiar</button></div></div>
-   ${!R.distributors.length&&e.rama==="Café"?'<p class="note">Agrega tus distribuidores en <b>Reglas</b> para elegirlos aquí.</p>':""}${!R.consult.length&&e.rama==="Consulting"?'<p class="note">Agrega los operadores de Consulting y su porcentaje en <b>Reglas</b>.</p>':""}`;
+   ${!R.distributors.length&&e.rama==="Café"?'<p class="note">Agrega tus distribuidores en <b>Reglas</b> para elegirlos aquí.</p>':""}${false?'<p class="note">Agrega los operadores de Consulting y su porcentaje en <b>Reglas</b>.</p>':""}`;
   slOut()}
 function slOut(){const k=slCalc(SLE),R=SL.rules;
-  $("sl-out").innerHTML=`<div class="sl-flow"><div><span>${SLE.rama==="Café"?"Venta de café":"Ingreso"}</span><b>${$$(k.v)}</b></div><div><span>− Costo / materia prima</span><b>${$$(-k.c)}</b></div><div><span>− Insumos directos</span><b>${$$(-k.i)}</b></div><div class="hi"><span>= Base neta</span><b>${$$(k.base)}</b></div></div>
+  $("sl-out").innerHTML=`<div class="sl-flow">${SLE.rama==="Café"?`<div><span>Venta de café</span><b>${$$(k.v)}</b></div><div><span>− Costo / materia prima</span><b>${$$(-k.c)}</b></div><div><span>− Insumos directos</span><b>${$$(-k.i)}</b></div>`:`<div><span>Ingreso</span><b>${$$(k.v)}</b></div><div><span>− Inversión</span><b>${$$(-k.i)}</b></div>`}<div class="hi"><span>= Base neta</span><b>${$$(k.base)}</b></div></div>
    <table class="mx-tbl"><thead><tr><th>Para</th><th>Regla</th><th class="n">Monto</th></tr></thead><tbody>${k.L.map(x=>`<tr class="${x.k==="p"?"":"sl-hl"}"><td>${esc(x.n)}</td><td style="color:var(--muted)">${esc(x.t)}</td><td class="n">${$$(x.v)}</td></tr>`).join("")}
    <tr><td colspan="2"><b>Entrada neta de la compañía</b> (después de comisiones)</td><td class="n"><b>${$$(k.net)}</b></td></tr></tbody></table>
    ${k.sumP!==100?`<ul class="mx-al"><li class="b">⚠ ${R.ops_name} (${R.ops}%) + socios suman ${k.sumP}%. Debe ser 100%: revisa Reglas.</li></ul>`:""}`}
@@ -1392,11 +1397,11 @@ function slRules(){const R=SL.rules;const sum=R.ops+R.partners.reduce((s,p)=>s+(
     <label>Comisión distribuidores de Café (%)<input type="number" step="0.5" value="${R.dist}" onchange="SL.rules.dist=+this.value;slSave();slRules()"></label>
     <label>Retención ${esc(R.ops_name)} (%)<input type="number" step="0.5" value="${R.ops}" onchange="SL.rules.ops=+this.value;slSave();slRules()"></label>
     <label>Comisión contadora (%)<input type="number" step="0.5" value="${R.cont}" onchange="SL.rules.cont=+this.value;slSave();slRules()"></label></div>
-    <p class="note" style="margin:0">Las comisiones se calculan sobre la <b>base neta</b>: venta − costo de materia prima − insumos directos. Nunca sobre la venta bruta.</p></div>
+    <p class="note" style="margin:0">Las comisiones se calculan sobre la <b>base neta</b>: Café: venta − materia prima − insumos directos. Consulting y otras: ingreso − inversión. Nunca sobre la venta bruta.</p></div>
    <div class="mx-box"><h3>Socios (entrada neta de la compañía)</h3><table class="mx-tbl"><tbody>${R.partners.map((p,i)=>`<tr><td><input value="${esc(p.n)}" onchange="SL.rules.partners[${i}].n=this.value;slSave()"></td><td><input value="${esc(p.r||"")}" onchange="SL.rules.partners[${i}].r=this.value;slSave()"></td><td class="n"><input type="number" step="0.5" value="${p.p}" style="width:80px;text-align:right" onchange="SL.rules.partners[${i}].p=+this.value;slSave();slRules()"> %</td></tr>`).join("")}</tbody></table>
     <ul class="mx-al"><li class="${sum===100?"o":"b"}">${esc(R.ops_name)} ${R.ops}% + socios ${sum-R.ops}% = <b>${sum}%</b>${sum===100?" ✓":" · debe sumar 100%"}</li></ul></div>
    ${list("distributors","Distribuidores de Café","Deja el % vacío para usar la comisión general ("+R.dist+"%).",R.dist)}
-   ${list("consult","Operadores de Consulting","Escribe el % de comisión de cada operador sobre la base neta de la cuenta.","%")}
+   ${list("consult","Áreas de Consulting","Escribe el % que le corresponde a cada área sobre la base neta (ingreso − inversión). Vacío = por definir.","%")}
    <div class="mx-box" id="sl-acc"><h3>Quién puede entrar</h3><p class="note">Cargando…</p></div>
    <div class="mx-box"><h3>Mi clave de esta sección</h3><div class="mx-form"><label>Clave actual<input id="sl-o" type="password" autocomplete="current-password"></label><label>Nueva clave<input id="sl-n" type="password" autocomplete="new-password"></label></div><button type="button" class="mx-btn" onclick="api('sal_setkey',{old:$('sl-o').value,key:$('sl-n').value}).then(()=>toast('Clave cambiada')).catch(e=>toast(e.message))">Cambiar clave</button></div>`;slAcc()}
 async function slAcc(u,on){let r;try{r=await api("sal_access",u?{user:u,on:on?1:0}:{})}catch(e){return}const B=$("sl-acc");if(!B)return;
