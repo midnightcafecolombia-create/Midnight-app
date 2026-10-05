@@ -370,6 +370,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .tg{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:16px}
 .tg-c{width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px}.tg-c h2{margin:0;color:var(--gold-hi);font-weight:500}
 .tg-c input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit;margin-top:3px}
+.mx-demo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:10px;border:1px dashed var(--gold);border-radius:12px;color:var(--cream);font-size:14px}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -1048,10 +1049,33 @@ const ENG={star:["STAR","Alta popularidad + alta rentabilidad","Excelente margen
   plow:["PLOWHORSE","Alta popularidad + menor rentabilidad","Se vende mucho pero deja poco. Sube el precio poco a poco, ajusta la porción o cambia el ingrediente más caro por uno equivalente."],
   puz:["PUZZLE","Alta rentabilidad + baja popularidad","Deja buen dinero pero se vende poco. Muévela a un lugar visible del menú, mejora la foto y la descripción, y pide al equipo que la recomiende."],
   dog:["DOG","Baja popularidad + baja rentabilidad","No vende y deja poco. Rediséñala con otra receta o precio, o sácala del menú para simplificar la barra."]};
-function mxEng(){const E=mxEngData();const B=$("mx-body");
-  if(!E){B.innerHTML='<div class="mx-empty">Para la ingeniería de menú necesito <b>datos reales de ventas</b>. Abre cada bebida y escribe <b>Ventas por mes</b> y su <b>precio</b> y costo. Con eso la clasifico en STAR, PLOWHORSE, PUZZLE o DOG y te digo qué hacer con cada una.</div>';return}
-  B.innerHTML=`<p class="note" style="margin:0">Basado en ${E.tot} bebidas vendidas al mes. Margen promedio ponderado: <b>${$m(E.wm)}</b>. Popularidad mínima: ${pc(E.popT*100)} de las ventas.</p>
+function mxEng(){const E=mxEngData();const B=$("mx-body");const DB=V().demo?`<div class="mx-demo"><span>👀 Estás viendo un <b>menú de ejemplo</b> con precios y ventas inventados.</span><button type="button" class="mx-btn" onclick="mxDemoDel()">🗑 Borrar ejemplo</button></div>`:"";
+  if(!E){B.innerHTML='<div class="mx-empty">Para la ingeniería de menú necesito <b>datos reales de ventas</b>. Abre cada bebida y escribe <b>Ventas por mes</b> y su <b>precio</b> y costo. Con eso la clasifico en STAR, PLOWHORSE, PUZZLE o DOG y te digo qué hacer con cada una.<br><br><button type="button" class="mx-btn gold" onclick="mxDemo()">✨ Ver un menú de ejemplo</button></div>';return}
+  B.innerHTML=`${DB}<p class="note" style="margin:0">Basado en ${E.tot} bebidas vendidas al mes. Margen promedio ponderado: <b>${$m(E.wm)}</b>. Popularidad mínima: ${pc(E.popT*100)} de las ventas.</p>
    <div class="mx-eng">${["star","plow","puz","dog"].map(k=>{const L=E.L.filter(x=>x.k===k);return `<div class="mx-q ${k}"><h4>${ENG[k][0]} <small style="color:var(--muted);font-family:var(--body);letter-spacing:0">(${L.length})</small></h4><p>${ENG[k][1]}</p><p style="color:var(--cream)">${ENG[k][2]}</p><ul>${L.map(x=>`<li><a href="#" onclick="mxOpenDrink('${x.d.id}');return false" style="color:var(--gold-hi)">${esc(x.d.name)}</a> · ${x.c.sales}/mes · ${$m(x.c.margin)} c/u</li>`).join("")||"<li>—</li>"}</ul></div>`}).join("")}</div>`}
+/* ---------- menú de ejemplo (para ver cómo funciona; se borra con un toque) ---------- */
+function mxDemo(){if(MX.venues.some(v=>v.demo)){MXV=MX.venues.findIndex(v=>v.demo);MXT="eng";return mxRender()}
+  const I={};const inv=(k,name,size,cost)=>{const p={id:mxId(),name:name+" (ejemplo)",size,unit:"ml",cost,prov:"Ejemplo",hist:[],demo:true};MX.inv.push(p);I[k]=p.id};
+  inv("teq","Tequila blanco",750,28);inv("mez","Mezcal",750,38);inv("vod","Vodka",750,22);inv("gin","Gin",750,26);inv("ron","Ron blanco",750,18);inv("bou","Bourbon",750,32);
+  inv("caf","Licor de café",750,24);inv("tri","Triple sec",750,14);inv("cb","Cold brew",1000,8);inv("lim","Jugo de lima",1000,6);inv("sim","Jarabe simple",1000,3);
+  inv("gb","Ginger beer",1000,5);inv("sod","Agua con gas / tónica",1000,2.5);inv("mar","Puré de maracuyá",1000,12);inv("pin","Jugo de piña",1000,4);inv("ver","Vermut rojo",750,16);
+  inv("cam","Campari",750,28);inv("ang","Angostura",200,12);inv("coco","Crema de coco",1000,9);
+  const it=(k,q,n,u)=>({q,u:u||"oz",n,inv:I[k]});
+  const dk=(name,cat,glass,method,price,sales,items,desc)=>({id:mxId(),name,cat,desc:desc||"",glass,ice:true,method,garnish:"",price,sales,items,steps:[],visual:null,cap:null});
+  const D=[
+   dk("Espresso Martini","Cocktails","Coupe","batido",16,120,[it("vod",1.5,"Vodka"),it("caf",.75,"Licor de café"),it("cb",1,"Cold brew"),it("sim",.25,"Jarabe simple")],"El clásico de la casa con nuestro café."),
+   dk("Margarita Midnight","Cocktails","Rocks","batido",14,110,[it("teq",2,"Tequila blanco"),it("tri",.75,"Triple sec"),it("lim",1,"Jugo de lima"),it("sim",.5,"Jarabe simple")]),
+   dk("Mezcal Maracuyá","Cocktails","Rocks","batido",17,35,[it("mez",1.5,"Mezcal"),it("mar",1,"Puré de maracuyá"),it("lim",.75,"Jugo de lima"),it("sim",.5,"Jarabe simple")]),
+   dk("Moscow Mule","Cocktails","Taza mule","construido",11,95,[it("vod",2,"Vodka"),it("lim",.5,"Jugo de lima"),it("gb",4,"Ginger beer")]),
+   dk("Negroni","Cocktails","Rocks","revuelto",15,30,[it("gin",1,"Gin"),it("cam",1,"Campari"),it("ver",1,"Vermut rojo")]),
+   dk("Mojito","Cocktails","Highball","construido",10,90,[it("ron",2,"Ron blanco"),it("lim",1,"Jugo de lima"),it("sim",.75,"Jarabe simple"),it("sod",2,"Agua con gas")]),
+   dk("Old Fashioned","Cocktails","Rocks","revuelto",15,40,[it("bou",2,"Bourbon"),it("sim",.25,"Jarabe simple"),it("ang",2,"Angostura","dash")]),
+   dk("Piña Colada","Cocktails","Hurricane","licuado",11,15,[it("ron",2,"Ron blanco"),it("pin",3,"Jugo de piña"),it("coco",1.5,"Crema de coco")]),
+   dk("Gin Tonic Lima","Cocktails","Copa de vino","construido",13,25,[it("gin",2,"Gin"),it("sod",4,"Tónica"),it("lim",.25,"Jugo de lima")]),
+   dk("Maracuyá Spritz (sin alcohol)","Mocktails","Highball","construido",8,60,[it("mar",1.5,"Puré de maracuyá"),it("lim",.5,"Jugo de lima"),it("sim",.5,"Jarabe simple"),it("sod",4,"Agua con gas")])];
+  MX.venues.push({id:mxId(),name:"Ejemplo · Lounge",target:20,demo:true,menus:[{id:mxId(),name:"Menú de ejemplo",drinks:D}]});
+  MXV=MX.venues.length-1;MXM="all";MXT="eng";mxSave();mxRender();toast("Menú de ejemplo cargado")}
+function mxDemoDel(){if(!confirm("¿Borrar el menú de ejemplo y sus ingredientes de ejemplo?"))return;MX.venues=MX.venues.filter(v=>!v.demo);MX.inv=MX.inv.filter(p=>!p.demo);MXV=0;MXM="all";mxSave();mxRender();toast("Ejemplo borrado")}
 /* ---------- asistente IA ---------- */
 const MXQ=["¿Qué está mal con mi menú?","¿Cuáles son mis cinco tragos menos rentables?","¿Qué tragos debería subir de precio?","¿Qué ingredientes me están costando demasiado?","¿Qué bebidas puedo mejorar sin aumentar el precio?","¿Qué bebidas debería eliminar?","¿Qué bebidas debería promocionar?"];
 let MXCHAT=[];
