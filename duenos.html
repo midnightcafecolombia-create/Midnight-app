@@ -351,6 +351,8 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .sl-strow{display:grid;grid-template-columns:130px minmax(140px,1fr) 110px 130px 80px 110px 30px;gap:8px;align-items:end;padding:8px;border:1px solid var(--line);border-radius:10px;width:100%}
 .sl-strow label{font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
 @media(max-width:900px){.sl-strow{grid-template-columns:1fr 1fr}}
+.sl-final-big{margin:12px 0;padding:18px 20px;border:2px solid var(--gold);border-radius:14px;background:linear-gradient(135deg,rgba(212,171,95,.12),transparent);display:flex;flex-direction:column;gap:2px}
+.sl-final-big span{color:var(--gold-hi);font-size:13px;letter-spacing:.06em;text-transform:uppercase}.sl-final-big b{font:500 38px/1.1 Georgia,serif;color:var(--cream)}.sl-final-big b.neg{color:var(--bad)}.sl-final-big small{color:var(--muted)}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -476,7 +478,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
     <div id="sl-app" hidden>
       <div class="mx-head"><div class="mx-brand"><b>DISTRIBUCIÓN DE LA COMPAÑÍA</b><small>Comisiones · Midnight Operaciones · socios · nómina · confidencial</small></div>
         <div class="mx-venue"><button type="button" class="chip" onclick="slLock()">🔒 Cerrar</button></div></div>
-      <nav class="mx-tabs" id="sl-tabs"><button type="button" data-t="calc">Calcular</button><button type="button" data-t="reg">Registro</button><button type="button" data-t="res">Resumen por persona</button><button type="button" data-t="pay">Nómina</button><button type="button" data-t="rules">Reglas</button></nav>
+      <nav class="mx-tabs" id="sl-tabs"><button type="button" data-t="calc">Calcular</button><button type="button" data-t="reg">Registro</button><button type="button" data-t="rep">📊 Reporte final</button><button type="button" data-t="res">Resumen por persona</button><button type="button" data-t="pay">Nómina</button><button type="button" data-t="rules">Reglas</button></nav>
       <div id="sl-body" class="mx-body"></div>
       <p class="note" id="sl-saved">Los datos se guardan solo en tu servidor · respaldo automático cada hora.</p>
     </div>
@@ -1399,7 +1401,7 @@ function slPartners(e,R){const o=e.pp||{};const pool=100-R.ops;if(e.rama==="Caf�
   const used=inc.reduce((s,p)=>s+p.pe,0);return {list,fund:Math.max(0,rd(pool-used)),over:used>pool+0.001}}
 function slPP(id,k,val){SLE.pp=SLE.pp||{};SLE.pp[id]=SLE.pp[id]||{};SLE.pp[id][k]=val;SLsocOpen=true;slOut()}
 let SLsocOpen=false;
-function slRender(){document.querySelectorAll("#sl-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===SLT));({calc:slCalcView,reg:slReg,res:slRes,pay:slPay,rules:slRules})[SLT]()}
+function slRender(){document.querySelectorAll("#sl-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===SLT));({calc:slCalcView,reg:slReg,res:slRes,rep:slRep,pay:slPay,rules:slRules})[SLT]()}
 /* costo del café por libra: fijo en Reglas ($11), se puede mover por orden */
 const slCpl=(it,R)=>it.cpl!=null&&it.cpl!==""?slNum(it.cpl):(R.lb??11);
 const slProd=(it,R)=>(R.products||[]).find(p=>p.id===it.prod);
@@ -1520,7 +1522,8 @@ function slOut(){const k=slCalc(SLE),R=SL.rules,e=SLE;
    ${k.sumP!==100?`<ul class="mx-al"><li class="b">⚠ ${R.ops_name} (${R.ops}%) + socios suman ${k.sumP}%. Debe ser 100%: revisa Reglas.</li></ul>`:""}`}
 function slAdd(){const k=slCalc(SLE);if(k.staff?!k.pay:!k.v)return toast(k.staff?"Escribe cuánto se le paga":"Escribe el monto del ingreso");(SLE.ds||[]).forEach(d=>{const n=(d.n||"").trim();if(n&&!SL.rules.distributors.some(x=>x.n.toLowerCase()===n.toLowerCase()))SL.rules.distributors.push({id:slId(),n,p:null})});SL.entries.push({...SLE,snap:{rules:JSON.parse(JSON.stringify(SL.rules))}});slSave();toast("Entrada registrada");SLE=slBlank(SLE.rama);SLsocOpen=false;slCalcView()}
 /* registro */
-function slMonthEntries(){return SL.entries.filter(e=>(e.fecha||"").slice(0,7)===SLM)}
+let SLYR=false;
+function slMonthEntries(){return SL.entries.filter(e=>SLYR?(e.fecha||"").slice(0,4)===SLM.slice(0,4):(e.fecha||"").slice(0,7)===SLM)}
 function slCalcSnap(e){const keep=SL.rules;if(e.snap&&e.snap.rules)SL.rules=e.snap.rules;const k=slCalc(e);SL.rules=keep;return k}
 function slMonthPick(){return `<label class="note" style="display:flex;gap:6px;align-items:center">Mes <input type="month" value="${SLM}" onchange="SLM=this.value;slRender()"></label>`}
 function slReg(){const L=slMonthEntries().slice().reverse();const B=$("sl-body");
@@ -1543,6 +1546,49 @@ function slPrint(){const {T,venta,base,net}=slTotals();const rows=Object.values(
    <table><tr><th>Persona</th><th>Rol</th><th class="n">Monto</th></tr>${rows.map(r=>`<tr><td>${esc(r.n)}</td><td>${r.role}</td><td class="n">${$$(r.v)}</td></tr>`).join("")}</table>
    <h3>Detalle de entradas</h3><table><tr><th>Fecha</th><th>Rama</th><th>Cuenta</th><th class="n">Venta</th><th class="n">Base neta</th></tr>${slMonthEntries().map(e=>{const k=slCalcSnap(e);return `<tr><td>${e.fecha}</td><td>${e.rama}</td><td>${esc(e.cuenta||"")}</td><td class="n">${$$(k.v)}</td><td class="n">${$$(k.base)}</td></tr>`}).join("")}</table>
    <p class="s" style="margin-top:20px">Las comisiones se calculan sobre la base neta (venta − materia prima − insumos), no sobre la venta bruta.</p><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close()}
+/* ===== REPORTE FINAL CONSOLIDADO: todas las ramas y cuentas → un solo número ===== */
+const SL_FREQ={Mensual:1,Quincenal:2,Semanal:52/12};
+function slAgg(){const E=slMonthEntries();const z=()=>({n:0,v:0,tax:0,cost:0,base:0,com:0,cont:0,staff:0,net:0,ops:0,fund:0,soc:0});
+  const T=z(),byR={},byC={},people={};const addP=(k,n,role,v)=>{if(!v)return;people[k]=people[k]||{n,role,v:0};people[k].v=rd(people[k].v+v)};
+  E.forEach(e=>{const k=slCalcSnap(e);const r=RAMA_LBL[e.rama]||e.rama,c=(e.cuenta||"Sin cuenta").trim();
+    const row={n:1,v:k.v,tax:k.tax||0,cost:k.c+k.i,base:k.base,com:k.dist+k.op,cont:k.cont,staff:k.staff?k.pay:0,net:k.staff?-k.pay:k.net,ops:k.ops,fund:k.fund||0,soc:k.L.filter(x=>x.k==="p").reduce((a,x)=>a+x.v,0)};
+    [T,byR[r]=byR[r]||z(),byC[c]=byC[c]||z()].forEach(o=>Object.keys(row).forEach(f=>o[f]=rd(o[f]+row[f])));
+    k.L.forEach(x=>addP(x.k+":"+x.id,x.n,{dist:"Distribuidor",op:"Consulting",cont:"Contadora",ops:"Midnight Operaciones",p:"Socio",fd:"Fondo Midnight",st:"Personal (pago)"}[x.k]||"",x.v))});
+  const months=SLYR?12:1;const nom=rd(SL.payroll.reduce((a,p)=>a+(+p.m||0)*(SL_FREQ[p.f]||1),0)*months);
+  const final=rd(T.net-nom);return {E,T,byR,byC,people,nom,final}}
+function slPeriod(){if(!SLYR)return new Date(SLM+"-15").toLocaleDateString("es",{month:"long",year:"numeric"});return "Año "+SLM.slice(0,4)}
+function slRep(){const A=slAgg(),T=A.T;const B=$("sl-body");
+  const tbl=(o,h)=>`<div class="mx-scroll"><table class="mx-tbl"><thead><tr><th>${h}</th><th class="n">Entradas</th><th class="n">Ventas</th><th class="n">Costos</th><th class="n">Comisiones</th><th class="n">Personal</th><th class="n">Neto</th></tr></thead><tbody>
+    ${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")||'<tr><td colspan="7"><div class="mx-empty">Sin entradas en este periodo.</div></td></tr>'}</tbody></table></div>`;
+  const P=Object.values(A.people).sort((a,b)=>b.v-a.v);
+  B.innerHTML=`<div class="mx-row">${slMonthPick()}<label class="sl-ck note" style="margin:0"><input type="checkbox" ${SLYR?"checked":""} onchange="SLYR=this.checked;slRender()"> Todo el año</label><span class="sp"></span><button type="button" class="mx-btn gold" onclick="slRepPrint()">🖨 Reporte para socios (PDF)</button></div>
+   <div class="sl-final-big"><span>Resultado final · ${slPeriod()}</span><b class="${A.final<0?"neg":""}">${$$(A.final)}</b><small>Todas las ramas y cuentas, después de costos, comisiones, pagos al personal y nómina</small></div>
+   <div class="mx-box"><h3>De las ventas al resultado final</h3><table class="mx-tbl sl-wf"><tbody>
+    <tr class="sl-tot"><td>Ventas totales (${A.E.length} entradas)</td><td class="n">${$$(T.v)}</td></tr>
+    <tr><td>− Costos (café, insumos, DV Nova, gastos)</td><td class="n neg">${$$(-T.cost)}</td></tr>
+    <tr class="sl-tot"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
+    <tr><td>− Comisiones de distribuidores</td><td class="n neg">${$$(-T.com)}</td></tr>
+    <tr><td>− Contadora</td><td class="n neg">${$$(-T.cont)}</td></tr>
+    <tr><td>− Pagos al personal (Mixología y Barismo)</td><td class="n neg">${$$(-T.staff)}</td></tr>
+    <tr><td>− Nómina fija ${SLYR?"del año":"del mes"}</td><td class="n neg">${$$(-A.nom)}</td></tr>
+    <tr class="sl-tot"><td>= Resultado final</td><td class="n">${$$(A.final)}</td></tr></tbody></table>
+    <p class="note">Taxes cobrados aparte (se pagan al estado): <b>${$$(T.tax)}</b></p></div>
+   <div class="mx-box"><h3>Por rama</h3>${tbl(A.byR,"Rama")}</div>
+   <div class="mx-box"><h3>Por cuenta / sucursal</h3>${tbl(A.byC,"Cuenta")}</div>
+   <div class="mx-box"><h3>Reparto: a quién le corresponde</h3><table class="mx-tbl"><tbody>${P.map(x=>`<tr><td>${esc(x.n)}</td><td style="color:var(--muted)">${x.role}</td><td class="n">${$$(x.v)}</td></tr>`).join("")||'<tr><td><div class="mx-empty">Sin datos.</div></td></tr>'}</tbody></table>
+   ${A.nom?`<p class="note">La nómina fija (${$$(A.nom)}) se descuenta del resultado final; no está incluida en el reparto por entrada.</p>`:""}</div>`}
+function slRepPrint(){const A=slAgg(),T=A.T;const w=window.open("","_blank");if(!w)return toast("Permite ventanas emergentes");
+  const tb=(o,h)=>`<table><tr><th>${h}</th><th class="n">Entradas</th><th class="n">Ventas</th><th class="n">Costos</th><th class="n">Comisiones</th><th class="n">Personal</th><th class="n">Neto</th></tr>${Object.entries(o).sort((a,b)=>b[1].net-a[1].net).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.n}</td><td class="n">${$$(x.v)}</td><td class="n">${$$(-x.cost)}</td><td class="n">${$$(-(x.com+x.cont))}</td><td class="n">${$$(-x.staff)}</td><td class="n"><b>${$$(x.net)}</b></td></tr>`).join("")}</table>`;
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Reporte ${slPeriod()}</title><style>body{font:13px/1.5 Helvetica,Arial;color:#1a140d;margin:32px}h1{font:600 22px Georgia;margin:0}h2{font:600 15px Georgia;margin:22px 0 6px;border-bottom:2px solid #d4ab5f;padding-bottom:3px}.s{color:#7a6c5c}table{width:100%;border-collapse:collapse}th{background:#0b0907;color:#f1d48f;text-align:left;padding:6px}td{padding:5px 6px;border-bottom:1px solid #e3d8c4}.n{text-align:right}.big{margin:16px 0;padding:14px 18px;border:2px solid #d4ab5f;border-radius:10px;display:flex;justify-content:space-between;align-items:center}.big b{font:600 28px Georgia}.t td{font-weight:600}</style></head><body>
+   <h1>Reporte de resultados · ${slPeriod()}</h1><div class="s">Midnight Consulting Global LLC · Confidencial · Generado ${new Date().toLocaleDateString("es")}</div>
+   <div class="big"><span>Resultado final (todas las ramas y cuentas)</span><b>${$$(A.final)}</b></div>
+   <h2>De las ventas al resultado final</h2><table>
+   <tr class="t"><td>Ventas totales (${A.E.length} entradas)</td><td class="n">${$$(T.v)}</td></tr><tr><td>− Costos</td><td class="n">${$$(-T.cost)}</td></tr><tr class="t"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
+   <tr><td>− Comisiones de distribuidores</td><td class="n">${$$(-T.com)}</td></tr><tr><td>− Contadora</td><td class="n">${$$(-T.cont)}</td></tr><tr><td>− Pagos al personal</td><td class="n">${$$(-T.staff)}</td></tr><tr><td>− Nómina fija</td><td class="n">${$$(-A.nom)}</td></tr>
+   <tr class="t"><td>= Resultado final</td><td class="n">${$$(A.final)}</td></tr></table><p class="s">Taxes cobrados aparte (se pagan al estado): ${$$(T.tax)}</p>
+   <h2>Por rama</h2>${tb(A.byR,"Rama")}<h2>Por cuenta / sucursal</h2>${tb(A.byC,"Cuenta")}
+   <h2>Reparto</h2><table><tr><th>Persona</th><th>Rol</th><th class="n">Monto</th></tr>${Object.values(A.people).sort((a,b)=>b.v-a.v).map(x=>`<tr><td>${esc(x.n)}</td><td>${x.role}</td><td class="n">${$$(x.v)}</td></tr>`).join("")}</table>
+   <script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close()}
 /* nómina */
 function slPay(){const B=$("sl-body");const tot=SL.payroll.reduce((s,p)=>s+(+p.m||0),0);
   B.innerHTML=`<div class="mx-box"><h3>Nómina y pagos fijos</h3><p class="note" style="margin:0">Salarios, retiros fijos o pagos mensuales (aparte de la distribución de utilidades).</p>
