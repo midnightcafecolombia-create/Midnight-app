@@ -294,6 +294,13 @@ main:has(#v-mix:not([hidden])){max-width:1100px}
 .lab-card.on{border-color:var(--gold);background:linear-gradient(135deg,rgba(212,171,95,.16),rgba(212,171,95,.03))}
 .lab-card .ic{font-size:20px}.lab-card b{font-family:var(--display);color:var(--gold-hi);font-size:13px;letter-spacing:.03em}
 .lab-card small{color:var(--muted);font-size:11.5px;line-height:1.35}
+.lab-guide{border-color:var(--gold)}
+.lab-m{background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.lab-m summary{cursor:pointer;display:flex;flex-direction:column;gap:2px;list-style:none}
+.lab-m summary::-webkit-details-marker{display:none}
+.lab-m summary b{color:var(--gold-hi);font-weight:500;font-size:14px}.lab-m summary b::before{content:"▸ ";color:var(--gold)}
+.lab-m[open] summary b::before{content:"▾ "}
+.lab-m summary small{color:var(--muted);font-size:12px}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -1167,7 +1174,8 @@ const LAB=[["clar","💧","Clarificación","Milk punch, agar-agar, centrífuga o
 let LABK="clar",LABR=null;
 function mxLab(){const B=$("mx-body");MX.lab=MX.lab||[];const T=LAB.find(x=>x[0]===LABK);
   const drinkOpts=allDrinks().map(({d})=>`<option value="${d.id}">${esc(d.name)}</option>`).join("");
-  B.innerHTML=`<div class="lab-grid">${LAB.map(([k,ic,n,d])=>`<button type="button" class="lab-card ${k===LABK?"on":""}" onclick="LABK='${k}';LABR=null;mxRender()"><span class="ic">${ic}</span><b>${n}</b><small>${d}</small></button>`).join("")}</div>
+  B.innerHTML=`<div class="lab-grid">${LAB.map(([k,ic,n,d])=>`<button type="button" class="lab-card ${k===LABK?"on":""}" onclick="LABK='${k}';LABR=null;mxRender();setTimeout(()=>{const g=document.querySelector('.lab-guide');g&&g.scrollIntoView({behavior:'smooth',block:'start'})},60)"><span class="ic">${ic}</span><b>${n}</b><small>${d}</small></button>`).join("")}</div>
+   ${mxLabGuide()}
    <div class="mx-box"><h3>${T[1]} ${T[2]}</h3>
     ${LABK==="verif"?`<div class="mx-form"><label class="w2">Verificar una bebida del menú<select id="lb-drink"><option value="">— Escribir receta o técnica abajo —</option>${drinkOpts}</select></label><label class="w2">Tamaño del vaso<select id="lb-cap">${[6,8,10,12].map(o=>`<option ${o==10?"selected":""}>${o} oz</option>`).join("")}</select></label>
       <label class="w4">Receta o técnica a verificar<textarea id="lb-txt" placeholder="Pega la receta o describe tu técnica. Ej.: Milk punch con 750 ml de ron, 250 ml de leche entera, 200 ml de jugo de limón…"></textarea></label></div>`
@@ -1213,6 +1221,58 @@ function mxLabPrint(){const r=LABR.r,L=a=>Array.isArray(a)?a.filter(Boolean):[];
    ${L(r.equipment).length?`<h2>Equipo</h2><p>${L(r.equipment).map(esc).join(" · ")}</p>`:""}${L(r.steps).length?`<h2>Procedimiento</h2><ol>${L(r.steps).map(s=>`<li>${esc(s.t||s)}${s.time||s.temp?` <i class="s">(${[s.time,s.temp].filter(Boolean).map(esc).join(" · ")})</i>`:""}</li>`).join("")}</ol>`:""}
    ${L(r.checks).length?`<h2>Control de calidad</h2><ul>${L(r.checks).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${L(r.safety).length?`<h2>Seguridad</h2><ul class="w">${L(r.safety).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
    ${r.use?`<h2>Uso en barra</h2><p>${esc(r.use)}</p>`:""}<p class="s" style="margin-top:24px">Midnight Consulting Global LLC · Midnight Mixology Lab</p><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close()}
+/* guía fija de cada técnica (sin IA) */
+const LABG={
+clar:{q:"Quitar sólidos y turbidez para lograr un trago cristalino, más suave y estable en batch.",m:[
+ ["Milk punch (clarificación con leche)","Proporción guía: 4 partes de cóctel ácido : 1 parte de leche entera.",["Prepara el cóctel completo con su ácido (limón, lima, café, té…).","Pon la leche fría en un recipiente y vierte el cóctel SOBRE la leche (nunca al revés). Revuelve suave una vez.","Deja cortar 30 min a temperatura ambiente o toda la noche en nevera.","Filtra por filtro de café o paño; repite pasando de nuevo por la misma cuajada (filtra mejor la segunda vez).","Embotella y refrigera: dura 3–4 semanas."]],
+ ["Agar-agar (clarificación en gel)","0.2% de agar sobre el peso del líquido (2 g por litro).",["Hierve 1/4 del líquido con el agar 2 min, revolviendo.","Mezcla con el resto del líquido frío y deja cuajar en nevera 1 h.","Rompe el gel con un batidor y cuélalo por paño exprimiendo suave.","Ideal para jugos cítricos y café: sale transparente en 2 horas."]],
+ ["Filtrado simple","Para cold brew, infusiones y siropes.",["Cuela por colador fino, luego por filtro de café.","Deja reposar en nevera 12 h y trasvasa sin mover el fondo."]]],
+ s:["Lácteos: alérgeno, avísalo en el menú.","Etiqueta fecha de producción y vida útil."]},
+smoke:{q:"Aportar aroma ahumado al trago, al vaso o a un ingrediente, y crear un momento visual en la mesa.",m:[
+ ["Vaso ahumado","Lo más rápido para servicio.",["Enciende chips de madera (cerezo, roble, nogal) en una tabla o ahumador.","Pon el vaso boca abajo sobre el humo 10–20 segundos.","Voltea, sirve el trago de inmediato y sirve el hielo al final."]],
+ ["Campana (cloche) en la mesa","Presentación de alto impacto.",["Sirve el trago en una tabla.","Cubre con la campana e inyecta humo con la pistola 5–8 segundos.","Deja 30–60 s y destapa frente al cliente."]],
+ ["Ingrediente ahumado","Sirope, hielo o destilado ahumado.",["Pon el líquido en un recipiente ancho y tapa con film dejando una abertura.","Inyecta humo, tapa del todo y agita 30 s; repite 2–3 veces.","Prueba: el humo se fija rápido, no te pases."]]],
+ s:["Fuego: lejos de alcohol abierto y cortinas; ten extintor y apagador cerca.","Usa solo maderas de grado alimenticio, nunca tratadas o pintadas.","Ventila el área; no ahumar en espacios cerrados sin extracción."]},
+inf:{q:"Pasar sabor de frutas, especias, café o hierbas a un destilado, sirope o base sin alcohol.",m:[
+ ["Infusión en frío","Para frutas, hierbas y café (sabor limpio).",["Proporción guía: 50–100 g de sólido por cada 750 ml.","Junta en frasco limpio y refrigera.","Prueba cada 12 h: hierbas 12–24 h, frutas 2–4 días, café 12–24 h, chile 15–60 min (¡prueba seguido!).","Cuela y embotella."]],
+ ["Infusión rápida (sifón o sous-vide)","Lista en minutos u horas.",["Sifón: líquido + sólido, 2 cargas de N₂O, agita, espera 2–5 min y libera el gas.","Sous-vide: en bolsa al vacío a 55–60 °C por 1–2 h.","Enfría en hielo y cuela."]]],
+ s:["No dejes ajo, frutas frescas ni lácteos infusionando a temperatura ambiente.","Rotula sólido, fecha y vida útil (normalmente 1–3 meses refrigerado)."]},
+fat:{q:"Darle al destilado el sabor y la textura sedosa de una grasa (mantequilla, coco, tocino, aceite).",m:[
+ ["Método estándar","Proporción guía: 100–120 g de grasa por 750 ml de destilado.",["Derrite la grasa (si es mantequilla, tuéstala hasta color avellana).","Mezcla con el destilado en un recipiente de boca ancha y agita.","Deja a temperatura ambiente 2–4 h, agitando de vez en cuando.","Congela 12 h: la grasa sube y se solidifica.","Retira la capa sólida y cuela por filtro de café."]]],
+ s:["Tocino y mantequilla: producto con alérgenos y menor vida útil (refrigera, 1 mes).","Aceite de oliva: usa extra virgen suave."]},
+foam:{q:"Coronar el trago con una textura aireada que aporta sabor, presentación y estabilidad.",m:[
+ ["Espuma en sifón","Base + estabilizante.",["Mezcla 300 ml de base (jugo, café, sirope) con 1–2 claras pasteurizadas o 60 ml de aquafaba.","Cuela al sifón, carga 1–2 cápsulas de N₂O y agita bien.","Refrigera 30 min y sirve encima del trago."]],
+ ["Aire con lecitina","Burbujas ligeras para encima.",["Mezcla 0.5–1% de lecitina de soya en el líquido.","Inclina el recipiente y bate en la superficie con mini-túrmix hasta formar burbujas.","Deja asentar 1 min y recoge el aire con cuchara."]],
+ ["Dry shake (sin sifón)","Para tragos con clara o aquafaba.",["Bate sin hielo 10 s para emulsionar.","Agrega hielo y bate 10 s más.","Doble colado para espuma fina."]]],
+ s:["Usa huevo pasteurizado o aquafaba (vegano).","Sifón: nunca más cargas de las indicadas; revisa juntas y válvula."]},
+cord:{q:"Hacer tus propios endulzantes y ácidos para tener sabor propio, consistencia y mejor costo.",m:[
+ ["Sirope simple y rico","1:1 (simple) o 2:1 (rico) azúcar:agua.",["Calienta el agua, disuelve el azúcar sin hervir.","Enfría y refrigera: 1 mes (simple), 2–3 meses (rico)."]],
+ ["Cordial ácido","Ejemplo base: 500 ml de jugo + 400 g de azúcar + 10 g de ácido cítrico.",["Disuelve azúcar y ácido en el jugo (o en agua si usas cáscaras).","Agrega cáscaras o especias y deja 2–12 h.","Cuela y refrigera; dura más que el jugo fresco."]],
+ ["Oleo saccharum","Aceite esencial de cáscaras con azúcar.",["Pela cítricos sin la parte blanca.","Cubre con azúcar (mismo peso que cáscaras) y aplasta.","Deja 4–24 h, disuelve con un poco de agua o jugo y cuela."]],
+ ["Shrub","Fruta + azúcar + vinagre (1:1:1).",["Macera fruta con azúcar 24 h.","Agrega vinagre, cuela y refrigera 1 semana antes de usar."]]],
+ s:["Etiqueta y refrigera todo; descarta si ves burbujas o fermentación no deseada."]},
+sphere:{q:"Crear perlas, esferas o gelatinas comestibles para garnish o texturas sorprendentes.",m:[
+ ["Esferificación básica","Alginato en el líquido, calcio en el baño.",["Mezcla 2 g de alginato de sodio por 400 ml de líquido con túrmix; deja reposar 1 h para quitar burbujas.","Prepara baño de 5 g de cloruro de calcio en 1 L de agua.","Deja caer gotas con jeringa o cuchara medidora.","Espera 1–2 min, saca y enjuaga en agua limpia."]],
+ ["Perlas en aceite frío (agar)","Para garnish rápido.",["Calienta el líquido con 1–2% de agar hasta hervir.","Deja caer gotas en aceite neutro muy frío (congelador).","Cuela y enjuaga."]],
+ ["Gelatinas o gomitas","Para porciones o shots.",["Hidrata gelatina (2–3 hojas por 250 ml) y disuélvela en la base tibia.","Vierte en moldes y refrigera 3–4 h."]]],
+ s:["Líquidos muy ácidos no esferifican bien: ajusta el pH con citrato de sodio."]},
+carb:{q:"Agregar gas al trago o a la base para frescura y burbuja fina.",m:[
+ ["Sifón de soda (CO₂)","Para porciones pequeñas.",["Enfría el líquido a 0–2 °C y cuélalo bien (sin pulpa).","Llena el sifón hasta la línea, carga 1 cápsula de CO₂ y agita.","Refrigera 30 min y sirve."]],
+ ["Botella con tapa carbonatadora","Para batch.",["Llena 3/4 de botella PET con líquido muy frío.","Exprime el aire, enrosca la tapa y conecta CO₂ a 30–40 psi.","Agita 1 min, deja reposar y libera presión lento."]]],
+ s:["Nunca carbonates líquidos tibios ni con pulpa (espuma y presión).","Usa solo envases aptos para presión."]},
+batch:{q:"Preparar tragos por adelantado con la dilución ya incluida, para servir más rápido y siempre igual.",m:[
+ ["Batch con pre-dilución","Fórmula: (receta × número de tragos) + agua de dilución.",["Multiplica cada ingrediente por el número de tragos (sin cítricos frescos si va a durar más de 1 día).","Agrega agua: 20% para tragos revueltos, 25% para batidos, 10% para servidos sobre hielo.","Embotella, rotula y refrigera.","Al servir: sirve directo sobre hielo o en vaso frío, sin batir."]],
+ ["Cítricos en batch","El limón pierde frescura en 4–8 h.",["Agrega el jugo al momento del servicio, o usa un cordial ácido estable.","Si se va a usar el mismo día, prepara el batch máximo 4 h antes."]]],
+ s:["Rotula ABV y fecha; mantén batches con alcohol fuera del alcance del público."]},
+verif:{q:"Asegurar que cada trago esté balanceado, bien medido, seguro y rentable antes de entrar al menú.",m:[
+ ["Checklist rápido","Revísalo en cada receta.",["Base de alcohol 1.5–2 oz por trago.","Balance clásico: 2 partes fuerte : 0.75 ácido : 0.75 dulce (ajusta al gusto).","Volumen final con dilución dentro del vaso (8–10 oz).","Medidas en cuartos de onza para servir con jigger.","Prueba de color, aroma, temperatura y garnish contra la foto estándar."]],
+ ["Con la IA","Para una revisión profunda.",["Elige la bebida o pega la receta abajo.","Toca «Verificar con IA»: recibes veredicto, puntaje, problemas y correcciones."]]],
+ s:["Higiene: hielo de máquina limpia, frutas lavadas, utensilios desinfectados."]}};
+function mxLabGuide(){const g=LABG[LABK];if(!g)return"";
+  return `<div class="mx-box lab-guide"><span class="lbl" style="margin:0">Guía de la técnica</span><p class="cr-desc" style="margin:0"><b>Para qué sirve:</b> ${esc(g.q)}</p>
+   ${g.m.map(([t,d,st],i)=>`<details class="lab-m" ${i===0?"open":""}><summary><b>${esc(t)}</b><small>${esc(d)}</small></summary><ol class="cr-steps">${st.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></details>`).join("")}
+   ${g.s.length?`<ul class="mx-al">${g.s.map(x=>`<li class="b">⚠ ${esc(x)}</li>`).join("")}</ul>`:""}
+   <p class="note" style="margin:0">¿Quieres el protocolo exacto para tu trago y tu cantidad? Usa el formulario de abajo y la IA lo diseña a tu medida.</p></div>`}
 
 /* ===== Inicio ===== */
 async function boot(){
