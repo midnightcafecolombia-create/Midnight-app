@@ -641,6 +641,8 @@ body.desk .bar,body.desk .scroll{padding-left:max(24px,calc((100% - 860px)/2));p
 body.desk .scroll{padding-bottom:40px}
 body.desk .home-hero{border-radius:0 0 24px 24px}
 body.desk .home-hero .wordmark{font-size:56px}
+@media (max-height:640px){body.desk .home-hero{padding-top:10px;padding-bottom:12px}body.desk .home-hero .wordmark{font-size:40px}body.desk .home-hero img,body.desk .home-hero svg{max-height:96px;width:auto}body.desk .nav button{padding:6px 12px;font-size:13.5px}body.desk .nav::before{font-size:17px;padding-bottom:12px}}
+@media (max-height:460px){body.desk .side-social{display:none}body.desk .nav{padding-top:8px}body.desk .nav button{padding:5px 10px}}
 body.desk .grid{grid-template-columns:repeat(3,1fr);gap:14px}
 body.desk .products{flex-wrap:wrap;overflow:visible;gap:14px}
 body.desk .prod{flex:0 0 calc(25% - 11px)}
@@ -2885,7 +2887,7 @@ i18nInit();renderPolicy();
 try{const lo=JSON.parse(localStorage.getItem("midnight-last")||"null");if(lo){lastOrder=lo;renderReceipt(lo)}}catch(e){}
 /* Tablets y computadoras: agranda la app para que llene la pantalla (iPad, Mac) */
 function fitScreen(){const ph=$("app");if(!ph)return;const W=innerWidth,H=innerHeight;
-  const desk=W>=1000&&H>=500;document.body.classList.toggle("desk",desk);document.documentElement.style.overflow=desk?"hidden":"";
+  const desk=W>=900&&H>=380;document.body.classList.toggle("desk",desk);document.documentElement.style.overflow=desk?"hidden":"";
   if(desk){ph.style.zoom=ph.style.width=ph.style.maxWidth=ph.style.height=ph.style.flex=ph.style.transform=ph.style.transformOrigin=ph.style.border=ph.style.borderRadius="";document.body.style.overflow=document.body.style.alignItems=document.body.style.padding="";return}
   const z=W>=600?Math.max(1,Math.min(W/460,H/620,2)):1;
   // Escala con transform (más compatible que zoom: las imágenes se ven en todos los iPad)
