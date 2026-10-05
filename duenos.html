@@ -1363,7 +1363,7 @@ async function slSetKey(){const a=$("sl-k1").value,b=$("sl-k2").value;if(a!==b)r
 async function slUnlock(){try{await api("sal_unlock",{key:$("sl-k").value});slOpen()}catch(e){toast(e.message)}}
 async function slLock(){try{await api("sal_lock")}catch(e){}SL=null;slStart()}
 async function slOpen(){try{const r=await api("sal_load");SL=r.data}catch(e){return slStart()}
-  SL.rules.consult=SL.rules.consult||[];if(SL.rules.lb==null)SL.rules.lb=11;if(SL.rules.tax==null)SL.rules.tax=9;if(SL.rules.dv==null)SL.rules.dv=3000;if(!SL.rules.fund)SL.rules.fund=[1,2,3].map(()=>({id:slId(),n:'',p:null}));if(!SL.rules.consult.length)SL.rules.consult=AREAS.map(n=>({id:slId(),n,p:null}));SL.rules.distributors=SL.rules.distributors||[];SL.entries=SL.entries||[];SL.payroll=SL.payroll||[];
+  SL.rules.consult=SL.rules.consult||[];if(SL.rules.lb==null)SL.rules.lb=11;if(SL.rules.tax==null||(SL.rules.tax===9&&!SL.rules.taxv)){SL.rules.tax=7;SL.rules.taxv=2}if(SL.rules.dv==null)SL.rules.dv=3000;if(!SL.rules.fund)SL.rules.fund=[1,2,3].map(()=>({id:slId(),n:'',p:null}));if(!SL.rules.consult.length)SL.rules.consult=AREAS.map(n=>({id:slId(),n,p:null}));SL.rules.distributors=SL.rules.distributors||[];SL.entries=SL.entries||[];SL.payroll=SL.payroll||[];
   $("sl-lock").hidden=true;$("sl-app").hidden=false;document.querySelectorAll("#sl-tabs button").forEach(b=>b.onclick=()=>{SLT=b.dataset.t;slRender()});slRender()}
 function slSave(){clearTimeout(SLsaveT);$("sl-saved").textContent="Guardando…";SLsaveT=setTimeout(async()=>{try{await api("sal_save",{data:SL});$("sl-saved").textContent="✓ Guardado en el servidor · respaldo cada hora"}catch(e){$("sl-saved").textContent="⚠️ No se guardó: "+(e.message==="sallock"?"la sesión se cerró, vuelve a entrar":"revisa la conexión")}},600)}
 const $$=n=>n==null||isNaN(n)?"—":(n<0?"-":"")+"$"+Math.abs(+n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1387,7 +1387,7 @@ function slCalc(e){const R=SL.rules;const L=[];
   const FD=slFund(R,fund);FD.forEach(f=>L.push(f));
   PE.list.forEach(p=>{if(p.on)L.push({k:"p",id:p.id,n:p.n,t:`${rd(p.pe)}% de la entrada neta`,v:rd(net*p.pe/100),pe:p.pe})});
   const sumP=rd(R.ops+PE.fund+PE.list.reduce((s,p)=>s+(p.on?p.pe:0),0));
-  const tax=e.rama==="Café"&&e.tax!==false?rd(v*(R.tax??9)/100):0;
+  const tax=e.rama==="Café"&&e.tax!==false?rd(v*(R.tax??7)/100):0;
   return {v,c,i,base,cBase,dist,op,comp,cont,net,ops,fund,FD,L,sumP,AX,PE,tax}}
 /* reparto del fondo Midnight entre personas (por defecto 3, partes iguales o % propio) */
 function slFund(R,amt){if(!(amt>0))return [];const P=(R.fund||[]);if(!P.length)return [{k:"fd",id:"fondo",n:"Fondo Midnight",t:"Sin reparto",v:amt,pe:100}];
@@ -1523,12 +1523,12 @@ function slOut(){const k=slCalc(SLE),R=SL.rules,e=SLE;
   step(R.ops_name+" "+R.ops+"%",k.ops);
   const P=k.L.filter(x=>x.k==="p"),pt=rd(P.reduce((s,x)=>s+x.v,0));const pp=R.partners.reduce((s,x)=>s+(+x.p||0),0);
   
-  const TX=e.rama==="Café"?`<div class="sl-bill"><label class="sl-ck"><input type="checkbox" ${e.tax!==false?"checked":""} onchange="SLE.tax=this.checked;slOut()"> Cobrar taxes ${R.tax??9}%</label>
-    <div><span>Subtotal</span><b>${$$(k.v)}</b></div><div><span>+ Taxes ${R.tax??9}%</span><b>${$$(k.tax)}</b></div><div class="hi"><span>Total a cobrar al cliente</span><b>${$$(rd(k.v+k.tax))}</b></div>
+  const TX=e.rama==="Café"?`<div class="sl-bill"><label class="sl-ck"><input type="checkbox" ${e.tax!==false?"checked":""} onchange="SLE.tax=this.checked;slOut()"> Cobrar taxes ${R.tax??7}%</label>
+    <div><span>Subtotal</span><b>${$$(k.v)}</b></div><div><span>+ Taxes ${R.tax??7}%</span><b>${$$(k.tax)}</b></div><div class="hi"><span>Total a cobrar al cliente</span><b>${$$(rd(k.v+k.tax))}</b></div>
     <small>Los taxes se le cobran al cliente y se pagan al estado: no entran en la ganancia ni en el reparto.</small></div>`:"";
   $("sl-out").innerHTML=`${TX}<h3 class="sl-h">Desglose</h3>
    <table class="mx-tbl sl-wf"><thead><tr><th>Concepto</th><th class="n">Monto</th><th class="n">Queda</th></tr></thead><tbody>
-   ${k.tax?`<tr class="sl-tot"><td>Total cobrado al cliente (con taxes)</td><td></td><td class="n">${$$(rd(k.v+k.tax))}</td></tr><tr><td>− Taxes ${R.tax??9}% (se pagan al estado)</td><td class="n neg">${$$(-k.tax)}</td><td class="n">${$$(k.v)}</td></tr>`:""}
+   ${k.tax?`<tr class="sl-tot"><td>Total cobrado al cliente (con taxes)</td><td></td><td class="n">${$$(rd(k.v+k.tax))}</td></tr><tr><td>− Taxes ${R.tax??7}% (se pagan al estado)</td><td class="n neg">${$$(-k.tax)}</td><td class="n">${$$(k.v)}</td></tr>`:""}
    <tr class="sl-tot"><td>${k.tax?"= "+top+" sin taxes":top}</td><td></td><td class="n">${$$(k.v)}</td></tr>${W.join("")}</tbody></table>
    ${k.PE.none?"":`<details class="sl-soc" ${SLsocOpen?"open":""} ontoggle="SLsocOpen=this.open"><summary><span>▸ Socios <small>(${P.length} de ${R.partners.length}) · toca para ver y modificar</small></span><b>${$$(pt)}</b></summary>
    <table class="mx-tbl">${k.PE.list.map(x=>`<tr class="${x.on?"":"sl-off"}"><td><label class="sl-ck"><input type="checkbox" ${x.on?"checked":""} onchange="slPP('${x.id}','off',!this.checked)"> ${esc(x.n)}</label></td>
@@ -1588,7 +1588,7 @@ function slRep(){const A=slAgg(),T=A.T;const B=$("sl-body");
    <div class="sl-final-big"><span>Resultado final · ${slPeriod()}</span><b class="${A.final<0?"neg":""}">${$$(A.final)}</b><small>Todas las ramas y cuentas, después de costos, comisiones, pagos al personal y nómina</small></div>
    <div class="mx-box"><h3>De las ventas al resultado final</h3><table class="mx-tbl sl-wf"><tbody>
     <tr class="sl-tot"><td>Monto bruto entrante, con taxes (${A.E.length} entradas)</td><td class="n">${$$(rd(T.v+T.tax))}</td></tr>
-    <tr><td>− Taxes ${SL.rules.tax??9}% (se pagan al estado)</td><td class="n neg">${$$(-T.tax)}</td></tr>
+    <tr><td>− Taxes ${SL.rules.tax??7}% (se pagan al estado)</td><td class="n neg">${$$(-T.tax)}</td></tr>
     <tr class="sl-tot"><td>= Ventas sin taxes</td><td class="n">${$$(T.v)}</td></tr>
     <tr><td>− Costos (café, insumos, DV Nova, gastos)</td><td class="n neg">${$$(-T.cost)}</td></tr>
     <tr class="sl-tot"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
@@ -1609,7 +1609,7 @@ function slRepPrint(){const A=slAgg(),T=A.T;const w=window.open("","_blank");if(
    <h1>Reporte de resultados · ${slPeriod()}</h1><div class="s">Midnight Consulting Global LLC · Confidencial · Generado ${new Date().toLocaleDateString("es")}</div>
    <div class="big"><span>Resultado final (todas las ramas y cuentas)</span><b>${$$(A.final)}</b></div>
    <h2>De las ventas al resultado final</h2><table>
-   <tr class="t"><td>Monto bruto entrante, con taxes (${A.E.length} entradas)</td><td class="n">${$$(rd(T.v+T.tax))}</td></tr><tr><td>− Taxes ${SL.rules.tax??9}% (se pagan al estado)</td><td class="n">${$$(-T.tax)}</td></tr><tr class="t"><td>= Ventas sin taxes</td><td class="n">${$$(T.v)}</td></tr><tr><td>− Costos</td><td class="n">${$$(-T.cost)}</td></tr><tr class="t"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
+   <tr class="t"><td>Monto bruto entrante, con taxes (${A.E.length} entradas)</td><td class="n">${$$(rd(T.v+T.tax))}</td></tr><tr><td>− Taxes ${SL.rules.tax??7}% (se pagan al estado)</td><td class="n">${$$(-T.tax)}</td></tr><tr class="t"><td>= Ventas sin taxes</td><td class="n">${$$(T.v)}</td></tr><tr><td>− Costos</td><td class="n">${$$(-T.cost)}</td></tr><tr class="t"><td>= Utilidad bruta</td><td class="n">${$$(T.base)}</td></tr>
    <tr><td>− Comisiones de distribuidores</td><td class="n">${$$(-T.com)}</td></tr><tr><td>− Contadora</td><td class="n">${$$(-T.cont)}</td></tr><tr><td>− Pagos al personal</td><td class="n">${$$(-T.staff)}</td></tr><tr><td>− Nómina fija</td><td class="n">${$$(-A.nom)}</td></tr>
    <tr class="t"><td>= Resultado final</td><td class="n">${$$(A.final)}</td></tr></table><p><b>Taxes a pagar al estado: ${$$(T.tax)}</b> <span class="s">(descontados; el reparto se calcula sin taxes)</span></p>
    <h2>Por rama</h2>${tb(A.byR,"Rama")}<h2>Por cuenta / sucursal</h2>${tb(A.byC,"Cuenta")}
@@ -1627,7 +1627,7 @@ function slRules(){const R=SL.rules;const sum=R.ops+R.partners.reduce((s,p)=>s+(
   B.innerHTML=`<div class="mx-box"><h3>Reglas generales</h3><div class="mx-form">
     <label>Comisión distribuidores de Café (%)<input type="number" step="0.5" value="${R.dist}" onchange="SL.rules.dist=+this.value;slSave();slRules()"></label>
     <label>Retención ${esc(R.ops_name)} (%)<input type="number" step="0.5" value="${R.ops}" onchange="SL.rules.ops=+this.value;slSave();slRules()"></label>
-    <label>Taxes de venta café (%)<input type="text" inputmode="decimal" value="${R.tax??9}" onchange="SL.rules.tax=slNum(this.value);slSave();slRules()"></label>
+    <label>Taxes de venta café (%)<input type="text" inputmode="decimal" value="${R.tax??7}" onchange="SL.rules.tax=slNum(this.value);slSave();slRules()"></label>
     <label>Inversión DV Nova fija en Consulting ($)<input type="text" inputmode="decimal" value="${R.dv??3000}" onchange="SL.rules.dv=slNum(this.value);slSave();slRules()"></label>
     <label>Costo del café por libra ($)<input type="text" inputmode="decimal" value="${R.lb??11}" onchange="SL.rules.lb=slNum(this.value)||11;slSave();slRules()"></label>
     <label>Comisión contadora (%)<input type="number" step="0.5" value="${R.cont}" onchange="SL.rules.cont=+this.value;slSave();slRules()"></label></div>
