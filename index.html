@@ -96,10 +96,12 @@ button:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
 .prod .price{font-size:16px;font-weight:500;font-variant-numeric:tabular-nums}
 .add{width:36px;height:36px;border-radius:50%;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold);transition:background .2s}
 .add:active,.add.done{background:var(--gold);color:#120d07}
-.ourstory{margin:16px 16px 0;padding:22px 20px 18px;border:1px solid var(--line);border-radius:18px;background:radial-gradient(120% 80% at 50% 0%,rgba(212,171,95,.10),transparent 60%),var(--panel2,#15110c);text-align:center}
-.ourstory p{font-family:var(--serif);font-size:15.5px;line-height:1.65;color:var(--cream);margin:0 0 14px;text-wrap:pretty}
+.hero.hs{min-height:0;padding-bottom:22px}.hero.hs h2{max-width:none;font-size:34px}.hero.hs p{max-width:36ch;font-size:14px}
+body.desk .hero.hs{min-height:260px;justify-content:center}body.desk .hero.hs p{max-width:46ch;font-size:15px}
+.ourstory{margin:10px 16px 0;padding:22px 20px 18px;border:1px solid var(--line);border-radius:18px;background:radial-gradient(120% 80% at 50% 0%,rgba(212,171,95,.10),transparent 60%),var(--panel2,#15110c);text-align:center}
+.ourstory p{font-family:var(--serif);font-size:15.5px;line-height:1.55;color:var(--cream);margin:0 0 10px;text-wrap:pretty}
 .ourstory p:last-of-type{margin-bottom:10px}
-.os-orn{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--gold);margin:0 0 14px;font-size:16px}.os-orn span{height:1px;width:56px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.os-orn{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--gold);margin:0 0 10px;font-size:16px}.os-orn span{height:1px;width:56px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 .os-sign{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.85}
 body.desk .ourstory{padding:30px 48px 24px}body.desk .ourstory p{font-size:17px}
 .story{margin:18px 16px 0;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);font-size:13.5px;line-height:1.55;color:var(--cream)}
@@ -761,7 +763,7 @@ body.desk #home .tile:hover{transform:translateY(-3px);box-shadow:0 14px 34px rg
       <button class="icon-btn cart-btn" aria-label="Abrir carrito" onclick="openCart()"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM5.2 4l.9 2H21l-3.4 7.2a2 2 0 0 1-1.8 1.1H8.1l-1 1.7H19v2H5l2.1-3.6L3.8 4H2V2h3.1l.1.2Z"/></svg><span class="badge" hidden>0</span></button>
     </div>
     <div class="scroll">
-      <div class="hero">
+      <div class="hero hs">
         <div class="eyebrow">Midnight Café</div>
         <h2>Nuestra historia</h2>
         <p>Midnight Café nace con el propósito de llevar al mundo el auténtico café colombiano de origen, ofreciendo una experiencia premium que une tradición, calidad e innovación.</p>
