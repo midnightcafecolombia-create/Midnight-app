@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#0b0907">
-<title>Midnight · Dueños</title>
+<title>Midnight Accounting</title><meta name="apple-mobile-web-app-title" content="Midnight Accounting"><meta name="application-name" content="Midnight Accounting">
 <!-- MIDNIGHT-DUENOS -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Jost:wght@300;400;500&display=swap">
@@ -375,7 +375,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 </head>
 <body>
 <header class="top">
-  <div class="top-row"><div class="brand">MIDNIGHT · DUEÑOS</div><div class="who"><span id="who"></span><a href="?salir=1">Salir</a></div></div>
+  <div class="top-row"><div class="brand">MIDNIGHT · ACCOUNTING</div><div class="who"><span id="who"></span><a href="?salir=1">Salir</a></div></div>
   <nav class="tabs" role="tablist">
     <button type="button" class="on" data-v="ordenes">Órdenes<span class="n" id="n-new" hidden></span></button>
     <button type="button" data-v="preguntas">Preguntas<span class="n" id="n-chat" hidden></span></button>
@@ -1669,7 +1669,7 @@ async function slAcc(u,on){let r;try{r=await api("sal_access",u?{user:u,on:on?1:
 
 
 /* ===== Acceso por WhatsApp + contraseña provisoria ===== */
-function waAccessMsg(name,user,pw){const url=location.origin+"/duenos/";return `Hola ${name||""} 👋\nTe di acceso al panel de dueños de Midnight.\n\nEntra aquí: ${url}\nUsuario: ${user}\nContraseña provisoria: ${pw}\n\nAl entrar te va a pedir que crees tu propia contraseña.`}
+function waAccessMsg(name,user,pw){const url=location.origin+"/duenos/";return `Hola ${name||""} 👋\nTe di acceso a Midnight Accounting.\n\nEntra aquí: ${url}\nUsuario: ${user}\nContraseña provisoria: ${pw}\n\nAl entrar te va a pedir que crees tu propia contraseña.`}
 function waShow(name,user,pw){const b=$("u-wa");b.hidden=false;b.dataset.msg=waAccessMsg(name,user,pw);
   b.innerHTML=`<div class="wa-h">✅ Acceso listo para <b>${esc(name||user)}</b></div><p class="note" style="margin:4px 0 8px">Usuario <b>${esc(user)}</b> · contraseña provisoria <b class="mono">${esc(pw)}</b>. Al entrar, el sistema le pide crear la suya.</p>
    <div class="pw-row"><input id="u-wa-tel" type="tel" inputmode="tel" placeholder="WhatsApp (ej. 305 555 1234)"><button type="button" class="btn" style="width:auto;padding:10px 14px" onclick="waSend()">📲 Enviar por WhatsApp</button></div>
