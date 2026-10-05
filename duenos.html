@@ -357,7 +357,9 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 @media(max-width:1000px){.sl-irow.sl-rent{grid-template-columns:1fr 1fr}}
 .sl-taxbox{margin:0 0 12px;padding:12px 16px;border:1px dashed #e6a08a;border-radius:12px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
 .sl-taxbox span{color:#e6a08a;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase}.sl-taxbox b{font-size:22px;font-weight:500;color:var(--cream)}.sl-taxbox small{flex-basis:100%;color:var(--muted)}
-.ai-mini{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:14px 0 4px;position:relative}
+.ai-pop input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
+.pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
+.ai-mini{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px;margin:14px 0 4px;position:relative}
 .ai-pill{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--gold);color:var(--gold-hi)}.ai-pill.off{border-color:var(--line);color:var(--muted)}
 .ai-cfg summary{list-style:none;cursor:pointer;font-size:12px;color:var(--muted);padding:4px 8px;border:1px solid var(--line);border-radius:999px}.ai-cfg summary::-webkit-details-marker{display:none}
 .ai-cfg[open] summary{color:var(--gold-hi);border-color:var(--gold)}
@@ -501,7 +503,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
       <form class="form" id="u-form" autocomplete="off">
         <label>Nombre<input id="u-name" required></label>
         <label>Usuario<input id="u-user" autocapitalize="none" required></label>
-        <label>Contraseña (10+ caracteres)<input id="u-pw" type="password" autocomplete="new-password" required></label>
+        <label>Contraseña (10+ caracteres)<span class="pw-row"><input id="u-pw" type="password" autocomplete="new-password" required><button type="button" class="chip" title="Crear una contraseña segura" onclick="pwGen('u-pw')">🎲 Crear</button><button type="button" class="chip" title="Copiar" onclick="pwCopy('u-pw')">📋</button></span><small class="note" id="u-pw-tip" style="margin:4px 0 0" hidden>Cópiala y pásasela a la persona. Después puede cambiarla en «🔑 Mi contraseña».</small></label>
         <label>Permiso<select id="u-role"><option value="socio">Socio: ve y actualiza</option><option value="admin">Administrador: también maneja el equipo</option></select></label>
         <button class="btn" type="submit">Agregar</button>
       </form>
@@ -511,13 +513,13 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
         <div class="ai-pop"><p class="note" style="margin:0 0 6px">Pega la clave de Anthropic (empieza con <b>sk-ant-</b>). Se guarda en tu servidor.</p>
         <input id="ai-key" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" placeholder="sk-ant-…" style="font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:6px 8px">
         <div class="row" style="margin-top:6px;gap:6px"><button class="chip" type="button" onclick="aiSaveKey()">Guardar</button><button class="chip" type="button" style="opacity:.7" onclick="aiClearKey()">Quitar</button></div></div>
+      </details>
+      <details class="ai-cfg"><summary title="Cambiar mi contraseña">🔑 Mi contraseña</summary>
+        <div class="ai-pop"><form id="p-form" autocomplete="off">
+          <label class="note" style="display:block;margin:0 0 6px">Contraseña actual<input id="p-old" type="password" autocomplete="current-password" required style="padding:6px 8px;font-size:13px"></label>
+          <label class="note" style="display:block;margin:0 0 6px">Nueva contraseña<span class="pw-row"><input id="p-new" type="password" autocomplete="new-password" required style="padding:6px 8px;font-size:13px"><button type="button" class="chip" title="Crear una contraseña segura" onclick="pwGen('p-new')">🎲</button></span></label>
+          <button class="chip" type="submit">Cambiar</button></form></div>
       </details></div>
-    <span class="lbl">Cambiar mi contraseña</span>
-    <form class="form" id="p-form" autocomplete="off">
-      <label>Contraseña actual<input id="p-old" type="password" autocomplete="current-password" required></label>
-      <label>Nueva contraseña<input id="p-new" type="password" autocomplete="new-password" required></label>
-      <button class="btn ghost" type="submit">Cambiar contraseña</button>
-    </form>
   </section>
 </main>
 <div class="toast" id="toast"></div>
@@ -607,7 +609,11 @@ function renderUsers(){
 let delArm=null;
 async function delUser(u){if(delArm!==u){delArm=u;toast("Toca otra vez «Quitar acceso» para confirmar");setTimeout(()=>delArm=null,4000);return}
   try{const r=await api("del_user",{user:u});D.users=r.users;renderUsers();toast("Acceso quitado")}catch(e){toast(e.message)}}
-$("u-form").onsubmit=async e=>{e.preventDefault();try{const r=await api("add_user",{name:$("u-name").value,user:$("u-user").value,pw:$("u-pw").value,role:$("u-role").value});D.users=r.users;renderUsers();e.target.reset();toast("Acceso creado. Comparte el usuario y la contraseña en persona")}catch(err){toast(err.message)}};
+$("u-form").onsubmit=async e=>{e.preventDefault();try{const r=await api("add_user",{name:$("u-name").value,user:$("u-user").value,pw:$("u-pw").value,role:$("u-role").value});D.users=r.users;renderUsers();e.target.reset();$("u-pw").type="password";$("u-pw-tip").hidden=true;toast("Acceso creado. Comparte el usuario y la contraseña en persona")}catch(err){toast(err.message)}};
+function pwGen(id){const A="ABCDEFGHJKLMNPQRSTUVWXYZ",a="abcdefghijkmnpqrstuvwxyz",n="23456789",y="!@#$%*?";const all=A+a+n+y;const r=m=>{const u=new Uint32Array(1);crypto.getRandomValues(u);return u[0]%m};
+  let c=[A[r(A.length)],a[r(a.length)],n[r(n.length)],y[r(y.length)]];while(c.length<14)c.push(all[r(all.length)]);for(let i=c.length-1;i>0;i--){const j=r(i+1);[c[i],c[j]]=[c[j],c[i]]}
+  const el=$(id);el.type="text";el.value=c.join("");el.focus();el.select();const t=$(id+"-tip");if(t)t.hidden=false;toast("Contraseña creada: cópiala antes de guardar")}
+function pwCopy(id){const v=$(id).value;if(!v)return toast("Primero crea o escribe la contraseña");(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Copiada")).catch(()=>{$(id).type="text";$(id).select();toast("Selecciónala y cópiala")})}
 $("p-form").onsubmit=async e=>{e.preventDefault();try{await api("passwd",{old:$("p-old").value,pw:$("p-new").value});e.target.reset();toast("Contraseña cambiada")}catch(err){toast(err.message)}};
 
 /* ===== Costos ===== */
