@@ -983,7 +983,7 @@ function mxReport(k){const R=REPS.find(r=>r[0]===k);const L=allDrinks().map(x=>(
 let MXCR=null,MXCRH=[];
 function mxCreate(){const B=$("mx-body");
   B.innerHTML=`<div class="mx-box"><h3>🍸 Creador de tragos con IA</h3><p class="note" style="margin:0">Escribe los ingredientes que quieres usar y la IA te diseña el trago completo: cantidades, preparación, descripción, garnish y la ilustración con su ficha.</p>
-   <label class="note" style="display:flex;flex-direction:column;gap:4px">Ingredientes base<textarea id="cr-ing" oninput="crTypeCheck(true)" placeholder="Ej.: espresso Midnight, naranja, canela, miel">${MXCR?esc(MXCR.inp.ing):""}</textarea></label>
+   <label class="note" style="display:flex;flex-direction:column;gap:4px">Ingredientes base<textarea id="cr-ing" oninput="crTypeCheck()" placeholder="Ej.: espresso Midnight, naranja, canela, miel">${MXCR?esc(MXCR.inp.ing):""}</textarea></label>
    <div class="mx-form">
     <label>Tipo<select id="cr-type" onchange="crTypeCheck()">${["Cocktail (con alcohol)","Mocktail (sin alcohol)","Coffee","Que decida la IA según los ingredientes"].map(t=>`<option ${MXCR&&MXCR.inp.type===t?"selected":""}>${t}</option>`).join("")}</select></label>
     <label>Vaso<select id="cr-glass"><option value="">Que decida la IA</option>${Object.keys(GLASS).map(g=>`<option ${MXCR&&MXCR.inp.glass===g?"selected":""}>${g}</option>`).join("")}</select></label>
@@ -991,23 +991,36 @@ function mxCreate(){const B=$("mx-body");
     <label>Estilo u ocasión (opcional)<input id="cr-style" placeholder="Ej.: refrescante, para brunch, de autor, para Miami" value="${MXCR?esc(MXCR.inp.style):""}"></label>
     <label class="ck w4"><input type="checkbox" id="cr-inv" ${MX.inv.length?"checked":""}> Usar productos de mi inventario cuando se pueda (para calcular el costo)</label>
    </div>
-   <div class="mx-row"><button type="button" class="mx-btn gold" id="cr-go" onclick="mxCreateGo()">✨ Crear trago</button>${MXCR&&MXCR.r?`<button type="button" class="mx-btn" onclick="mxCreateGo(true)">🔄 Otra versión</button>`:""}</div></div>
+   <ul class="mx-al" id="cr-rules"></ul><div class="mx-row"><button type="button" class="mx-btn gold" id="cr-go" onclick="mxCreateGo()">✨ Crear trago</button>${MXCR&&MXCR.r?`<button type="button" class="mx-btn cr-again" onclick="mxCreateGo(true)">🔄 Otra versión</button>`:""}</div></div>
    <div id="cr-out"></div>
    ${MXCRH.length>1?`<div class="mx-box"><h3>Creados en esta sesión</h3><div class="mx-chips" style="flex-wrap:wrap">${MXCRH.map((h,i)=>`<button type="button" onclick="MXCR=MXCRH[${i}];mxRender()">${esc(h.r.name)}</button>`).join("")}</div></div>`:""}`;
-  if(MXCR&&MXCR.r)mxCreateShow()}
+  crTypeCheck();if(MXCR&&MXCR.r)mxCreateShow()}
 const ALC=/tequila|mezcal|vodka|ron\b|rum|gin\b|ginebra|whisk|bourbon|brandy|cognac|co[ñn]ac|pisco|aguardiente|cacha[cç]a|licor|liqueur|vermu|vermouth|aperol|campari|amaretto|kahl[uú]a|baileys|triple sec|cointreau|vino|wine|prosecco|champagne|cava|cerveza|beer|sake|absenta|jagermeister|fernet|grand marnier|chartreuse|st.? germain/i;
-function crTypeCheck(fromIng){const ing=($("cr-ing")||{}).value||"",sel=$("cr-type");if(!sel)return;const hasA=ALC.test(ing);
-  if(hasA&&/Mocktail/.test(sel.value)){sel.value="Cocktail (con alcohol)";toast(fromIng?"Tiene alcohol: lo cambié a Cocktail":"Ese ingrediente lleva alcohol, así que tiene que ser Cocktail")}}
-async function mxCreateGo(again){const ing=$("cr-ing").value.trim();if(!ing)return toast("Escribe al menos un ingrediente");crTypeCheck();
+const DAIRY=/leche|crema|cream|half|yogur|baileys|condensada|evaporada/i,ACID=/lim[oó]n|lima|lime|maracuy[aá]|pi[ñn]a|naranja|toronja|vinagre|shrub|tamarindo/i;
+function crRules(ing,type){const E=[],W=[];const hasA=ALC.test(ing);
+  if(/Mocktail/.test(type)&&hasA)E.push(`«${(ing.match(ALC)||[""])[0]}» lleva alcohol. Un mocktail no puede llevar alcohol: quita ese ingrediente o elige Cocktail.`);
+  if(/^Cocktail/.test(type)&&ing.trim()&&!hasA)E.push("Un cocktail necesita una base de alcohol (tequila, ron, vodka, gin, whisky…). Agrégala o elige Mocktail.");
+  if(DAIRY.test(ing)&&ACID.test(ing))W.push("Lácteo con cítrico o fruta ácida puede cortarse. La IA usará una técnica segura (leche vegetal o clarificado).");
+  return {E,W}}
+function crTypeCheck(){const ing=($("cr-ing")||{}).value||"",sel=$("cr-type"),box=$("cr-rules"),btn=$("cr-go");if(!sel||!box)return true;
+  const {E,W}=crRules(ing,sel.value);
+  box.innerHTML=E.map(e=>`<li class="b"><b>🚫 BLOQUEADO</b> · ${esc(e)}</li>`).join("")+W.map(w=>`<li class="w"><b>⚠ OJO</b> · ${esc(w)}</li>`).join("");
+  if(btn){btn.disabled=!!E.length;btn.title=E.length?"Corrige los ingredientes o el tipo para continuar":""}
+  document.querySelectorAll(".cr-again").forEach(x=>x.disabled=!!E.length);return !E.length}
+async function mxCreateGo(again){const ing=$("cr-ing").value.trim();if(!ing)return toast("Escribe al menos un ingrediente");if(!crTypeCheck())return toast("Bloqueado: corrige los ingredientes o el tipo");
   const inp={ing,type:$("cr-type").value,glass:$("cr-glass").value,style:$("cr-style").value.trim(),cap:+$("cr-cap").value||10};const b=$("cr-go");b.disabled=true;b.textContent="Creando tu trago…";
   const ctx=JSON.stringify({vaso_oz:inp.cap,REGLAS:"El vaso es de "+inp.cap+" oz: la receta completa con la dilución del hielo debe caber (máximo ~"+Math.round(inp.cap*0.62*10)/10+" oz de líquido si va con hielo). La base de alcohol total es de 1.5 a 2 oz, nunca más. Extractos, bitters y amargos van en dash o gotas, nunca en onzas. Los ingredientes_base son OBLIGATORIOS y deben ser el protagonista del trago, con su cantidad real. Nunca los quites ni los reemplaces. Si un ingrediente base lleva alcohol, el trago es un Cocktail con alcohol. Solo es mocktail si el tipo lo pide y ningún ingrediente base lleva alcohol.",ingredientes_base:ing,tipo:inp.type,vaso_preferido:inp.glass||"el mejor para el trago",estilo:inp.style||"",
     inventario:$("cr-inv").checked?MX.inv.map(p=>p.name):[],evitar_nombres:again&&MXCR&&MXCR.r?[MXCR.r.name]:[],objetivo_beverage_cost:V().target+"%"});
   try{const r=await api("mix_ai",{mode:"create",text:ctx});if(!r.name||!Array.isArray(r.items))throw new Error("La IA no devolvió una receta. Intenta otra vez.");
+    const resA=r.items.some(i=>ALC.test(i.n||""));
+    if(/Mocktail/.test(inp.type)&&resA){if(!again){b.textContent="Corrigiendo…";return mxCreateGo(true)}throw new Error("Bloqueado: la IA puso alcohol en un mocktail. Intenta otra vez.")}
+    if(/^Cocktail/.test(inp.type)&&!r.items.some(i=>SPIRIT.test(i.n||"")||ALC.test(i.n||""))){if(!again){b.textContent="Corrigiendo…";return mxCreateGo(true)}throw new Error("Bloqueado: la receta no tiene base de alcohol. Intenta otra vez.")}
+    if(/Mocktail/.test(inp.type))r.cat="Mocktails";else if(/^Cocktail/.test(inp.type))r.cat="Cocktails";
     const base=ing.split(/[,;\n]| y /).map(x=>x.trim().toLowerCase()).filter(x=>x.length>2);const miss=base.filter(b=>!r.items.some(i=>(i.n||"").toLowerCase().includes(b.split(" ")[0])));
     if(miss.length&&!again){b.textContent="Ajustando…";return mxCreateGo(true)}
     if(miss.length)toast("Ojo: la receta no incluye "+miss.join(", ")+". Toca Otra versión.");
     r.items=r.items.map(i=>{const it={q:i.q==null?null:+i.q,u:UNITS[i.u]?i.u:"oz",n:i.n||""};const p=MX.inv.find(p=>it.n.length>2&&(p.name.toLowerCase().includes(it.n.toLowerCase())||it.n.toLowerCase().includes(p.name.toLowerCase())));if(p)it.inv=p.id;return it});
-    r.cap=inp.cap;if(inp.glass)r.glass=inp.glass;crFit(r);MXCR={inp,r};MXCRH.push(MXCR);mxRender()}catch(e){toast(e.message);b.disabled=false;b.textContent="✨ Crear trago"}}
+    r.cap=inp.cap;if(inp.glass)r.glass=inp.glass;crFit(r);MXCR={inp,r};MXCRH.push(MXCR);mxRender()}catch(e){const bb=$("cr-go");toast(e.message);b.disabled=false;b.textContent="✨ Crear trago"}}
 function crDrink(r){return {cap:r.cap||null,id:mxId(),name:r.name,cat:/cocktail/i.test(r.cat)?"Cocktails":/coffee/i.test(r.cat)?"Coffee":"Mocktails",desc:r.desc||"",glass:r.glass||"",ice:r.ice!==false,method:(r.method||"").toLowerCase(),garnish:r.garnish||"",price:null,sales:null,items:r.items.map(i=>({...i})),steps:r.steps||[],visual:r.visual||null}}
 function mxCreateShow(){const r=MXCR.r;const d=crDrink(r);const c=mxCalc(d);const svg=mxDrinkSVG(r);
   $("cr-out").innerHTML=`<div class="mx-box cr-res"><div class="cr-grid"><div class="cr-art">${svg}<small class="note">Ilustración generada a partir de la receta</small></div>
@@ -1029,7 +1042,7 @@ function mxCreateShow(){const r=MXCR.r;const d=crDrink(r);const c=mxCalc(d);cons
    <div class="mx-row"><label class="note" style="display:flex;gap:6px;align-items:center">Guardar en <select id="cr-menu">${V().menus.map((m,i)=>`<option value="${i}">${esc(m.name)}</option>`).join("")}</select></label><button type="button" class="mx-btn gold" onclick="mxCreateSave()">💾 Guardar en el menú</button><button type="button" class="mx-btn" onclick="mxCreateCard()">⬇ Descargar ficha</button><button type="button" class="mx-btn" onclick="mxCreateCopy()">Copiar receta</button></div></div>`}
 function mxCreateCopy(){const r=MXCR.r;const t=`${r.name}\n${r.desc||""}\n\nVaso: ${r.glass} · ${r.method}${r.ice===false?"":" · con hielo"}\n`+r.items.map(i=>`• ${i.q??"?"} ${(UNITS[i.u]||UNITS.oz).l} ${i.n}`).join("\n")+`\nGarnish: ${r.garnish||"—"}\n\nPreparación:\n`+(r.steps||[]).map((s,i)=>`${i+1}. ${s}`).join("\n");try{navigator.clipboard.writeText(t).then(()=>toast("Receta copiada"))}catch(e){}}
 function svgToJpeg(svg,w,h){return new Promise((ok,ko)=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.drawImage(img,0,0,w,h);ok(c)};img.onerror=ko;img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg)})}
-async function mxCreateSave(){const r=MXCR.r;const d=crDrink(r);const M=V().menus[+$("cr-menu").value]||V().menus[0];if(!M)return toast("Crea un menú primero");M.drinks.push(d);mxSave();
+async function mxCreateSave(){const r=MXCR.r;if(/mocktail/i.test(r.cat)&&r.items.some(i=>ALC.test(i.n||"")))return toast("Bloqueado: un mocktail no puede llevar alcohol");const d=crDrink(r);const M=V().menus[+$("cr-menu").value]||V().menus[0];if(!M)return toast("Crea un menú primero");M.drinks.push(d);mxSave();
   try{const c=await svgToJpeg(mxDrinkSVG(r,true),800,1000);const u=c.toDataURL("image/jpeg",.88);await api("mix_photo_save",{id:d.id,kind:"master",image:u.split(",")[1]});MXPH[d.id+"-master"]=u;d.ph={master:true};mxSave()}catch(e){}
   toast(`«${r.name}» guardado en ${M.name}`)}
 async function mxCreateCard(){const r=MXCR.r;const d=crDrink(r);const c=mxCalc(d);const W=1080,H=1500;
