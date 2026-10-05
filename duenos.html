@@ -518,6 +518,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
         <label>Usuario<input id="u-user" autocapitalize="none" required></label>
         <label>Contraseña provisoria (10+ caracteres)<span class="pw-row"><input id="u-pw" type="password" autocomplete="new-password" required><button type="button" class="chip" title="Crear una contraseña segura" onclick="pwGen('u-pw')">🎲 Crear</button><button type="button" class="chip" title="Copiar" onclick="pwCopy('u-pw')">📋</button></span><small class="note" id="u-pw-tip" style="margin:4px 0 0" hidden>Al tocar Agregar te sale el botón para enviársela por WhatsApp. Al entrar, la persona crea la suya.</small></label>
         <label>Permiso<select id="u-role"><option value="socio">Socio: ve y actualiza</option><option value="admin">Administrador: también maneja el equipo</option></select></label>
+        <label class="ck" style="flex-direction:row;align-items:center;gap:8px;grid-column:1/-1"><input type="checkbox" id="u-sal" style="width:auto"> 🔒 También puede entrar a <b>Distribución</b> (crea su clave al entrar)</label>
         <button class="btn" type="submit">Agregar</button>
       </form>
     </div>
@@ -621,7 +622,7 @@ function renderUsers(){
 }
 async function delUser(u,n){if(!confirm(`¿Borrar a ${n||u} (${u})? Ya no podrá entrar al panel.`))return;
   try{const r=await api("del_user",{user:u});D.users=r.users;renderUsers();toast("Persona borrada")}catch(e){toast(e.message)}}
-$("u-form").onsubmit=async e=>{e.preventDefault();try{const nm=$("u-name").value.trim(),us=$("u-user").value.trim().toLowerCase(),pw=$("u-pw").value;const r=await api("add_user",{name:nm,user:us,pw,role:$("u-role").value});D.users=r.users;renderUsers();e.target.reset();$("u-pw").type="password";$("u-pw-tip").hidden=true;waShow(nm,us.replace(/[^a-zA-Z0-9._@-]/g,"").toLowerCase(),pw);toast("Acceso creado")}catch(err){toast(err.message)}};
+$("u-form").onsubmit=async e=>{e.preventDefault();try{const wantSal=$("u-sal").checked,nm=$("u-name").value.trim(),us=$("u-user").value.trim().toLowerCase(),pw=$("u-pw").value;const r=await api("add_user",{name:nm,user:us,pw,role:$("u-role").value});D.users=r.users;renderUsers();e.target.reset();$("u-pw").type="password";$("u-pw-tip").hidden=true;const uu=us.replace(/[^a-zA-Z0-9._@-]/g,"").toLowerCase();let sal=false;if(wantSal){try{await api("sal_grant",{user:uu});sal=true}catch(x){toast(x.message)}}$("u-sal").checked=false;waShow(nm,uu,pw,sal);toast("Acceso creado")}catch(err){toast(err.message)}};
 function pwGen(id){const A="ABCDEFGHJKLMNPQRSTUVWXYZ",a="abcdefghijkmnpqrstuvwxyz",n="23456789",y="!@#$%*?";const all=A+a+n+y;const r=m=>{const u=new Uint32Array(1);crypto.getRandomValues(u);return u[0]%m};
   let c=[A[r(A.length)],a[r(a.length)],n[r(n.length)],y[r(y.length)]];while(c.length<14)c.push(all[r(all.length)]);for(let i=c.length-1;i>0;i--){const j=r(i+1);[c[i],c[j]]=[c[j],c[i]]}
   const el=$(id);el.type="text";el.value=c.join("");el.focus();el.select();const t=$(id+"-tip");if(t)t.hidden=false;toast("Contraseña creada: cópiala antes de guardar")}
@@ -1702,12 +1703,13 @@ async function slAcc(u,on){let r;try{r=await api("sal_access",u?{user:u,on:on?1:
 
 
 /* ===== Acceso por WhatsApp + contraseña provisoria ===== */
-function waAccessMsg(name,user,pw){const url=location.origin+"/duenos/";return `Hola ${name||""} 👋\nTe di acceso a Midnight Accounting.\n\nEntra aquí: ${url}\nUsuario: ${user}\nContraseña provisoria: ${pw}\n\nAl entrar te va a pedir que crees tu propia contraseña.`}
-function waShow(name,user,pw){const b=$("u-wa");b.hidden=false;b.dataset.msg=waAccessMsg(name,user,pw);
+function waAccessMsg(name,user,pw,sal){const url=location.origin+"/duenos/";return `Hola ${name||""} 👋\nTe di acceso a Midnight Accounting.\n\nEntra aquí: ${url}\nUsuario: ${user}\nContraseña provisoria: ${pw}\n\nAl entrar te va a pedir que crees tu propia contraseña.`+(sal?`\n\n🔒 También tienes acceso a Distribución: la primera vez que la abras, crea tu clave personal para esa sección.`:"")}
+function waShow(name,user,pw,sal){const b=$("u-wa");b.hidden=false;b.dataset.msg=waAccessMsg(name,user,pw,sal);b.dataset.n=name||"";b.dataset.u=user;b.dataset.p=pw;
   b.innerHTML=`<div class="wa-h">✅ Acceso listo para <b>${esc(name||user)}</b></div><p class="note" style="margin:4px 0 8px">Usuario <b>${esc(user)}</b> · contraseña provisoria <b class="mono">${esc(pw)}</b>. Al entrar, el sistema le pide crear la suya.</p>
    <div class="pw-row"><input id="u-wa-tel" type="tel" inputmode="tel" placeholder="WhatsApp (ej. 305 555 1234)"><button type="button" class="btn" style="width:auto;padding:10px 14px" onclick="waSend()">📲 Enviar por WhatsApp</button></div>
-   <div class="row" style="margin-top:6px;gap:6px"><button type="button" class="chip" onclick="waCopyMsg()">📋 Copiar mensaje</button><button type="button" class="chip" style="opacity:.7" onclick="$('u-wa').hidden=true">Cerrar</button></div>`;
+   <div class="row" style="margin-top:6px;gap:6px;flex-wrap:wrap">${sal?'<span class="chip" style="border-color:var(--gold);color:var(--gold-hi)">🔒 Con acceso a Distribución</span>':`<button type="button" class="chip" onclick="waGrant()">🔒 Darle acceso a Distribución</button>`}<button type="button" class="chip" onclick="waCopyMsg()">📋 Copiar mensaje</button><button type="button" class="chip" style="opacity:.7" onclick="$('u-wa').hidden=true">Cerrar</button></div>`;
   b.scrollIntoView({behavior:"smooth",block:"center"})}
+async function waGrant(){const b=$("u-wa");try{await api("sal_grant",{user:b.dataset.u});waShow(b.dataset.n,b.dataset.u,b.dataset.p,true);toast("Acceso a Distribución dado")}catch(e){toast(e.message)}}
 function waSend(){let t=($("u-wa-tel").value||"").replace(/\D/g,"");if(t.length===10)t="1"+t;const u="https://wa.me/"+(t.length>=11?t:"")+"?text="+encodeURIComponent($("u-wa").dataset.msg);window.open(u,"_blank")}
 function waCopyMsg(){const m=$("u-wa").dataset.msg;(navigator.clipboard?navigator.clipboard.writeText(m):Promise.reject()).then(()=>toast("Mensaje copiado")).catch(()=>toast("No se pudo copiar"))}
 function pwMake(){const A="ABCDEFGHJKLMNPQRSTUVWXYZ",a="abcdefghijkmnpqrstuvwxyz",n="23456789",y="!@#$%*?";const all=A+a+n+y;const r=m=>{const u=new Uint32Array(1);crypto.getRandomValues(u);return u[0]%m};let c=[A[r(24)],a[r(24)],n[r(8)],y[r(7)]];while(c.length<14)c.push(all[r(all.length)]);for(let i=c.length-1;i>0;i--){const j=r(i+1);[c[i],c[j]]=[c[j],c[i]]}return c.join("")}
