@@ -1302,7 +1302,7 @@ let SL=null,SLT="calc",SLsaveT=null,SLM=new Date().toISOString().slice(0,7);
 const slId=()=>Math.random().toString(36).slice(2,10);
 const RAMAS=["Café","Consulting","Otro"];
 async function slStart(){const L=$("sl-lock");
-  let st;try{st=await api("sal_status")}catch(e){L.hidden=false;L.innerHTML='<div class="empty">No se pudo cargar. Sube el archivo api.php nuevo del panel.</div>';return}
+  let st;try{st=await api("sal_status")}catch(e){L.hidden=false;L.innerHTML=`<div class="empty">No se pudo cargar. El servidor todavía tiene el api.php viejo.<br><small style="opacity:.6">Detalle: ${esc(e.message||"")}</small></div>`;return}
   if(st.open)return slOpen();$("sl-app").hidden=true;L.hidden=false;
   const H='<div class="big">💼</div><h2>Distribución de la compañía</h2>';
   if(!st.set){L.innerHTML=BOOT.role==="admin"?H+`<p class="note">Quien crea la primera clave queda como <b>principal</b> y decide quién más entra. Cada persona tiene su propia clave (8+ caracteres), distinta a la del panel.</p><input id="sl-k1" type="password" placeholder="Nueva clave" autocomplete="new-password"><input id="sl-k2" type="password" placeholder="Repite la clave" autocomplete="new-password"><button class="btn" type="button" onclick="slSetKey()">Crear clave y entrar</button>`:'<div class="empty">🔒 Esta sección es privada.</div>';return}
