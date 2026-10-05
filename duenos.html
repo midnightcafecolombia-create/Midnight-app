@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
+<meta charset="utf-8"><script>try{if(localStorage.getItem("midnight-theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#0b0907">
@@ -14,12 +14,18 @@
 :root{
   --ink:#0b0907;--panel:#15110c;--panel2:#1d1710;--gold:#d4ab5f;--gold-hi:#f1d48f;--gold-lo:#8a6a31;
   --cream:#efe6d6;--muted:#a8998a;--line:rgba(212,171,95,.35);--ok:#7cc79a;--warn:#e9b25a;--bad:#e06a5a;
-  --display:"Cinzel",Georgia,serif;--body:"Jost","Helvetica Neue",Arial,sans-serif;color-scheme:dark}
+  --display:"Cinzel",Georgia,serif;--body:"Jost","Helvetica Neue",Arial,sans-serif;--ink2:#0e0b08;--warm:#2a2013;--warm2:#2a2117;--ovr:11,9,7;--bg0:#050403;color-scheme:dark}
+html[data-theme="light"]{--ink:#f8f3ea;--ink2:#f1eadc;--panel:#ffffff;--panel2:#fbf7f0;--gold:#b58733;--gold-hi:#9a6f22;--gold-lo:#7a5a24;--cream:#241b10;--muted:#6e604f;--line:rgba(154,111,34,.32);--warm:#f4e9d2;--warm2:#ead9b6;--ovr:250,246,238;--bg0:#e8e0d0;--ok:#2f8a55;--warn:#a8701a;--bad:#c0473a;color-scheme:light}
+html[data-theme="light"] img,html[data-theme="light"] .seal{filter:none}
+html[data-theme="light"] input,html[data-theme="light"] select,html[data-theme="light"] textarea{color:var(--cream)}
+html[data-theme="light"] .sl-wf td.neg,html[data-theme="light"] .neg{color:#b5502f}html[data-theme="light"] .sl-taxbox{border-color:#b5502f}html[data-theme="light"] .sl-taxbox span{color:#b5502f}
+.theme-btn{display:inline-grid;place-items:center;width:34px;height:30px;border-radius:15px;border:1px solid var(--line);background:rgba(var(--ovr),.6);font-size:15px;line-height:1;cursor:pointer;color:var(--cream)}
+
 *{box-sizing:border-box}
 body{margin:0;background:var(--ink);color:var(--cream);font:300 15px/1.5 var(--body)}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
-.top{position:sticky;top:0;z-index:5;background:rgba(11,9,7,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0}
+.top{position:sticky;top:0;z-index:5;background:rgba(var(--ovr),.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0}
 .top-row{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:760px;margin:0 auto}
 .brand{font:600 17px var(--display);letter-spacing:.16em;color:var(--gold-hi)}
 .who{font-size:12px;color:var(--muted);display:flex;gap:10px;align-items:center}
@@ -208,7 +214,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .mx-dc:hover{border-color:var(--gold)}
 .mx-dc.warn{border-left-color:var(--warn)}.mx-dc.bad{border-left-color:var(--bad)}
 .mx-dc .t{display:flex;gap:10px;align-items:center}
-.mx-dc .ph{flex:none;width:46px;height:46px;border-radius:10px;background:#0b0907 center/cover;border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
+.mx-dc .ph{flex:none;width:46px;height:46px;border-radius:10px;background:var(--ink) center/cover;border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
 .mx-dc b{font-family:var(--display);color:var(--gold-hi);font-size:13.5px;font-weight:600}
 .mx-dc small{display:block;color:var(--muted);font-size:11.5px}
 .mx-dc .nums{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:11px;color:var(--muted)}
@@ -249,7 +255,7 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 .mx-bar.warn i:not(.l){background:var(--warn)}.mx-bar.bad i:not(.l){background:var(--bad)}
 .mx-photos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mx-ph{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
-.mx-ph .img{aspect-ratio:4/5;border-radius:12px;border:1px dashed var(--line);background:#0b0907 center/cover no-repeat;display:grid;place-items:center;font-size:28px;color:var(--gold-lo)}
+.mx-ph .img{aspect-ratio:4/5;border-radius:12px;border:1px dashed var(--line);background:var(--ink) center/cover no-repeat;display:grid;place-items:center;font-size:28px;color:var(--gold-lo)}
 .mx-ph .acts{display:flex;gap:6px;flex-wrap:wrap}
 .mx-ph label.mx-btn{cursor:pointer}.mx-ph input[type=file]{display:none}
 .mx-vis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px}
@@ -397,7 +403,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .mx-form>*{min-width:0}.mx-form input,.mx-form select,.mx-form textarea{width:100%}
 @media(max-width:480px){.mx-form{grid-template-columns:1fr!important}.mx-form label.w2,.mx-form .w2,.mx-form .w4,.mx-form label.w4{grid-column:1/-1}}
 /* panel extra (fuera de la región de Distribución) */
-.ai-pop input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
+.ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
 .u-x{background:none;border:1px solid rgba(224,106,90,.5);color:#e06a5a;width:30px;height:30px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;flex:none}.u-x:hover{background:rgba(224,106,90,.15)}
 .ai-mini{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px;margin:14px 0 4px;position:relative}
@@ -406,16 +412,16 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .ai-cfg[open] summary{color:var(--gold-hi);border-color:var(--gold)}
 .ai-pop{position:absolute;right:0;top:34px;z-index:20;width:min(320px,90vw);padding:10px;background:var(--ink);border:1px solid var(--gold);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .wa-box{margin-top:10px;padding:12px;border:1px solid #25D366;border-radius:12px;background:rgba(37,211,102,.06)}.wa-h{color:var(--cream)}.mono{font-family:ui-monospace,Menlo,monospace}
-.wa-box input{background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit}
+.wa-box input{background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit}
 .tg{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:16px}
 .tg-c{width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px}.tg-c h2{margin:0;color:var(--gold-hi);font-weight:500}
-.tg-c input{width:100%;box-sizing:border-box;background:#0b0907;color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit;margin-top:3px}
+.tg-c input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit;margin-top:3px}
 .mx-demo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:10px;border:1px dashed var(--gold);border-radius:12px;color:var(--cream);font-size:14px}
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="top-row"><div class="brand">MIDNIGHT · ACCOUNTING</div><div class="who"><span id="who"></span><a href="?salir=1">Salir</a></div></div>
+  <div class="top-row"><div class="brand">MIDNIGHT · ACCOUNTING</div><div class="who"><button type="button" class="theme-btn" onclick="toggleTheme()" aria-label="Pantalla clara">☀️</button><span id="who"></span><a href="?salir=1">Salir</a></div></div>
   <nav class="tabs" role="tablist">
     <button type="button" class="on" data-v="ordenes">Órdenes<span class="n" id="n-new" hidden></span></button>
     <button type="button" data-v="preguntas">Preguntas<span class="n" id="n-chat" hidden></span></button>
@@ -1765,6 +1771,12 @@ async function slAcc(u,on){let r;try{r=await api("sal_access",u?{user:u,on:on?1:
   B.innerHTML=`<h3>Quién puede entrar</h3><p class="note" style="margin:0">Principal: <b>${esc(nm(r.owner))}</b>. Cada persona entra con su propia clave.</p><table class="mx-tbl"><tbody>${r.users.map(x=>{const al=r.allow.includes(x.user),own=x.user===r.owner;return `<tr><td>${esc(x.name)}</td><td style="color:var(--muted)">${own?"Principal":al?(r.haskey.includes(x.user)?"Tiene acceso":"Acceso dado · falta que cree su clave"):"Sin acceso"}</td><td class="n">${r.isOwner&&!own?`<button type="button" class="mx-btn" onclick="slAcc('${esc(x.user)}',${al?0:1})">${al?"Quitar":"Dar acceso"}</button>`:""}</td></tr>`}).join("")}</tbody></table>${r.isOwner?"":'<p class="note">Solo el principal puede dar o quitar acceso.</p>'}`}
 
 /* ===== Inicio ===== */
+/* ===== Pantalla oscura / clara ===== */
+function themeIsLight(){return document.documentElement.dataset.theme==="light"}
+function themeBtns(){document.querySelectorAll(".theme-btn").forEach(b=>{b.textContent=themeIsLight()?"🌙":"☀️";b.title=themeIsLight()?"Pantalla oscura":"Pantalla clara";b.setAttribute("aria-label",b.title)});const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=themeIsLight()?"#f8f3ea":"#0b0907"}
+function toggleTheme(){if(themeIsLight())delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme="light";try{localStorage.setItem("midnight-theme",themeIsLight()?"light":"dark")}catch(e){}themeBtns()}
+document.addEventListener("DOMContentLoaded",themeBtns);setTimeout(themeBtns,0);
+
 /* ===== Acceso por WhatsApp + contraseña provisoria ===== */
 function waAccessMsg(name,user,pw,sal){const url=location.origin+"/duenos/";return `Hola ${name||""} 👋\nTe di acceso a Midnight Accounting.\n\nEntra aquí: ${url}\nUsuario: ${user}\nContraseña provisoria: ${pw}\n\nAl entrar te va a pedir que crees tu propia contraseña.`+(sal?`\n\n🔒 También tienes acceso a Distribución: la primera vez que la abras, crea tu clave personal para esa sección.`:"")}
 function waShow(name,user,pw,sal){const b=$("u-wa");b.hidden=false;b.dataset.msg=waAccessMsg(name,user,pw,sal);b.dataset.n=name||"";b.dataset.u=user;b.dataset.p=pw;
