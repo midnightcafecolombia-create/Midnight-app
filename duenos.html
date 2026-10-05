@@ -348,6 +348,9 @@ main:has(#v-mix:not([hidden])),main:has(#v-sal:not([hidden])){max-width:1100px}
 @media(max-width:900px){.sl-irow.sl-cafe{grid-template-columns:1fr 1fr}}
 .sl-grow{display:grid;grid-template-columns:minmax(200px,1fr) minmax(140px,220px) 30px;gap:8px;align-items:center;width:100%}
 .sl-usd{position:relative;display:block}.sl-usd:before{content:"$";position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gold-hi);pointer-events:none}.sl-usd input{width:100%;padding-left:22px!important}
+.sl-strow{display:grid;grid-template-columns:130px minmax(140px,1fr) 110px 130px 80px 110px 30px;gap:8px;align-items:end;padding:8px;border:1px solid var(--line);border-radius:10px;width:100%}
+.sl-strow label{font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+@media(max-width:900px){.sl-strow{grid-template-columns:1fr 1fr}}
 .quick{display:flex;gap:6px;flex-wrap:wrap}
 .quick button{border:1px solid var(--line);border-radius:16px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
 </style>
@@ -1360,7 +1363,9 @@ function slSave(){clearTimeout(SLsaveT);$("sl-saved").textContent="Guardando…"
 const $$=n=>n==null||isNaN(n)?"—":(n<0?"-":"")+"$"+Math.abs(+n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const rd=n=>Math.round(n*100)/100;
 /* cálculo de una entrada */
-function slCalc(e){const R=SL.rules;const L=[];let v,c=0,i=0,dist=0,op=0;
+function slCalc(e){const R=SL.rules;const L=[];
+  if(e.rama==="Mixología"){let pay=0;(e.st||[]).forEach((x,j)=>{const t=rd(slNum(x.rate)*slNum(x.qty));if(!t)return;pay=rd(pay+t);L.push({k:"st",id:((x.n||"")+"|"+x.role).toLowerCase(),n:(x.n||"Sin nombre")+" · "+x.role,t:`${x.pt==="dia"?"Por día":"Por hora"} · ${slNum(x.qty)} × ${$$(slNum(x.rate))}`,v:t})});
+    return {staff:true,pay,v:0,c:0,i:0,base:0,cBase:0,dist:0,op:0,comp:0,cont:0,net:0,ops:0,fund:0,FD:[],L,sumP:100,AX:[],PE:{list:[],fund:0,none:true},tax:0}}let v,c=0,i=0,dist=0,op=0;
   v=slNum(e.venta);const AX=[];
   let cb=null;
   if(e.rama==="Café"&&e.items&&e.items.length){v=0;cb=0;e.items.forEach(it=>{const pr=slPrice(it,R),co=slCost(it,R);if(!pr&&!co)return;v+=pr;c+=co;if(co)AX.push({n:slIsCat(it)?`Costo · ${(slProd(it,R)||{}).n} × ${slNum(it.q)} (${$$(slUC(it,R))} c/u)`:it.t==="Café"&&slNum(it.lb)?`Costo café · ${slNum(it.lb)} lb × ${$$(slCpl(it,R))}`:"Costo · "+(it.t)+(it.d?" ("+it.d+")":""),v:co});if(it.com)cb+=pr-co});cb=Math.max(0,cb)}
@@ -1405,10 +1410,12 @@ const slIsCat=it=>it.t==="Café"&&it.prod;
 const slPrice=(it,R)=>slIsCat(it)?rd(slNum(it.q)*slUP(it,R)):slNum(it.precio);
 const slCost=(it,R)=>slIsCat(it)?rd(slNum(it.q)*slUC(it,R)):it.t==="Café"&&slNum(it.lb)?rd(slNum(it.lb)*slCpl(it,R)):slNum(it.costo);
 /* calculadora */
+const SL_ROLES=["Mixólogo","Barista","Chef","Mesero","Ayudante","Otro"],RAMA_LBL={"Mixología":"Mixología y Barismo"};
+function slStSum(j){const o=$("sl-st"+j),x=SLE.st[j];if(o)o.textContent=$$(rd(slNum(x.rate)*slNum(x.qty)))}
 const SL_IT=["Café","Cafetera · venta","Cafetera · renta","Insumos","Otro"],SL_COM={"Café":true,"Cafetera · venta":false,"Cafetera · renta":false,"Insumos":true,"Otro":false};
 const SL_PH={"Café":"Ej.: Huila tostado medio","Cafetera · venta":"Modelo de la cafetera","Cafetera · renta":"Modelo · meses de renta","Insumos":"Vasos, tapas, azúcar…","Otro":"Detalle"};
 let SLE=null;
-function slBlank(r){const R0=(typeof SL!=='undefined'&&SL&&SL.rules)||{};return {gx:r==="Consulting"?[{cat:'',m:''}]:[],pp:{},ds:[],items:[{t:"Café",prod:"",ch:"Directo",q:"",up:"",uc:"",com:true}],id:slId(),fecha:new Date().toISOString().slice(0,10),rama:r||"Café",cuenta:"",dist:"",op:"",areas:{},venta:"",costo:"",insumos:"",cont:false,nota:"",...(r==="Consulting"?{insumos:String(R0.dv??3000)}:{})}}
+function slBlank(r){const R0=(typeof SL!=='undefined'&&SL&&SL.rules)||{};return {st:r==="Mixología"?[{role:"Mixólogo",n:"",pt:"hora",rate:"",qty:""}]:[],gx:r==="Consulting"?[{cat:'',m:''}]:[],pp:{},ds:[],items:[{t:"Café",prod:"",ch:"Directo",q:"",up:"",uc:"",com:true}],id:slId(),fecha:new Date().toISOString().slice(0,10),rama:r||"Café",cuenta:"",dist:"",op:"",areas:{},venta:"",costo:"",insumos:"",cont:false,nota:"",...(r==="Consulting"?{insumos:String(R0.dv??3000)}:{})}}
 const RAMA_IC={"Café":"☕","Consulting":"💼","Mixología":"🍸","Otro":"•"};
 function slRama(r){const k=SLE||{};SLE={...slBlank(r),pp:k.pp||{},fecha:k.fecha||slBlank().fecha,cuenta:k.cuenta||"",cont:!!k.cont,nota:k.nota||""};slCalcView()}
 const slIn=(lbl,key,ph,cls)=>`<label${cls?` class="${cls}"`:""}>${lbl}<input type="text" inputmode="decimal" placeholder="${ph||"$0"}" value="${esc(SLE[key]??"")}" oninput="SLE.${key}=this.value;slOut()"></label>`;
@@ -1434,15 +1441,24 @@ function slCalcView(){SLE=SLE||slBlank();SLE.areas=SLE.areas||{};if(!SLE.items)S
       <span class="sl-usd"><input type="text" inputmode="decimal" placeholder="0.00" value="${esc(g.m||"")}" oninput="SLE.gx[${j}].m=this.value;slOut()"></span>
       <button type="button" class="sl-x" title="Quitar" onclick="SLE.gx.splice(${j},1);slCalcView()">×</button></div>`).join("")}
       <div class="sl-add"><button type="button" class="mx-btn" onclick="SLE.gx=SLE.gx||[];SLE.gx.push({cat:'',m:''});slCalcView()">+ Agregar gasto</button></div></div>`;
-  else if(e.rama==="Mixología")f=`${slIn("Ingreso del servicio / evento ($)","venta","$0","w2")}${slIn("Costo de insumos (licores, frutas, hielo…) ($)","insumos","$0","w2")}`;
+  else if(e.rama==="Mixología")f=`<div class="w4 sl-sub">Pagos al personal <small>(esto se descuenta: es lo que pagamos)</small></div>
+    <div class="w4 sl-items">${(e.st||[]).map((x,j)=>`<div class="sl-strow">
+      <label>Puesto<select onchange="SLE.st[${j}].role=this.value;slOut()">${SL_ROLES.map(r=>`<option ${r===x.role?"selected":""}>${r}</option>`).join("")}</select></label>
+      <label>Nombre<input placeholder="Nombre" value="${esc(x.n||"")}" oninput="SLE.st[${j}].n=this.value;slOut()"></label>
+      <label>Pago<select onchange="SLE.st[${j}].pt=this.value;slCalcView()"><option value="hora" ${x.pt!=="dia"?"selected":""}>Por hora</option><option value="dia" ${x.pt==="dia"?"selected":""}>Por día</option></select></label>
+      <label>${x.pt==="dia"?"Pago por día":"Pago por hora"}<span class="sl-usd"><input type="text" inputmode="decimal" placeholder="0.00" value="${esc(x.rate||"")}" oninput="SLE.st[${j}].rate=this.value;slStSum(${j});slOut()"></span></label>
+      <label>${x.pt==="dia"?"Días":"Horas"}<input type="text" inputmode="decimal" placeholder="1" value="${esc(x.qty??"")}" oninput="SLE.st[${j}].qty=this.value;slStSum(${j});slOut()"></label>
+      <label>Total<output class="sl-co" id="sl-st${j}">${$$(rd(slNum(x.rate)*slNum(x.qty)))}</output></label>
+      <button type="button" class="sl-x" title="Quitar" onclick="SLE.st.splice(${j},1);slCalcView()">×</button></div>`).join("")}
+      <div class="sl-add"><button type="button" class="mx-btn" onclick="SLE.st=SLE.st||[];SLE.st.push({role:'Mixólogo',n:'',pt:'hora',rate:'',qty:''});slCalcView()">+ Agregar persona</button></div></div>`;
   else f=`${slIn("Ingreso ($)","venta","$0","w2")}${slIn("Costos directos ($)","insumos","$0","w2")}`;
   B.innerHTML=`<div class="mx-box"><h3>Calcular una entrada</h3>
-   <div class="sl-ramas">${RAMAS.map(r=>`<button type="button" class="${r===e.rama?"on":""}" onclick="slRama('${r}')">${RAMA_IC[r]||""} ${r}</button>`).join("")}</div>
+   <div class="sl-ramas">${RAMAS.map(r=>`<button type="button" class="${r===e.rama?"on":""}" onclick="slRama('${r}')">${RAMA_IC[r]||""} ${RAMA_LBL[r]||r}</button>`).join("")}</div>
    <div class="mx-form">
     <label>Fecha<input type="date" value="${e.fecha}" onchange="SLE.fecha=this.value"></label>
-    <label class="w3">${e.rama==="Café"?"Cliente o cuenta":"Lugar / cliente"}<input value="${esc(e.cuenta)}" placeholder="Ej.: Sushi Único" oninput="SLE.cuenta=this.value"></label>
+    <label class="w3">${e.rama==="Café"?"Cliente o cuenta":e.rama==="Mixología"?"Lugar / evento":"Lugar / cliente"}<input value="${esc(e.cuenta)}" placeholder="Ej.: Sushi Único" oninput="SLE.cuenta=this.value"></label>
     ${f}
-    ${+R.cont?`<label class="ck w4"><input type="checkbox" ${e.cont?"checked":""} onchange="SLE.cont=this.checked;slOut()"> Cuenta manejada por la contadora (${R.cont}%)</label>`:""}
+    ${+R.cont&&e.rama!=="Mixología"?`<label class="ck w4"><input type="checkbox" ${e.cont?"checked":""} onchange="SLE.cont=this.checked;slOut()"> Cuenta manejada por la contadora (${R.cont}%)</label>`:""}
     <label class="w4">Nota<input value="${esc(e.nota)}" oninput="SLE.nota=this.value"></label></div>
    <div id="sl-out"></div>
    <div class="mx-row"><button type="button" class="mx-btn gold" onclick="slAdd()">💾 Registrar entrada</button><button type="button" class="mx-btn" onclick="SLE=slBlank(SLE.rama);slCalcView()">Limpiar</button></div></div>
@@ -1464,7 +1480,12 @@ function slRowSumHTML(it,R){if(!slIsCat(it))return '<span class="note" style="ma
   return `<span>Venta <b>${$$(pr)}</b></span><span>Costo <b>${$$(co)}</b></span><span class="${g<0?"neg":"pos"}">Ganancia <b>${$$(g)}</b>${pr?` <small>(${Math.round(g/pr*100)}%)</small>`:""}</span>`}
 function slRowSum(j){const o=$("sl-rs"+j);if(o)o.innerHTML=slRowSumHTML(SLE.items[j],SL.rules)}
 function slCostShow(j){const o=$("sl-co"+j);if(o)o.textContent=$$(slCost(SLE.items[j],SL.rules))}
-function slOut(){const k=slCalc(SLE),R=SL.rules,e=SLE;const W=[];let run=k.v;
+function slOut(){const k=slCalc(SLE),R=SL.rules,e=SLE;
+  if(k.staff){$("sl-out").innerHTML=`<h3 class="sl-h">Pagos al personal</h3><table class="mx-tbl sl-wf"><thead><tr><th>Persona</th><th>Cálculo</th><th class="n">A pagar</th></tr></thead><tbody>
+    ${k.L.map(x=>`<tr><td>${esc(x.n)}</td><td style="color:var(--muted)">${esc(x.t)}</td><td class="n neg">${$$(-x.v)}</td></tr>`).join("")||'<tr><td colspan="3" class="note">Agrega a la persona, la tarifa y las horas o días.</td></tr>'}
+    <tr class="sl-tot"><td colspan="2">Total a pagar</td><td class="n">${$$(-k.pay)}</td></tr></tbody></table>
+    <p class="note">Es un gasto: no lleva el 10% de Midnight Operaciones ni reparto a socios.</p>`;return}
+  const W=[];let run=k.v;
   const step=(n,m,cls)=>{run=rd(run-m);W.push(`<tr class="${cls||""}"><td>− ${esc(n)}</td><td class="n neg">${$$(-m)}</td><td class="n">${$$(run)}</td></tr>`)};
   const top=e.rama==="Café"?"Total de la orden":e.rama==="Consulting"?"Total de la consultoría":e.rama==="Mixología"?"Ingreso del servicio":"Ingreso";
   if(e.rama==="Café"&&e.items&&e.items.length){k.AX.forEach(x=>step(x.n,x.v))}
@@ -1497,7 +1518,7 @@ function slOut(){const k=slCalc(SLE),R=SL.rules,e=SLE;const W=[];let run=k.v;
    <div class="mx-row" style="padding:0 14px 12px"><button type="button" class="mx-btn" onclick="SL.rules.fund.push({id:slId(),n:'',p:null});slSave();slOut()">+ Agregar persona</button><small class="note" style="margin:0">Vacío = partes iguales. El reparto se guarda para las próximas entradas.</small></div></details>`:""}
    <div class="sl-final"><span>Total repartido</span><b>${$$(rd(k.ops+k.fund+pt+k.dist+k.op+k.cont+k.c+k.i))}</b><small>de ${$$(k.v)} cobrados</small></div>
    ${k.sumP!==100?`<ul class="mx-al"><li class="b">⚠ ${R.ops_name} (${R.ops}%) + socios suman ${k.sumP}%. Debe ser 100%: revisa Reglas.</li></ul>`:""}`}
-function slAdd(){const k=slCalc(SLE);if(!k.v)return toast("Escribe el monto del ingreso");(SLE.ds||[]).forEach(d=>{const n=(d.n||"").trim();if(n&&!SL.rules.distributors.some(x=>x.n.toLowerCase()===n.toLowerCase()))SL.rules.distributors.push({id:slId(),n,p:null})});SL.entries.push({...SLE,snap:{rules:JSON.parse(JSON.stringify(SL.rules))}});slSave();toast("Entrada registrada");SLE=slBlank(SLE.rama);SLsocOpen=false;slCalcView()}
+function slAdd(){const k=slCalc(SLE);if(k.staff?!k.pay:!k.v)return toast(k.staff?"Escribe cuánto se le paga":"Escribe el monto del ingreso");(SLE.ds||[]).forEach(d=>{const n=(d.n||"").trim();if(n&&!SL.rules.distributors.some(x=>x.n.toLowerCase()===n.toLowerCase()))SL.rules.distributors.push({id:slId(),n,p:null})});SL.entries.push({...SLE,snap:{rules:JSON.parse(JSON.stringify(SL.rules))}});slSave();toast("Entrada registrada");SLE=slBlank(SLE.rama);SLsocOpen=false;slCalcView()}
 /* registro */
 function slMonthEntries(){return SL.entries.filter(e=>(e.fecha||"").slice(0,7)===SLM)}
 function slCalcSnap(e){const keep=SL.rules;if(e.snap&&e.snap.rules)SL.rules=e.snap.rules;const k=slCalc(e);SL.rules=keep;return k}
@@ -1505,12 +1526,12 @@ function slMonthPick(){return `<label class="note" style="display:flex;gap:6px;a
 function slReg(){const L=slMonthEntries().slice().reverse();const B=$("sl-body");
   B.innerHTML=`<div class="mx-row">${slMonthPick()}<span class="sp"></span><button type="button" class="mx-btn gold" onclick="SLT='calc';slRender()">+ Nueva entrada</button></div>
    <div class="mx-scroll"><table class="mx-tbl"><thead><tr><th>Fecha</th><th>Rama</th><th>Cuenta</th><th class="n">Venta</th><th class="n">Base neta</th><th class="n">Comisiones</th><th class="n">${esc(SL.rules.ops_name)}</th><th class="n">Neto socios</th><th></th></tr></thead><tbody>
-   ${L.map(e=>{const k=slCalcSnap(e);return `<tr><td>${e.fecha}</td><td>${e.rama}</td><td>${esc(e.cuenta||"—")}</td><td class="n">${$$(k.v)}</td><td class="n">${$$(k.base)}</td><td class="n">${$$(k.dist+k.op+k.cont)}</td><td class="n">${$$(k.ops)}</td><td class="n">${$$(k.net-k.ops)}</td><td><button type="button" class="del" style="color:var(--bad);font-size:18px" onclick="slDel('${e.id}')">×</button></td></tr>`}).join("")||'<tr><td colspan="9"><div class="mx-empty">No hay entradas en este mes.</div></td></tr>'}</tbody></table></div>
+   ${L.map(e=>{const k=slCalcSnap(e);return `<tr><td>${e.fecha}</td><td>${RAMA_LBL[e.rama]||e.rama}</td><td>${esc(e.cuenta||"—")}</td><td class="n">${$$(k.v)}</td><td class="n">${$$(k.staff?-k.pay:k.base)}</td><td class="n">${$$(k.dist+k.op+k.cont)}</td><td class="n">${$$(k.ops)}</td><td class="n">${$$(k.net-k.ops)}</td><td><button type="button" class="del" style="color:var(--bad);font-size:18px" onclick="slDel('${e.id}')">×</button></td></tr>`}).join("")||'<tr><td colspan="9"><div class="mx-empty">No hay entradas en este mes.</div></td></tr>'}</tbody></table></div>
    <p class="note">Cada entrada guarda las reglas que estaban vigentes cuando se registró, así los meses pasados no cambian si después ajustas un porcentaje.</p>`}
 let slDelArm="";function slDel(id){if(slDelArm!==id){slDelArm=id;return toast("Toca × otra vez para borrar la entrada")}SL.entries=SL.entries.filter(e=>e.id!==id);slSave();slReg()}
 /* resumen por persona */
 function slTotals(){const T={};const add=(id,n,role,v)=>{T[id]=T[id]||{n,role,v:0};T[id].v=rd(T[id].v+v)};let venta=0,base=0,net=0;
-  slMonthEntries().forEach(e=>{const k=slCalcSnap(e);venta+=k.v;base+=k.base;net+=k.net;k.L.forEach(x=>add(x.k+":"+x.id,x.n,{dist:"Distribuidor",op:"Operador Consulting",cont:"Contadora",ops:"Operaciones",p:"Socio",fd:"Fondo Midnight"}[x.k],x.v))});
+  slMonthEntries().forEach(e=>{const k=slCalcSnap(e);venta+=k.v;base+=k.staff?-k.pay:k.base;net+=k.staff?-k.pay:k.net;k.L.forEach(x=>add(x.k+":"+x.id,x.n,{dist:"Distribuidor",op:"Operador Consulting",cont:"Contadora",ops:"Operaciones",p:"Socio",fd:"Fondo Midnight",st:"Personal (pago)"}[x.k],x.v))});
   return {T,venta,base,net}}
 function slRes(){const {T,venta,base,net}=slTotals();const rows=Object.entries(T).sort((a,b)=>b[1].v-a[1].v);const max=Math.max(1,...rows.map(r=>r[1].v));const B=$("sl-body");
   B.innerHTML=`<div class="mx-row">${slMonthPick()}<span class="sp"></span><button type="button" class="mx-btn" onclick="slPrint()">🖨 Estado del mes (PDF)</button></div>
