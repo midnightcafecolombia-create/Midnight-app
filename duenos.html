@@ -719,6 +719,8 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 .vd-pct{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.vd-pct label{display:flex;align-items:center;gap:4px;border:1px solid var(--gold,#c9a256);border-radius:10px;padding:3px 8px;background:rgba(201,162,86,.08)}
 .vd-pin{width:52px;border:0;background:transparent;color:inherit;font:inherit;font-size:16px;font-weight:600;text-align:right;outline:0}.vd-pct small{opacity:.75;font-size:12px}.vd-pct b{font-weight:600;color:var(--gold2,#e8c77a)}
 .vd-rst{background:none;border:0;padding:0;color:inherit;text-decoration:underline;font:inherit;cursor:pointer}
+.vd-ref{border:1px dashed var(--gold,#c9a256);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.o-ref-by{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:6px 0;padding:8px 10px;border:1px solid var(--gold,#c9a256);border-radius:10px;background:rgba(201,162,86,.08);font-size:13.5px}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -926,7 +928,7 @@ function parseOrder(o){
   const t=(o.text||"").replace(/\*/g,""),L=t.split("\n"),g=re=>{const m=t.match(re);return m?m[1].trim():""};
   const items=[];L.forEach(l=>{const m=l.match(/^\s*☐\s*(\d+)\s*[×x]\s*(.+)$/);if(m){const name=m[2].trim(),low=name.toLowerCase(),sk=(NAME_SKU.find(([n])=>low.startsWith(n))||[])[1]||null;items.push({n:+m[1],name,sku:sk})}});
   const tot=g(/TOTAL:\s*(\$[\d,]+\.\d{2})/);
-  return {ref:o.ref,kind:KIND[o.ref.split("-")[0]]||"Solicitud",at:new Date(o.at),client:g(/Cliente:\s*(.+)/)||g(/Nombre:\s*(.+)/)||g(/Negocio:\s*(.+)/),tel:g(/Tel(?:éfono)?:\s*(.+)/),
+  return {ref:o.ref,rr:g(/Referido:\s*([A-Z0-9]{3,12})/),kind:KIND[o.ref.split("-")[0]]||"Solicitud",at:new Date(o.at),client:g(/Cliente:\s*(.+)/)||g(/Nombre:\s*(.+)/)||g(/Negocio:\s*(.+)/),tel:g(/Tel(?:éfono)?:\s*(.+)/),
     mode:g(/Entrega:\s*(.+)/),date:g(/Para el:\s*(.+)/),conf:g(/Conf\. Zelle:\s*(.+)/),payer:g(/Pagó:\s*(.+)/),total:tot,totalN:+(tot.replace(/[$,]/g,"")||0),items,text:o.text};
 }
 let OF="activas";
@@ -944,6 +946,7 @@ function renderOrders(){
   const list=all.filter(o=>{const s=stOf(o.ref);return OF==="todas"||(OF==="hoy"&&isToday(o))||(OF==="nueva"&&s==="nueva")||(OF==="activas"&&!["entregada","cancelada"].includes(s))});
   $("o-list").innerHTML=list.length?list.map(o=>{const s=stOf(o.ref),st=D.status[o.ref]||{};
     return `<article class="order s-${s}"><div class="o-head"><div><b>${esc(o.client||o.kind)}</b> <span class="chip">${o.kind}</span><div class="o-ref">${o.ref} · ${o.at.toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</div></div>${o.total?`<div class="o-total">${o.total}</div>`:""}</div>
+    ${o.rr&&REFS[o.rr]?`<div class="o-ref-by"><span>🤝 Referido por <b>${esc(REFS[o.rr].n)}</b> · ${esc(o.rr)}</span><a class="chip" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Hola "+REFS[o.rr].n+", entró una orden de un cliente tuyo:\n\n"+o.text.replace(/\*/g,"").replace(/[\u{1F000}-\u{1FFFF}\u2600-\u27BF\uFE0F\u200D]/gu,"").replace(/━+/g,"———"))}">📲 Pasársela a ${esc(REFS[o.rr].n)}</a></div>`:o.rr?`<div class="o-ref-by"><span>🤝 Referido · código ${esc(o.rr)} (no está asignado a nadie)</span></div>`:""}
     <div class="o-meta">${(o.text.match(/Vendedor:\s*(.+)/)||[])[1]?`<span>🧑‍💼 ${esc(o.text.match(/Vendedor:\s*(.+)/)[1])}</span>`:""}${(o.text.match(/Pago:\s*(.+)/)||[])[1]?`<span>💳 ${esc(o.text.match(/Pago:\s*(.+)/)[1])}</span>`:""}${o.tel?`<span>📞 ${esc(o.tel)}</span>`:""}${o.mode?`<span>${esc(o.mode)}</span>`:""}${(o.text||"").match(/Origen:\s*(\S+)/)?`<span>📣 ${esc((o.text.match(/Origen:\s*(\S+)/)||[])[1])}</span>`:""}${o.date?`<span>Para el ${esc(o.date)}</span>`:""}</div>
     ${o.items.length?`<ul class="o-items">${o.items.map(i=>`<li>${i.n} × ${esc(i.name)}</li>`).join("")}</ul>`:""}
     ${o.conf?`<div class="o-pay">Zelle reportado · Conf. <b>${esc(o.conf)}</b>${o.payer?` · pagó ${esc(o.payer)}`:""}${s==="nueva"?" · <b>revisa tu banco</b>":""}</div>`:""}
@@ -2815,11 +2818,11 @@ async function slPortal(){const B=$("emp-root");if(!SL){B.innerHTML=`<div class=
   B.innerHTML=`<div class="mk-head"><div><h2 class="mk-h">🪪 Empleados</h2><p class="mk-sub">Portal privado del equipo · midnightcgo.com/equipo.php</p></div></div><div id="da-box"></div><div class="mk-card"><div class="mk-ct"><b>Accesos de empleados</b><small>Cada persona entra en <b>midnightcgo.com/equipo.php</b> con su código y ve <b>solo lo que gana</b>: sus comisiones, ventas, pagos y salario. Nunca ve costos, márgenes ni lo de los demás.</small></div>
    <div class="mk-row"><button type="button" class="chip" onclick="mkCopy('https://midnightcgo.com/equipo.php')">Copiar enlace del portal</button><button type="button" class="chip" onclick="ptSync()">↻ Publicar ahora</button>${ptHasDemo()?'<button type="button" class="chip" onclick="ptDemo(false)">🗑 Borrar ejemplo de Andrés</button>':'<button type="button" class="chip" onclick="ptDemo(true)">🧪 Ver ejemplo de Andrés</button>'}</div>
    ${P.length?`<div class="cr-list">${P.map(p=>{const on=!!PTA[p.k],gm=p.lines.filter(l=>l.d.startsWith(mo)).reduce((s,l)=>s+l.g,0);return `<div class="pt-row"><div class="cr-n"><button type="button" class="pt-name" data-k="${esc(p.k)}" onclick="ptDetail(this.dataset.k)">${esc(p.n)} ›</button><small>${esc([...p.roles].join(" · "))} · ${p.lines.length} registro${p.lines.length===1?"":"s"} · este mes ${$$(gm)}</small>${on&&PTA[p.k].last?`<small>Último ingreso: ${new Date(PTA[p.k].last).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</small>`:""}</div>
-     <div class="pt-act">${on?`<span class="pt-on">● Con acceso</span><button type="button" class="chip" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n,1)">Nuevo código</button><button type="button" class="chip" data-k="${esc(p.k)}" onclick="ptRevoke(this.dataset.k)">Quitar</button>`:`<button type="button" class="btn pt-give" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n)">Dar acceso</button>`}</div></div>`}).join("")}</div>`
+     <div class="pt-act">${on?`<span class="pt-on">● Con acceso</span>${PTA[p.k].ref?`<button type="button" class="chip" title="Enlace de referido para compartir con clientes" onclick="mkCopy('https://midnightcgo.com/?r=${esc(PTA[p.k].ref)}')">🔗 ${esc(PTA[p.k].ref)}</button>`:""}<button type="button" class="chip" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n,1)">Nuevo código</button><button type="button" class="chip" data-k="${esc(p.k)}" onclick="ptRevoke(this.dataset.k)">Quitar</button>`:`<button type="button" class="btn pt-give" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n)">Dar acceso</button>`}</div></div>`}).join("")}</div>`
    :'<div class="empty">Todavía no hay empleados. Aparecen solas cuando registras ventas con distribuidores, personal de Mixología, empleados con % o nómina.</div>'}</div>`;daLoad()}
 async function ptCode(k,n,re){if(re&&!confirm("El código anterior de "+n+" dejará de funcionar. ¿Crear uno nuevo?"))return;
   try{const r=await api("portal_code",{key:k,n});PTA=null;await ptSync(true);
-    const msg=`Hola ${n.split(" ")[0]}, ya tienes acceso al Portal del equipo de Midnight. Ahí registras tus ventas y ves lo que vas ganando.\n\nEntra aquí: ${r.link}\nTu código: ${r.code}\n\nEs personal, no lo compartas.`;
+    const msg=`Hola ${n.split(" ")[0]}, ya tienes acceso al Portal del equipo de Midnight. Ahí registras tus ventas y ves lo que vas ganando.\n\nEntra aquí: ${r.link}\nTu código: ${r.code} (es personal, no lo compartas)\n\nTu enlace para compartir con clientes: ${r.reflink||""}\nTodo el que compre con ese enlace queda registrado como cliente tuyo.`;
     const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
     m.innerHTML=`<div class="cr-box wa-box"><div class="mk-ct"><b>🔑 Código de ${esc(n)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>Cópialo ahora: por seguridad no se vuelve a mostrar (si se pierde, creas uno nuevo).</small></div>
      <div class="pt-code">${esc(r.code)}</div><textarea class="mk-in" rows="6" id="pt-msg">${esc(msg)}</textarea>
@@ -2872,6 +2875,14 @@ async function vdImport(){if(!SL)return;await vdLoad();const have=new Set((SL.en
     if(document.querySelector("#v-emp:not([hidden])"))slPortal()}catch(e){toast("No se pudieron registrar las ventas del portal: "+e.message)}}
 if(typeof slOpen==="function"&&!slOpen._vd){const _o=slOpen;slOpen=async function(){const r=await _o.apply(this,arguments);if(SL)vdImport();return r};slOpen._vd=1}
 setInterval(()=>{if(SL&&!document.hidden)vdImport()},180000);
+
+/* referidos: código de cada vendedor → nombre (midnightcgo.com/?r=CODIGO) */
+let REFS={};
+async function refsLoad(){try{REFS=(await api("ref_map")).refs||{};if(typeof renderOrders==="function"&&typeof D!=="undefined"&&D&&D.orders)renderOrders()}catch(e){}}
+setTimeout(refsLoad,1500);setInterval(()=>{if(!document.hidden)refsLoad()},600000);
+const refLink=c=>"https://midnightcgo.com/?r="+c;
+function ptRefOrders(k){const code=Object.keys(REFS).find(c=>REFS[c].k===k);if(!code||typeof D==="undefined"||!D||!D.orders)return {code,list:[]};
+  return {code,list:D.orders.map(parseOrder).filter(o=>o.rr===code)}}
 /* detalle de una persona */
 const VD_ST={nueva:"Por verificar",pagada:"Pago verificado",preparada:"Preparada",entregada:"Entregada",cancelada:"Cancelada"};
 function ptDetail(k){if(!SL)return;const P=ptPeople().find(p=>p.k===k);if(!P)return;const R=SL.rules,rows=[];
@@ -2883,6 +2894,9 @@ function ptDetail(k){if(!SL)return;const P=ptPeople().find(p=>p.k===k);if(!P)ret
   const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
   m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>${esc(P.n)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>${esc([...P.roles].join(" · "))}</small></div>
    <div class="vd-k"><div><span>Ganado en total</span><b>${$$(gan)}</b></div>${sales.length?`<div><span>Ventas</span><b>${sales.length}</b></div><div><span>Total vendido</span><b>${$$(vend)}</b></div><div><span>Bolsas</span><b>${bags}</b></div><div><span>Café</span><b>${Math.round(lb*100)/100} lb</b></div>`:""}${pay?`<div><span>Salario fijo</span><b>${$$(pay)}</b></div>`:""}</div>
+   ${(()=>{const R2=ptRefOrders(k);if(!R2.code)return "";const st=o=>(((D.status||{})[o.ref]||{}).s)||"nueva",ok=R2.list.filter(o=>["pagada","preparada","entregada"].includes(st(o)));
+     return `<div class="vd-ref"><div class="vd-h"><div><b>🤝 Clientes que llegaron con su enlace</b><small>${esc(refLink(R2.code))}</small></div><div class="vd-m"><button type="button" class="chip" onclick="mkCopy('${refLink(R2.code)}')">Copiar enlace</button></div></div>
+     ${R2.list.length?`<small>${R2.list.length} orden${R2.list.length===1?"":"es"} · ${ok.length} pagada${ok.length===1?"":"s"} · ${$$(ok.reduce((a,o)=>a+o.totalN,0))}</small><ul class="vd-it">${R2.list.slice(0,30).map(o=>`<li><span>${esc(o.client||o.kind)} · ${esc(o.ref)} · ${o.at.toLocaleDateString("es-US",{day:"numeric",month:"short"})} · ${VD_ST[st(o)]||st(o)}</span><span>${o.total||""}</span></li>`).join("")}</ul>`:'<small>Todavía no ha entrado ninguna orden con su enlace.</small>'}</div>`})()}
    ${rows.length?rows.map(({e,l,K})=>{const v=e.vd,its=itemsOf(e),st=v?((D.status||{})[v.ref]||{}).s||v.st||"nueva":"";
      return `<div class="vd-row"><div class="vd-h"><div><b>${esc(e.cuenta||e.rama)}</b><small>${fdt(e.fecha)} · ${esc(e.rama)}${v?" · "+esc(v.ref):""}</small></div><div class="vd-m">${K.v?`<b>${$$(K.v)}</b>`:""}<small class="vd-g">+${$$(l.v)} ${l.k==="dist"?"comisión":l.k==="st"?"servicio":"participación"}</small></div></div>
       ${l.pct!=null?`<div class="vd-pct"><label><input class="vd-pin" type="text" inputmode="decimal" value="${l.pct}" data-e="${esc(e.id)}" data-t="${l.k}" data-x="${l.k==="emp"?esc(l.id):l.legacy?"":l.j}" data-p="${esc(k)}" onchange="ptPct(this)" aria-label="Porcentaje de ${esc(P.n)} en ${esc(e.cuenta||"esta cuenta")}"><span>%</span></label><small>${l.k==="emp"?"de la entrada neta":"de la ganancia"} · ${l.own?`<b>propio de esta cuenta</b> · <button type="button" class="vd-rst" data-e="${esc(e.id)}" data-t="${l.k}" data-x="${l.k==="emp"?esc(l.id):l.legacy?"":l.j}" data-p="${esc(k)}" onclick="ptPct(this,1)">volver al general</button>`:"el general · cámbialo solo para esta cuenta"}</small></div>`:""}

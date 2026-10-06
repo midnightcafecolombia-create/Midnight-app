@@ -2364,7 +2364,13 @@ const MD_SRC=(()=>{const now=Date.now(),s=mdSrcDetect();let o=null;try{o=JSON.pa
   if(NOTIFY_ON){let seen=null;try{seen=sessionStorage.getItem("midnight-visit");sessionStorage.setItem("midnight-visit","1")}catch(e){}
     if(!seen){const b=JSON.stringify({s:s||"Directo"});try{if(!(navigator.sendBeacon&&navigator.sendBeacon("/visita.php",new Blob([b],{type:"application/json"}))))fetch("/visita.php",{method:"POST",headers:{"Content-Type":"application/json"},body:b,keepalive:true}).catch(()=>{})}catch(e){}}}
   return o&&now-o.t<30*864e5?o.s:"Directo"})();
-function withSrc(t){return /Origen:/.test(t)?t:t+"\n📣 Origen: "+MD_SRC}
+/* ===== Referidos: midnightcgo.com/?r=CODIGO (el código del vendedor que compartió el enlace; dura 60 días en este teléfono) ===== */
+const MD_REF=(()=>{const now=Date.now();let r="",o=null;try{r=(new URLSearchParams(location.search).get("r")||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12)}catch(e){}
+  try{o=JSON.parse(localStorage.getItem("midnight-ref")||"null")}catch(e){}
+  if(r){o={r,t:now};try{localStorage.setItem("midnight-ref",JSON.stringify(o))}catch(e){}}
+  return o&&o.r&&now-o.t<60*864e5?o.r:""})();
+const withRef=t=>MD_REF&&!/Referido:/.test(t)?t+"\n🤝 Referido: "+MD_REF:t;
+function withSrc(t){return withRef(/Origen:/.test(t)?t:t+"\n📣 Origen: "+MD_SRC)}
 document.addEventListener("click",e=>{
   if(!NOTIFY_ON||e.defaultPrevented)return;
   const a=e.target.closest&&e.target.closest('a[href^="https://wa.me/'+WA_NUMBER+'"]');if(!a)return;
@@ -2394,7 +2400,7 @@ document.addEventListener("click",e=>{
   if(tl&&!CHAT.tel){CHAT.tel=tl.trim().slice(0,30);try{localStorage.setItem("midnight-chat-tel",CHAT.tel)}catch(x){}}
   const topic=pre?REQ_TOPIC[pre]:(TOPICS[current]?current:null);
   const subject=pre?REQ_NAME[pre]+(ref?" "+ref:""):(topic?TOPICS[topic].n.es:"Mensaje desde la app");
-  const body=(plain.length>990?plain.slice(0,980)+"\n… (completo en Órdenes)":plain);
+  const body=withRef(plain.length>990?plain.slice(0,980)+"\n… (completo en Órdenes)":plain);
   chatApi("send",{text:body,machine:subject.slice(0,80)}).then(r=>{
     if(pre==="MC"){toast(R.order);return}
     if(topic){openTopic(topic);setTimeout(()=>{chatMerge(r,true);askBubble(R.ok(ref))},150)}else toast(R.msg);
