@@ -698,6 +698,15 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 @media (max-width:560px){.pt-row{grid-template-columns:1fr}.pt-act{justify-content:flex-start}}
 #emp-root{display:flex;flex-direction:column;gap:12px}.emp-lock{align-items:flex-start}
 /* ===== FIN PORTAL EQUIPO ===== */
+/* solicitudes distribuidores */
+.da-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:#e7b94c;color:#1a1408;font-size:11px;font-weight:700;vertical-align:middle}
+.da-row{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:start;padding:14px 2px;border-top:1px solid var(--line)}
+.da-co{font-weight:400;opacity:.8}.da-st{font-weight:600}
+.da-grid{display:flex;flex-wrap:wrap;gap:4px 14px;margin:8px 0 4px;font-size:13px;opacity:.9}
+.da-msg{font-size:13px;font-style:italic;opacity:.8;margin:6px 0;white-space:pre-wrap}
+.da-act{flex-direction:column;align-items:stretch}
+#da-box{margin-bottom:14px}
+@media (max-width:560px){.da-row{grid-template-columns:1fr}.da-act{flex-direction:row;flex-wrap:wrap}}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -2788,14 +2797,14 @@ async function ptSync(quiet){if(!SL)return;try{if(!PTA)PTA=(await api("portal_li
   if(Object.keys(PTA).length)await api("portal_sync",{people:P});if(!quiet)toast("Portal del equipo actualizado ✓")}catch(e){if(!quiet)toast(e.message)}}
 function ptSyncSoon(){clearTimeout(PTsyncT);PTsyncT=setTimeout(()=>ptSync(true),2500)}
 if(typeof slSave==="function"&&!slSave._pt){const _s=slSave;slSave=function(){_s.apply(this,arguments);ptSyncSoon()};slSave._pt=1}
-async function slPortal(){const B=$("emp-root");if(!SL){B.innerHTML=`<div class="mk-head"><div><h2 class="mk-h">🪪 Empleados</h2><p class="mk-sub">Portal privado del equipo · cada empleado ve solo lo que gana</p></div></div><div class="mk-card emp-lock"><b>🔒 Esta sección usa los datos de Distribución</b><p class="mk-small">Ábrela con tu clave de Distribución y vuelves aquí sola.</p><button type="button" class="btn" style="width:auto" onclick="empUnlock()">Abrir con mi clave</button></div>`;return}B.innerHTML='<div class="empty">Cargando…</div>';
+async function slPortal(){const B=$("emp-root");if(!SL){B.innerHTML=`<div class="mk-head"><div><h2 class="mk-h">🪪 Empleados</h2><p class="mk-sub">Portal privado del equipo · cada empleado ve solo lo que gana</p></div></div><div id="da-box"></div><div class="mk-card emp-lock"><b>🔒 Esta sección usa los datos de Distribución</b><p class="mk-small">Ábrela con tu clave de Distribución y vuelves aquí sola.</p><button type="button" class="btn" style="width:auto" onclick="empUnlock()">Abrir con mi clave</button></div>`;daLoad();return}B.innerHTML='<div class="empty">Cargando…</div>';
   try{PTA=(await api("portal_list")).access||{}}catch(e){B.innerHTML=`<div class="empty">${esc(e.message)}<br>Sube el api.php nuevo.</div>`;return}
   const P=ptPeople(),mo=new Date().toLocaleDateString("en-CA").slice(0,7);
-  B.innerHTML=`<div class="mk-head"><div><h2 class="mk-h">🪪 Empleados</h2><p class="mk-sub">Portal privado del equipo · midnightcgo.com/equipo.php</p></div></div><div class="mk-card"><div class="mk-ct"><b>Accesos de empleados</b><small>Cada persona entra en <b>midnightcgo.com/equipo.php</b> con su código y ve <b>solo lo que gana</b>: sus comisiones, ventas, pagos y salario. Nunca ve costos, márgenes ni lo de los demás.</small></div>
+  B.innerHTML=`<div class="mk-head"><div><h2 class="mk-h">🪪 Empleados</h2><p class="mk-sub">Portal privado del equipo · midnightcgo.com/equipo.php</p></div></div><div id="da-box"></div><div class="mk-card"><div class="mk-ct"><b>Accesos de empleados</b><small>Cada persona entra en <b>midnightcgo.com/equipo.php</b> con su código y ve <b>solo lo que gana</b>: sus comisiones, ventas, pagos y salario. Nunca ve costos, márgenes ni lo de los demás.</small></div>
    <div class="mk-row"><button type="button" class="chip" onclick="mkCopy('https://midnightcgo.com/equipo.php')">Copiar enlace del portal</button><button type="button" class="chip" onclick="ptSync()">↻ Publicar ahora</button></div>
    ${P.length?`<div class="cr-list">${P.map(p=>{const on=!!PTA[p.k],gm=p.lines.filter(l=>l.d.startsWith(mo)).reduce((s,l)=>s+l.g,0);return `<div class="pt-row"><div class="cr-n"><b>${esc(p.n)}</b><small>${esc([...p.roles].join(" · "))} · ${p.lines.length} registro${p.lines.length===1?"":"s"} · este mes ${$$(gm)}</small>${on&&PTA[p.k].last?`<small>Último ingreso: ${new Date(PTA[p.k].last).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</small>`:""}</div>
      <div class="pt-act">${on?`<span class="pt-on">● Con acceso</span><button type="button" class="chip" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n,1)">Nuevo código</button><button type="button" class="chip" data-k="${esc(p.k)}" onclick="ptRevoke(this.dataset.k)">Quitar</button>`:`<button type="button" class="btn pt-give" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n)">Dar acceso</button>`}</div></div>`}).join("")}</div>`
-   :'<div class="empty">Todavía no hay empleados. Aparecen solas cuando registras ventas con distribuidores, personal de Mixología, empleados con % o nómina.</div>'}</div>`}
+   :'<div class="empty">Todavía no hay empleados. Aparecen solas cuando registras ventas con distribuidores, personal de Mixología, empleados con % o nómina.</div>'}</div>`;daLoad()}
 async function ptCode(k,n,re){if(re&&!confirm("El código anterior de "+n+" dejará de funcionar. ¿Crear uno nuevo?"))return;
   try{const r=await api("portal_code",{key:k,n});PTA=null;await ptSync(true);
     const msg=`Hola ${n.split(" ")[0]} 👋 Ya tienes acceso al Portal del equipo de Midnight, donde ves lo que vas ganando.\n\n🔗 ${r.link}\n🔑 Tu código: ${r.code}\n\nEs personal, no lo compartas.`;
@@ -2807,6 +2816,36 @@ async function ptCode(k,n,re){if(re&&!confirm("El código anterior de "+n+" deja
 async function ptRevoke(k){if(!confirm("¿Quitarle el acceso al portal? Su código deja de funcionar al instante."))return;try{await api("portal_revoke",{key:k});toast("Acceso quitado");slPortal()}catch(e){toast(e.message)}}
 function empUnlock(){showView("sal");const iv=setInterval(()=>{if(SL){clearInterval(iv);showView("emp")}},700);setTimeout(()=>clearInterval(iv),180000)}
 /* ===== FIN PORTAL EQUIPO ===== */
+/* ===== SOLICITUDES DISTRIBUIDORES ===== (llegan solas desde la página Distribuidores de midnightcgo.com) */
+let DAPPS=null,DAf="activas";
+const DA_ST={nuevo:["🆕 Nueva","#e7b94c"],contactado:["💬 Contactado","#6aa7ff"],aprobado:["✅ Aprobado","#5bc489"],rechazado:["✕ No aplica","#9a8f80"]};
+async function daLoad(){try{DAPPS=(await api("dist_apps")).apps||[]}catch(e){DAPPS=null}daBadge();daRender()}
+function daBadge(){const b=document.querySelector('[data-v="emp"]');if(!b)return;const n=(DAPPS||[]).filter(a=>a.st==="nuevo").length;let s=b.querySelector(".da-badge");
+  if(!n){s&&s.remove();return}if(!s){s=document.createElement("span");s.className="da-badge";b.appendChild(s)}s.textContent=n}
+function daRender(){const B=$("da-box");if(!B)return;if(DAPPS===null){B.innerHTML="";return}
+  const L=DAPPS.filter(a=>DAf==="todas"||(DAf==="activas"?["nuevo","contactado"].includes(a.st):a.st===DAf)),cnt=k=>DAPPS.filter(a=>a.st===k).length;
+  const fil=[["activas","Por atender",cnt("nuevo")+cnt("contactado")],["aprobado","Aprobados",cnt("aprobado")],["rechazado","No aplica",cnt("rechazado")],["todas","Todas",DAPPS.length]];
+  B.innerHTML=`<div class="mk-card"><div class="mk-ct"><b>🚚 Solicitudes de distribuidores</b><small>Llegan solas cuando alguien llena el formulario en la página <b>Distribuidores</b> de midnightcgo.com.</small></div>
+  <div class="mk-row">${fil.map(([k,t,n])=>`<button type="button" class="chip ${DAf===k?"on":""}" onclick="DAf='${k}';daRender()">${t} · ${n}</button>`).join("")}<button type="button" class="chip" onclick="daLoad()">↻</button></div>
+  ${L.length?`<div class="cr-list">${L.map(a=>{const [stt,stc]=DA_ST[a.st]||DA_ST.nuevo,tel=(a.phone||"").replace(/\D/g,""),wa=tel.length===10?"1"+tel:tel,d=a.at?new Date(a.at):null;
+    return `<div class="da-row"><div class="cr-n"><b>${esc(a.name||"Sin nombre")}${a.company?` · <span class="da-co">${esc(a.company)}</span>`:""}</b>
+      <small><span class="da-st" style="color:${stc}">${stt}</span> · ${esc(a.ref)}${d?" · "+d.toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}):""}${a.src?" · 📣 "+esc(a.src):""}</small>
+      <div class="da-grid">${[["📍",a.city],["🚚",a.type],["🗺️",a.zone],["📦",a.volume&&"Volumen: "+a.volume],["🎓",a.exp&&"Experiencia: "+a.exp],["🧾",a.resale&&"Reventa/Tax ID: "+a.resale],["🌐",a.web]].filter(x=>x[1]).map(([i,v])=>`<span>${i} ${esc(v)}</span>`).join("")}</div>
+      ${a.msg?`<div class="da-msg">“${esc(a.msg)}”</div>`:""}
+      <div class="mk-row">${wa?`<a class="chip" target="_blank" rel="noopener" href="https://wa.me/${wa}">💬 ${esc(a.phone)}</a>`:""}${a.email?`<a class="chip" href="mailto:${esc(a.email)}">✉️ ${esc(a.email)}</a>`:""}</div></div>
+      <div class="pt-act da-act">${a.st!=="aprobado"?`<button type="button" class="btn pt-give" data-r="${esc(a.ref)}" onclick="daApprove(this.dataset.r)">Aprobar</button>`:""}
+       ${a.st==="nuevo"?`<button type="button" class="chip" data-r="${esc(a.ref)}" onclick="daSet(this.dataset.r,'contactado')">Ya lo contacté</button>`:""}
+       ${a.st!=="rechazado"&&a.st!=="aprobado"?`<button type="button" class="chip" data-r="${esc(a.ref)}" onclick="daSet(this.dataset.r,'rechazado')">No aplica</button>`:""}
+       ${a.st==="rechazado"||a.st==="aprobado"?`<button type="button" class="chip" data-r="${esc(a.ref)}" onclick="daSet(this.dataset.r,'nuevo')">Deshacer</button>`:""}</div></div>`}).join("")}</div>`
+  :`<div class="empty">${DAPPS.length?"Nada en este filtro.":"Todavía no ha llegado ninguna solicitud. Cuando alguien se inscriba en la página de Distribuidores, aparece aquí sola y te llega aviso al teléfono."}</div>`}</div>`}
+async function daSet(ref,st,quiet){try{await api("dist_app_set",{ref,st});const a=DAPPS.find(x=>x.ref===ref);if(a)a.st=st;daBadge();daRender();if(!quiet)toast("Listo ✓")}catch(e){toast(e.message)}}
+async function daApprove(ref){const a=(DAPPS||[]).find(x=>x.ref===ref);if(!a)return;
+  if(!SL){toast("Abre Distribución con tu clave para aprobarlo");empUnlock();return}
+  const n=(a.name||"").trim();if(!n)return toast("La solicitud no tiene nombre");
+  if(!SL.rules.distributors.some(x=>x.n.toLowerCase()===n.toLowerCase())){SL.rules.distributors.push({id:slId(),n,p:null});slSave()}
+  await daSet(ref,"aprobado",true);toast(n+" ya es distribuidor ✓ Dale acceso al portal abajo");slPortal()}
+setTimeout(()=>{daLoad()},2500);setInterval(()=>{if(!document.hidden)daLoad()},300000);
+/* ===== FIN SOLICITUDES DISTRIBUIDORES ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
