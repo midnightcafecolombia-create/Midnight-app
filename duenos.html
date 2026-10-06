@@ -642,6 +642,39 @@ html[data-theme="light"] .wa-box{background:#fff!important}
 html[data-theme="light"] .wa-box textarea{color:#111}
 .tabs .wa-new{padding-left:6px!important;padding-right:6px!important;font-size:15px}
 /* ===== FIN WHATSAPP ===== */
+/* ===== WA BUSINESS ===== */
+.wa-d{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);z-index:88;background:var(--ink);border-left:1px solid #25d366;box-shadow:-12px 0 40px rgba(0,0,0,.45);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+.wa-d[hidden]{display:none}
+@media (min-width:1100px){body.wa-open main,body.wa-open header.top{margin-right:420px}}
+.wa-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);padding-top:max(12px,env(safe-area-inset-top,0px))}
+.wa-ht{display:flex;flex-direction:column;flex:1;min-width:0}.wa-ht b{color:var(--cream);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wa-ht small{font-size:11.5px;color:var(--muted)}
+.wa-bk,.wa-gear{border:0;background:none;color:var(--cream);font-size:24px;cursor:pointer;padding:0 4px;line-height:1}.wa-gear{font-size:18px;color:var(--muted)}
+.wa-tools{display:flex;gap:8px;padding:10px 12px}.wa-tools .mk-in{min-width:0}
+.wa-list{flex:1;overflow-y:auto}
+.wa-row{display:flex;gap:10px;align-items:center;width:100%;padding:10px 14px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--cream);font:inherit;text-align:left;cursor:pointer}
+.wa-row:hover{background:rgba(37,211,102,.06)}.wa-row.un b{color:#25d366}
+.wa-av{width:38px;height:38px;border-radius:50%;background:#1f3b2b;color:#25d366;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.wa-rt{flex:1;min-width:0;display:flex;flex-direction:column}.wa-rt small{color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wa-rm{display:flex;flex-direction:column;align-items:flex-end;gap:3px}.wa-rm small{font-size:11px;color:var(--muted)}.wa-rm i{font-style:normal;background:#25d366;color:#04140a;font-size:11px;font-weight:700;border-radius:10px;padding:1px 7px}
+.wa-sub{font-size:11.5px;color:var(--muted);padding:6px 14px;border-bottom:1px solid var(--line)}
+.wa-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:rgba(127,127,127,.04)}
+.wa-b{max-width:82%;padding:7px 10px 5px;border-radius:12px;font-size:14px;line-height:1.4;color:var(--cream);display:flex;flex-direction:column;gap:3px;word-wrap:break-word}
+.wa-b.in{align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-top-left-radius:3px}
+.wa-b.out{align-self:flex-end;background:#144d33;border-top-right-radius:3px}
+.wa-b small{font-size:10.5px;color:var(--muted);align-self:flex-end}.wa-b.out small{color:#9fd9b8}
+.wa-img{max-width:100%;border-radius:8px;cursor:zoom-in}.wa-b audio{max-width:230px}
+.wa-comp{border-top:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.wa-comp textarea{width:100%;resize:none;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--cream);font:inherit;font-size:15px;padding:9px 11px;max-height:160px}
+.wa-cr{display:flex;gap:6px;align-items:center}
+.wa-send{background:#25d366!important;border-color:#25d366!important;color:#04140a!important;width:auto!important;padding:9px 18px!important}
+.wa-setup{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.wa-copy{display:flex;gap:6px;align-items:center;margin:4px 0}.wa-copy code{font-size:12px;background:rgba(127,127,127,.15);padding:4px 7px;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+.wa-f .mk-w2{grid-column:1/-1}
+.wa-tpb{white-space:pre-wrap;font-size:13.5px;border:1px dashed var(--line);border-radius:10px;padding:10px;color:var(--cream)}
+.tabs .wa-tab .n{margin-left:4px}
+html[data-theme="light"] .wa-d{background:#fff}html[data-theme="light"] .wa-b,html[data-theme="light"] .wa-row,html[data-theme="light"] .wa-ht b,html[data-theme="light"] .wa-comp textarea,html[data-theme="light"] .wa-tpb{color:#111}
+html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .wa-b.out small{color:#4a7a5a}
+/* ===== FIN WA BUSINESS ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -2650,6 +2683,72 @@ function waSend(app){let n=$("wa-n").value.replace(/\D/g,"");if(n.length===10)n=
   const t=encodeURIComponent($("wa-t").value.trim());if(app)location.href=`whatsapp://send?phone=${n}&text=${t}`;else waWin(`https://web.whatsapp.com/send?phone=${n}&text=${t}`);document.querySelector(".wa-box")?.closest(".cr-modal")?.remove()}
 (function(){const nav=document.querySelector(".tabs");if(!nav||nav.querySelector(".wa-tab"))return;const b=document.createElement("button");b.type="button";b.className="wa-tab";b.innerHTML='<span class="wa-ic">✆</span> WhatsApp';b.onclick=e=>{if(e.altKey||e.shiftKey)waOpen();else waWin("https://web.whatsapp.com/")};b.title="Abrir WhatsApp · ⌥ clic: escribir a un número";const s=document.createElement("button");s.type="button";s.className="wa-tab wa-new";s.title="Escribir a un número";s.textContent="✎";s.onclick=waOpen;nav.appendChild(b);nav.appendChild(s);return;nav.appendChild(b)})();
 /* ===== FIN WHATSAPP ===== */
+/* ===== WA BUSINESS ===== (chats de WhatsApp dentro del panel, en un cajón a la derecha) */
+let WAC=null,WAL=[],WAT=null,WATM=[],WATL=0,WAPOLL=null,WATPL=null;
+const waTime=t=>{const d=new Date(t*1000),h=new Date();return d.toDateString()===h.toDateString()?d.toLocaleTimeString("es-US",{hour:"numeric",minute:"2-digit"}):d.toLocaleDateString("es-US",{day:"numeric",month:"short"})};
+const waFmt=n=>{n=String(n);return n.length===11&&n[0]==="1"?`+1 (${n.slice(1,4)}) ${n.slice(4,7)}-${n.slice(7)}`:"+"+n};
+function waName(id){const c=WAL.find(x=>x.id===id);let n=c&&c.name||"";try{if(!n&&typeof crAll==="function"&&MK){const k=crAll().find(x=>crTel(x.tel)===id.slice(-10));if(k)n=k.n}}catch(e){}return n||waFmt(id)}
+async function waDrawer(){let d=$("wa-d");if(d&&!d.hidden){waClose();return}
+  if(!d){d=document.createElement("aside");d.id="wa-d";d.className="wa-d";document.body.appendChild(d)}d.hidden=false;document.body.classList.add("wa-open");
+  d.innerHTML='<div class="empty">Cargando WhatsApp…</div>';
+  try{WAC=await api("wa_cfg")}catch(e){d.innerHTML=`<div class="wa-h"><b>WhatsApp</b><button type="button" class="cr-x" onclick="waClose()">×</button></div><div class="empty">Sube el api.php nuevo para activar WhatsApp en el panel.</div>`;return}
+  if(!WAC.ok)return waSetup();WAT=null;waRenderList();await waLoad();clearInterval(WAPOLL);WAPOLL=setInterval(()=>{if(!document.hidden&&!$("wa-d").hidden)WAT?waOpenChat(WAT,true):waLoad()},8000)}
+function waClose(){const d=$("wa-d");if(d)d.hidden=true;document.body.classList.remove("wa-open");clearInterval(WAPOLL)}
+async function waLoad(){try{const r=await api("wa_list");WAL=r.chats;waBadge(r.unread);if(!WAT)waRenderList()}catch(e){}}
+function waBadge(n){const b=document.querySelector(".tabs .wa-tab:not(.wa-new)");if(!b)return;let s=b.querySelector(".n");if(!s){s=document.createElement("span");s.className="n";b.appendChild(s)}s.hidden=!n;s.textContent=n}
+function waHead(t,back){return `<div class="wa-h">${back?`<button type="button" class="wa-bk" onclick="waBack()" aria-label="Volver">‹</button>`:""}<span class="wa-ic">✆</span><div class="wa-ht"><b>${t}</b>${back?"":`<small>${esc(WAC.name||"Midnight")} · ${esc(WAC.phone||"")}</small>`}</div>
+  ${!back&&WAC.admin?`<button type="button" class="wa-gear" onclick="waSetup()" title="Conexión">⚙︎</button>`:""}<button type="button" class="cr-x" onclick="waClose()" aria-label="Cerrar">×</button></div>`}
+function waRenderList(q=""){const d=$("wa-d");if(!d||WAT)return;const L=WAL.filter(c=>!q||(waName(c.id)+" "+c.id+" "+c.last).toLowerCase().includes(q.toLowerCase()));
+  d.innerHTML=waHead("WhatsApp")+`<div class="wa-tools"><input class="mk-in" placeholder="Buscar chat…" value="${esc(q)}" oninput="waRenderList(this.value);this.focus();this.setSelectionRange(this.value.length,this.value.length)"><button type="button" class="chip" onclick="waNew()">+ Nuevo</button></div>
+   <div class="wa-list">${L.length?L.map(c=>`<button type="button" class="wa-row${c.unread?" un":""}" onclick="waOpenChat('${c.id}')"><span class="wa-av">${esc((waName(c.id)[0]||"#").toUpperCase())}</span><div class="wa-rt"><b>${esc(waName(c.id))}</b><small>${c.lastDir==="out"?"Tú: ":""}${esc(c.last)}</small></div><div class="wa-rm"><small>${c.lastAt?waTime(c.lastAt):""}</small>${c.unread?`<i>${c.unread}</i>`:""}</div></button>`).join(""):'<div class="empty">Todavía no hay chats. Cuando un cliente le escriba al número de Midnight, aparece aquí.</div>'}</div>`}
+function waBack(){WAT=null;waRenderList();waLoad()}
+async function waOpenChat(id,quiet){WAT=id;const d=$("wa-d");if(!quiet)d.innerHTML=waHead(esc(waName(id)),1)+'<div class="empty">Cargando…</div>';
+  try{const r=await api("wa_thread",{id});const ch=JSON.stringify(r.msgs.map(m=>m.id+(m.status||"")));if(quiet&&ch===d.dataset.sig)return;d.dataset.sig=ch;WATM=r.msgs;WATL=r.lastIn}catch(e){toast(e.message);return}
+  const open=WATL&&Date.now()/1000-WATL<24*3600,draft=quiet&&$("wa-t")?$("wa-t").value:"";
+  d.innerHTML=waHead(esc(waName(id)),1)+`<div class="wa-sub">${waFmt(id)}${open?"":` · <b>ventana de 24 h cerrada</b>`}</div>
+   <div class="wa-msgs" id="wa-m">${WATM.map(m=>`<div class="wa-b ${m.dir}">${m.media?`<button type="button" class="chip" onclick="waMedia('${m.media}',this)">${{image:"🖼 Ver foto",audio:"🎧 Escuchar audio",video:"🎬 Ver video",document:"📄 Abrir documento",sticker:"🙂 Sticker"}[m.type]||"📎 Abrir"}</button>`:""}${m.text?`<div>${esc(m.text).replace(/\n/g,"<br>")}</div>`:""}<small>${waTime(m.t)}${m.dir==="out"?` ${{read:"✓✓ leído",delivered:"✓✓",sent:"✓",failed:"⚠️ no enviado"}[m.status]||""}`:""}</small></div>`).join("")||'<div class="empty">Sin mensajes.</div>'}</div>
+   ${open?`<div class="wa-comp"><textarea id="wa-t" rows="2" placeholder="Escribe un mensaje…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();waSendTxt()}">${esc(draft)}</textarea>
+     <div class="wa-cr"><button type="button" class="chip" onclick="waAI(this)">✨ Sugerir respuesta</button><button type="button" class="chip" onclick="voz('wa-t',this)">🎤</button><span class="sp" style="flex:1"></span><button type="button" class="btn wa-send" onclick="waSendTxt()">Enviar</button></div></div>`
+   :`<div class="wa-comp"><p class="mk-small">Pasaron más de 24 h desde que el cliente escribió. WhatsApp solo deja retomar la conversación con una <b>plantilla aprobada</b>.</p><button type="button" class="btn wa-send" onclick="waTplPick('${id}')">📋 Enviar plantilla</button></div>`}`;
+  const m=$("wa-m");if(m)m.scrollTop=m.scrollHeight;if(!quiet&&$("wa-t"))$("wa-t").focus();waLoad()}
+async function waSendTxt(){const t=$("wa-t"),v=t.value.trim();if(!v)return;t.disabled=true;
+  try{const r=await api("wa_send",{to:WAT,text:v});WATM.push(r.msg);t.value="";$("wa-d").dataset.sig="";waOpenChat(WAT,true)}catch(e){toast(e.message)}t.disabled=false;t.focus()}
+async function waAI(b){b.disabled=true;b.textContent="✨ Pensando…";
+  try{let facts="";try{facts=typeof mxFacts==="function"?mxFacts():""}catch(e){}const j=await api("wa_suggest",{id:WAT,draft:$("wa-t").value,facts});$("wa-t").value=j.text;$("wa-t").focus()}catch(e){toast(e.message)}b.disabled=false;b.textContent="✨ Sugerir respuesta"}
+async function waMedia(id,b){b.disabled=true;b.textContent="Cargando…";try{const r=await api("wa_media",{media:id});const u=URL.createObjectURL(new Blob([Uint8Array.from(atob(r.data),c=>c.charCodeAt(0))],{type:r.mime}));
+  if(/^image\//.test(r.mime)){b.outerHTML=`<img src="${u}" alt="" class="wa-img" onclick="window.open(this.src)">`}else if(/^audio\//.test(r.mime)){b.outerHTML=`<audio controls src="${u}"></audio>`}else{window.open(u,"_blank");b.disabled=false;b.textContent="📎 Abrir otra vez"}}catch(e){toast(e.message);b.disabled=false;b.textContent="📎 Reintentar"}}
+async function waTplPick(to){if(!WATPL){try{WATPL=(await api("wa_templates")).tpls}catch(e){WATPL=[]}}
+  const m=document.createElement("div");m.className="cr-modal";m.style.zIndex=95;m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="cr-box wa-box"><div class="mk-ct"><b>📋 Plantillas aprobadas</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>Se crean en Meta (WhatsApp Manager → Plantillas). Las aprobadas aparecen aquí.</small></div>
+   ${to?"":`<label class="fx-l">Número del cliente<input id="wa-to" type="tel" placeholder="305 123 4567"></label><label class="fx-l">Nombre (opcional)<input id="wa-nm"></label>`}
+   ${WATPL.length?`<label class="fx-l">Plantilla<select id="wa-tp" onchange="waTplVars()">${WATPL.map((t,i)=>`<option value="${i}">${esc(t.name)} · ${esc(t.lang)}</option>`).join("")}</select></label><div class="wa-tpb" id="wa-tpb"></div><div id="wa-tpv"></div>
+   <button type="button" class="btn wa-send" onclick="waTplSend('${to||""}',this)">Enviar plantilla</button>`:'<div class="empty">Todavía no tienes plantillas aprobadas. Créalas en Meta → WhatsApp Manager → Plantillas de mensajes (tardan minutos u horas en aprobarse).</div>'}</div>`;
+  document.body.appendChild(m);if(WATPL.length)waTplVars()}
+function waTplVars(){const t=WATPL[+$("wa-tp").value];$("wa-tpb").textContent=t.body;$("wa-tpv").innerHTML=Array.from({length:t.vars},(_,i)=>`<label class="fx-l">Dato {{${i+1}}}<input class="wa-tv"></label>`).join("")}
+async function waTplSend(to,b){const t=WATPL[+$("wa-tp").value],ps=[...document.querySelectorAll(".wa-tv")].map(x=>x.value.trim());if(ps.some(x=>!x))return toast("Completa los datos de la plantilla");
+  to=to||$("wa-to").value;let pv=t.body;ps.forEach((p,i)=>pv=pv.replace(`{{${i+1}}}`,p));b.disabled=true;
+  try{await api("wa_send",{to,tpl:t.name,lang:t.lang,params:ps,preview:pv,name:$("wa-nm")?$("wa-nm").value:""});b.closest(".cr-modal").remove();toast("Plantilla enviada ✓");let id=String(to).replace(/\D/g,"");if(id.length===10)id="1"+id;await waLoad();waOpenChat(id)}catch(e){toast(e.message);b.disabled=false}}
+function waNew(){const m=document.createElement("div");m.className="cr-modal";m.style.zIndex=95;m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="cr-box wa-box"><div class="mk-ct"><b>+ Nuevo chat</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>Si el cliente no te escribió en las últimas 24 h, WhatsApp exige empezar con una plantilla aprobada.</small></div>
+   <label class="fx-l">Número (con código de país)<input id="wa-nn" type="tel" placeholder="305 123 4567"></label>
+   <div class="mk-row"><button type="button" class="btn" onclick="let n=$('wa-nn').value.replace(/\\D/g,'');if(n.length===10)n='1'+n;if(n.length<11)return toast('Número incompleto');this.closest('.cr-modal').remove();WAT=n;waOpenChat(n)">Abrir chat</button><button type="button" class="chip" onclick="this.closest('.cr-modal').remove();waTplPick('')">📋 Empezar con plantilla</button></div></div>`;document.body.appendChild(m)}
+function waSetup(){const d=$("wa-d"),c=WAC||{};WAT=null;
+  d.innerHTML=waHead("Conectar WhatsApp Business")+`<div class="wa-setup">${c.ok?`<p class="mk-small">✅ Conectado: <b>${esc(c.name)}</b> · ${esc(c.phone)}</p>`:'<p class="mk-small">Una sola vez. Te guío paso a paso en el chat con Claude; aquí solo pegas los datos que te da Meta.</p>'}
+   ${c.admin?`<ol class="mk-steps"><li>En Meta, en <b>Webhook</b> pon esta URL:<div class="wa-copy"><code>${esc(c.webhook)}</code><button type="button" class="chip" onclick="mkCopy('${esc(c.webhook)}')">Copiar</button></div></li>
+     <li>Y este <b>Verify token</b>:<div class="wa-copy"><code>${esc(c.verify)}</code><button type="button" class="chip" onclick="mkCopy('${esc(c.verify)}')">Copiar</button></div>Después suscríbete al campo <b>messages</b>.</li>
+     <li>Pega aquí los datos de tu app de Meta (se guardan solo en tu servidor):</li></ol>
+     <form class="mk-form wa-f" onsubmit="waSave(event)"><label class="mk-w2">Phone number ID<input name="phone_id" value="${esc(c.phone_id)}" inputmode="numeric"></label>
+      <label class="mk-w2">WhatsApp Business Account ID<input name="waba" value="${esc(c.waba)}" inputmode="numeric"></label>
+      <label class="mk-w2">Token de acceso permanente ${c.hasToken?"(ya guardado ✓, déjalo vacío para no cambiarlo)":""}<input name="token" type="password" autocomplete="off"></label>
+      <label class="mk-w2">App Secret ${c.hasSecret?"(ya guardado ✓)":""}<input name="secret" type="password" autocomplete="off"></label>
+      <button class="btn" type="submit">Guardar y probar</button></form>`:'<p class="mk-small">Pide a un administrador que lo conecte.</p>'}
+   ${c.ok?`<button type="button" class="chip" onclick="waBack()">‹ Volver a los chats</button>`:""}
+   <p class="mk-small">Mientras tanto: <a href="#" onclick="waWin('https://web.whatsapp.com/');return false">abrir WhatsApp Web</a></p></div>`}
+async function waSave(e){e.preventDefault();const f=new FormData(e.target),b=e.target.querySelector("button");b.disabled=true;b.textContent="Probando con Meta…";
+  try{const r=await api("wa_cfg_save",Object.fromEntries(f));toast(r.phone?`✅ Conectado: ${r.phone}`:"Guardado");WAC=await api("wa_cfg");if(WAC.ok){waRenderList();waLoad()}else waSetup()}catch(x){toast(x.message);b.disabled=false;b.textContent="Guardar y probar"}}
+setTimeout(()=>{const b=document.querySelector(".tabs .wa-tab:not(.wa-new)");if(b)b.onclick=e=>{if(e.altKey)waWin("https://web.whatsapp.com/");else waDrawer()};
+  api("wa_list").then(r=>waBadge(r.unread)).catch(()=>{});setInterval(()=>{if(!document.hidden&&($("wa-d")||{}).hidden!==false)api("wa_list").then(r=>{WAL=r.chats;waBadge(r.unread)}).catch(()=>{})},30000)},300);
+/* ===== FIN WA BUSINESS ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
