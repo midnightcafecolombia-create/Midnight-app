@@ -724,6 +724,21 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 /* responder orden */
 .o-reply{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.o-reply .ai{border-color:var(--gold,#c9a256);color:var(--gold2,#e8c77a)}
 .or-ai{display:flex;gap:8px}.or-ai input{flex:1}#or-t{min-height:170px;font-size:15px;line-height:1.5}
+/* preguntas: más espacio para leer, escritura compacta */
+#q-thread .thread{max-height:none!important;height:calc(100vh - 250px);min-height:260px}
+#q-thread .bub{font-size:15.5px;line-height:1.5;max-width:min(92%,760px);padding:10px 14px}
+#q-form.reply{display:grid!important;grid-template-columns:1fr 1fr 1.5fr;gap:6px;padding-top:6px}
+#q-form>.quick,#q-form>p,#q-form>textarea{grid-column:1/-1}
+#q-form>.quick{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;gap:6px;padding-bottom:2px;scrollbar-width:none}
+#q-form>.quick::-webkit-scrollbar{display:none}
+#q-form>.quick button{flex:0 0 auto;white-space:nowrap;padding:4px 10px;font-size:12px}
+#q-form>textarea{min-height:44px!important;height:44px;max-height:170px;resize:none;padding:9px 12px;font-size:15px}
+#q-form .ai-row,#q-form .send-row{display:contents}
+#q-form .ai-row button{padding:8px 6px;font-size:12.5px;border-radius:10px}
+#q-form .send-row .btn{padding:9px 10px;font-size:12px;letter-spacing:.06em;border-radius:10px}
+#q-form>p.note{font-size:11.5px;margin:0;line-height:1.35}
+#q-form>p.note:last-child{display:none}
+@media (max-width:560px){#q-form.reply{grid-template-columns:1fr 1fr}#q-form .send-row .btn{grid-column:1/-1}#q-thread .thread{height:calc(100vh - 300px)}}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -1114,8 +1129,8 @@ function renderThread(scroll){
   let lastM="";
   $("q-msgs").innerHTML=(c.msgs||[]).map(m=>{const showM=m.from==="c"&&m.machine&&m.machine!==lastM;if(m.from==="c"&&m.machine)lastM=m.machine;return `<div class="bub ${m.from}">${showM?`<span class="mc">${esc(m.machine)}</span>`:""}${esc(m.text)}<small>${m.from==="m"?esc(m.by||m.who||"Midnight")+" · ":""}${hhmm(m.t)}</small></div>`}).join("");
   if(scroll){const t=$("q-msgs");t.scrollTop=t.scrollHeight}
-  $("q-send").textContent=c.src==="orden"?"Guardar en el hilo y enviar por WhatsApp":"Responder como Midnight Sales";
-  const on=$("q-ordnote");if(c.src==="orden"&&!on)$("q-quick").insertAdjacentHTML("beforebegin",'<p class="note" id="q-ordnote">Este cliente envió un formulario y no tiene el chat de la app abierto: tu respuesta queda guardada en este hilo y se abre WhatsApp para mandársela.</p>');else if(c.src!=="orden"&&on)on.remove();
+  $("q-send").textContent=c.src==="orden"?"Guardar y enviar por WhatsApp":"Responder como Midnight Sales";
+  const on=$("q-ordnote");if(c.src==="orden"&&!on)$("q-quick").insertAdjacentHTML("beforebegin",'<p class="note" id="q-ordnote">Llegó por formulario: tu respuesta se guarda aquí y se abre WhatsApp para enviársela.</p>');else if(c.src!=="orden"&&on)on.remove();
   if(c.lang&&c.lang!=="es"&&!$("q-langnote")){$("q-quick").insertAdjacentHTML("beforebegin",`<p class="note" id="q-langnote">Este cliente usa la app en ${lang}. Puedes responderle en ese idioma.</p>`)}else if((!c.lang||c.lang==="es")&&$("q-langnote"))$("q-langnote").remove();
 }
 $("q-quick").innerHTML=QUICK.map((q,i)=>`<button type="button" data-i="${i}">${esc(q.length>34?q.slice(0,32)+"…":q)}</button>`).join("");
@@ -2957,6 +2972,9 @@ async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(
   const ml=m.querySelector("#or-mail");if(ml)ml.onclick=async()=>{if(!need()||!confirm("¿Enviar este correo a "+mail+"?"))return;try{await api("mail_send",{to:mail,subject:"Midnight · "+(o.kind||"Tu solicitud")+" "+ref,body:T.value.trim()});toast("Correo enviado ✓");m.remove()}catch(e){toast(e.message)}};
 }
 /* ===== FIN RESPONDER ORDEN ===== */
+/* ===== COMPOSER PREGUNTAS ===== */
+(function(){const t=document.getElementById("q-text");if(!t||t._ag)return;t._ag=1;t.rows=1;const fit=()=>{t.style.height="44px";t.style.height=Math.min(170,t.scrollHeight+2)+"px"};t.addEventListener("input",fit);t.addEventListener("focus",fit);new MutationObserver(fit).observe(t,{attributes:true,attributeFilter:["value"]});setInterval(()=>{if(document.activeElement!==t&&t.value&&t.scrollHeight>t.clientHeight+4)fit()},800)})();
+/* ===== FIN COMPOSER PREGUNTAS ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
