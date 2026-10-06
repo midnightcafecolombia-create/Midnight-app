@@ -690,6 +690,13 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 .cmd-fab:hover{transform:scale(1.07) rotate(-6deg);box-shadow:0 12px 34px rgba(0,0,0,.5),0 0 0 9px rgba(201,162,86,.18)!important}
 .cmd-fab .ic-spark{width:26px;height:26px;fill:currentColor;stroke:none}
 .wa-cr .chip .ic-mic{width:17px;height:17px}
+/* ===== PORTAL EQUIPO ===== */
+.pt-row{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;padding:12px 2px;border-top:1px solid var(--line)}
+.pt-act{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
+.pt-on{font-size:12px;color:#5bc489}.pt-give{width:auto!important;padding:8px 16px!important;font-size:13px}
+.pt-code{font:600 34px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.18em;text-align:center;color:var(--gold);padding:14px;border:1px dashed var(--gold);border-radius:14px}
+@media (max-width:560px){.pt-row{grid-template-columns:1fr}.pt-act{justify-content:flex-start}}
+/* ===== FIN PORTAL EQUIPO ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -831,7 +838,7 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
     <div id="sl-app" hidden>
       <div class="mx-head"><div class="mx-brand"><b>DISTRIBUCIÓN DE LA COMPAÑÍA</b><small>Comisiones · Midnight Operaciones · socios · nómina · confidencial</small></div>
         <div class="mx-venue"><button type="button" class="chip" onclick="slLock()">🔒 Cerrar</button></div></div>
-      <nav class="mx-tabs" id="sl-tabs"><button type="button" data-t="calc">Calcular</button><button type="button" data-t="reg">Registro</button><button type="button" data-t="rep">📊 Reporte final</button><button type="button" data-t="res">Resumen por persona</button><button type="button" data-t="pay">Nómina</button><button type="button" data-t="rules">Reglas</button><button type="button" data-t="emp">👔 Empleados %</button></nav>
+      <nav class="mx-tabs" id="sl-tabs"><button type="button" data-t="calc">Calcular</button><button type="button" data-t="reg">Registro</button><button type="button" data-t="rep">📊 Reporte final</button><button type="button" data-t="res">Resumen por persona</button><button type="button" data-t="pay">Nómina</button><button type="button" data-t="rules">Reglas</button><button type="button" data-t="emp">👔 Empleados %</button><button type="button" data-t="portal">🔑 Portal equipo</button></nav>
       <div id="sl-body" class="mx-body"></div>
       <p class="note" id="sl-saved">Los datos se guardan solo en tu servidor · respaldo automático cada hora.</p>
     </div>
@@ -1791,7 +1798,7 @@ function slPartners(e,R){const o=e.pp||{};const pool=100-R.ops;if(e.rama==="Caf�
   const used=inc.reduce((s,p)=>s+p.pe,0);return {list,fund:Math.max(0,rd(pool-used)),over:used>pool+0.001}}
 function slPP(id,k,val){SLE.pp=SLE.pp||{};SLE.pp[id]=SLE.pp[id]||{};SLE.pp[id][k]=val;SLsocOpen=true;slOut()}
 let SLsocOpen=false;
-function slRender(){setTimeout(()=>{const t=document.querySelector('#sl-tabs button[data-t="'+SLT+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest"})},30);document.querySelectorAll("#sl-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===SLT));({calc:slCalcView,reg:slReg,res:slRes,rep:slRep,pay:slPay,rules:slRules,emp:slEmp})[SLT]()}
+function slRender(){setTimeout(()=>{const t=document.querySelector('#sl-tabs button[data-t="'+SLT+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest"})},30);document.querySelectorAll("#sl-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===SLT));({calc:slCalcView,reg:slReg,res:slRes,rep:slRep,pay:slPay,rules:slRules,emp:slEmp,portal:slPortal})[SLT]()}
 /* costo del café por libra: fijo en Reglas ($11), se puede mover por orden */
 const slCpl=(it,R)=>it.cpl!=null&&it.cpl!==""?slNum(it.cpl):(R.lb??11);
 const slProd=(it,R)=>(R.products||[]).find(p=>p.id===it.prod);
@@ -2763,6 +2770,39 @@ async function waSave(e){e.preventDefault();const f=new FormData(e.target),b=e.t
 setTimeout(()=>{const b=document.querySelector(".tabs .wa-tab:not(.wa-new)");if(b)b.onclick=e=>{if(e.altKey)waWin("https://web.whatsapp.com/");else waDrawer()};
   api("wa_list").then(r=>waBadge(r.unread)).catch(()=>{});setInterval(()=>{if(!document.hidden&&($("wa-d")||{}).hidden!==false)api("wa_list").then(r=>{WAL=r.chats;waBadge(r.unread)}).catch(()=>{})},30000)},300);
 /* ===== FIN WA BUSINESS ===== */
+/* ===== PORTAL EQUIPO ===== (Distribución → 🔑 Portal: dar código a cada persona; lo que gana se publica solo) */
+let PTA=null,PTsyncT=null;
+const ptKey=n=>String(n||"").split(" · ")[0].trim().toLowerCase().replace(/\s+/g," ");
+const ptName=l=>l.k==="st"?String(l.n).split(" · ")[0]:l.n;
+function ptPeople(){const M={};const add=(n,role)=>{const k=ptKey(n);if(!k||/^distribuidor \d|^sin nombre|^persona \d|sin asignar/.test(k))return null;return M[k]=M[k]||{k,n:String(n).split(" · ")[0].trim(),roles:new Set(),lines:[],pay:[]},M[k].roles.add(role),M[k]};
+  (SL.entries||[]).forEach(e=>{let K;try{K=slCalcSnap(e)}catch(x){return}(K.L||[]).forEach(l=>{if(!["dist","emp","st","p","fd"].includes(l.k)||!(l.v>0))return;
+    const p=add(ptName(l),{dist:"Distribuidor",emp:"Empleado %",st:"Personal",p:"Socio",fd:"Fondo"}[l.k]);if(!p)return;
+    p.lines.push({d:e.fecha||"",c:e.cuenta||"",r:e.rama||"",v:K.v||0,g:l.v,k:l.k,t:String(l.t||"").replace(/ de \$[\d.,]+/,"").replace(/ de la base neta/,"")})})});
+  (SL.payroll||[]).forEach(x=>{const p=add(x.n,"Nómina");if(p)p.pay.push({t:x.t||"",m:+x.m||0,f:x.f||"",r:x.r||""})});
+  (SL.rules.emps||[]).forEach(x=>add(x.n,"Empleado %"));(SL.rules.distributors||[]).forEach(x=>add(x.n,"Distribuidor"));
+  return Object.values(M).sort((a,b)=>a.n.localeCompare(b.n))}
+async function ptSync(quiet){if(!SL)return;try{if(!PTA)PTA=(await api("portal_list")).access||{};const P={};ptPeople().forEach(p=>{if(PTA[p.k])P[p.k]={n:p.n,lines:p.lines,pay:p.pay}});
+  if(Object.keys(PTA).length)await api("portal_sync",{people:P});if(!quiet)toast("Portal del equipo actualizado ✓")}catch(e){if(!quiet)toast(e.message)}}
+function ptSyncSoon(){clearTimeout(PTsyncT);PTsyncT=setTimeout(()=>ptSync(true),2500)}
+if(typeof slSave==="function"&&!slSave._pt){const _s=slSave;slSave=function(){_s.apply(this,arguments);ptSyncSoon()};slSave._pt=1}
+async function slPortal(){const B=$("sl-body");B.innerHTML='<div class="empty">Cargando…</div>';
+  try{PTA=(await api("portal_list")).access||{}}catch(e){B.innerHTML=`<div class="empty">${esc(e.message)}<br>Sube el api.php nuevo.</div>`;return}
+  const P=ptPeople(),mo=new Date().toLocaleDateString("en-CA").slice(0,7);
+  B.innerHTML=`<div class="mk-card"><div class="mk-ct"><b>🔑 Portal del equipo</b><small>Cada persona entra en <b>midnightcgo.com/equipo</b> con su código y ve <b>solo lo que gana</b>: sus comisiones, ventas, pagos y salario. Nunca ve costos, márgenes ni lo de los demás.</small></div>
+   <div class="mk-row"><button type="button" class="chip" onclick="mkCopy('https://midnightcgo.com/equipo/')">Copiar enlace del portal</button><button type="button" class="chip" onclick="ptSync()">↻ Publicar ahora</button></div>
+   ${P.length?`<div class="cr-list">${P.map(p=>{const on=!!PTA[p.k],gm=p.lines.filter(l=>l.d.startsWith(mo)).reduce((s,l)=>s+l.g,0);return `<div class="pt-row"><div class="cr-n"><b>${esc(p.n)}</b><small>${esc([...p.roles].join(" · "))} · ${p.lines.length} registro${p.lines.length===1?"":"s"} · este mes ${$$(gm)}</small>${on&&PTA[p.k].last?`<small>Último ingreso: ${new Date(PTA[p.k].last).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</small>`:""}</div>
+     <div class="pt-act">${on?`<span class="pt-on">● Con acceso</span><button type="button" class="chip" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n,1)">Nuevo código</button><button type="button" class="chip" data-k="${esc(p.k)}" onclick="ptRevoke(this.dataset.k)">Quitar</button>`:`<button type="button" class="btn pt-give" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n)">Dar acceso</button>`}</div></div>`}).join("")}</div>`
+   :'<div class="empty">Todavía no hay personas. Aparecen solas cuando registras ventas con distribuidores, personal de Mixología, empleados con % o nómina.</div>'}</div>`}
+async function ptCode(k,n,re){if(re&&!confirm("El código anterior de "+n+" dejará de funcionar. ¿Crear uno nuevo?"))return;
+  try{const r=await api("portal_code",{key:k,n});PTA=null;await ptSync(true);
+    const msg=`Hola ${n.split(" ")[0]} 👋 Ya tienes acceso al Portal del equipo de Midnight, donde ves lo que vas ganando.\n\n🔗 ${r.link}\n🔑 Tu código: ${r.code}\n\nEs personal, no lo compartas.`;
+    const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
+    m.innerHTML=`<div class="cr-box wa-box"><div class="mk-ct"><b>🔑 Código de ${esc(n)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>Cópialo ahora: por seguridad no se vuelve a mostrar (si se pierde, creas uno nuevo).</small></div>
+     <div class="pt-code">${esc(r.code)}</div><textarea class="mk-in" rows="6" id="pt-msg">${esc(msg)}</textarea>
+     <div class="mk-row"><a class="btn wa-main" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msg)}">Enviar por WhatsApp</a><button type="button" class="chip" onclick="mkCopy($('pt-msg').value)">Copiar mensaje</button></div></div>`;
+    document.body.appendChild(m);slPortal()}catch(e){toast(e.message)}}
+async function ptRevoke(k){if(!confirm("¿Quitarle el acceso al portal? Su código deja de funcionar al instante."))return;try{await api("portal_revoke",{key:k});toast("Acceso quitado");slPortal()}catch(e){toast(e.message)}}
+/* ===== FIN PORTAL EQUIPO ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
