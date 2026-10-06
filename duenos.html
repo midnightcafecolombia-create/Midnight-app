@@ -769,7 +769,17 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 .bk-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.bk-form label{display:flex;flex-direction:column;gap:4px;font-size:12px}
 .bk-sum{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0}.bk-good{color:#3ecf8e}
 .bk-pv{max-height:220px;overflow:auto}
-@media(max-width:640px){.bk-row{grid-template-columns:1fr auto;grid-template-areas:"n a" "d c"}.bk-row .bk-d{grid-area:d}.bk-row .cr-n{grid-area:n}.bk-row .bk-amt{grid-area:a}.bk-row .bk-cs{grid-area:c;justify-self:end}.bk-cat{grid-template-columns:100px 1fr auto}.bk-form{grid-template-columns:1fr}}
+@media(max-width:640px){.bk-row{grid-template-columns:1fr auto;grid-template-areas:"n a" "d c"}.bk-row .bk-d{grid-area:d}.bk-row .cr-n{grid-area:n}.bk-row .bk-aw{grid-area:a}.bk-row .bk-cs{grid-area:c;justify-self:end}.bk-cat{grid-template-columns:100px 1fr auto}.bk-form{grid-template-columns:1fr}}
+.bk-saldo{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:10px 0 4px;padding:12px 16px;border:1px solid var(--gold);border-radius:14px;background:rgba(212,175,96,.07)}
+.bk-saldo span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}.bk-saldo b{font-size:26px}.bk-saldo small{opacity:.65;font-size:12px;margin-left:auto}
+.bk-aw{display:flex;gap:6px;align-items:center;justify-content:flex-end}.bk-x{padding:2px 8px}
+.bk-fab{background:var(--gold);color:#111;border:0;border-radius:999px;width:34px;height:34px;font-size:17px;cursor:pointer;margin-left:6px}
+.bk-calc{position:fixed;right:14px;bottom:84px;z-index:80;width:min(320px,calc(100vw - 28px));max-height:80vh;overflow:auto;background:var(--ink);border:1px solid var(--gold);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:9px;box-shadow:0 16px 50px rgba(0,0,0,.6)}
+.bk-ch{display:flex;justify-content:space-between;align-items:center}.bk-calc .bk-form{margin:0}
+.bk-sg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bk-sg button{padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit;font-weight:600;cursor:pointer}
+.bk-sg button.in.on{background:#3ecf8e;color:#0b2417;border-color:#3ecf8e}.bk-sg button.out.on{background:#ff6b6b;color:#2a0c0c;border-color:#ff6b6b}
+.bk-amtin{font-size:20px;text-align:center}.bk-live{font-size:13px;text-align:center;min-height:20px}
+.bk-calc input,.bk-calc select{box-sizing:border-box;width:100%;min-width:0}.bk-calc .bk-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.bk-calc{box-sizing:border-box}
 /* ===== FIN BANCO ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
@@ -912,7 +922,8 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
     <section class="view" id="v-bank" hidden>
     <div id="bk-lock" class="mx-lock"></div>
     <div id="bk-app" hidden>
-      <div class="mx-head"><div class="mx-brand"><b>BANCO</b><small>Statements · entradas · salidas · saldo · confidencial</small></div><button type="button" class="chip" onclick="bkLock()">🔒 Cerrar</button></div>
+      <div class="mx-head"><div class="mx-brand"><b>BANCO</b><small>Statements · entradas · salidas · saldo · confidencial</small></div><div><button type="button" class="chip" onclick="bkLock()">🔒 Cerrar</button><button type="button" class="bk-fab" title="Calculadora: anotar entrada o salida" aria-label="Calculadora" onclick="bkCalc()">🧮</button></div></div>
+      <div class="bk-saldo" id="bk-saldo"></div>
       <div class="mx-tabs" id="bk-tabs"><button type="button" data-t="res">Resumen</button><button type="button" data-t="mov">Movimientos</button><button type="button" data-t="est">Statements</button><button type="button" data-t="acc">Acceso</button></div>
       <div id="bk-body"></div>
     </div>
@@ -3045,7 +3056,7 @@ async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(
 /* ===== BANCO ===== (statements, entradas, salidas y saldo · clave numérica aparte · datos solo en el servidor) */
 let BK=null,BKCATS=[],BKA="todas",BKT="res",BKM="",BKQ="",BKF="todos",BKIDLE=null;
 const bkDate=d=>d?new Date(d+"T12:00").toLocaleDateString("es-US",{day:"numeric",month:"short",year:"numeric"}):"—";
-const bkMon=m=>m==="todos"?"Todos los meses":new Date(m+"-15T12:00").toLocaleDateString("es-US",{month:"long",year:"numeric"});
+const bkMon=m=>m==="todos"?"Todos los meses":new Date(m+"-15T12:00").toLocaleDateString("es-US",{month:"long",year:"numeric"}).replace(/^./,c=>c.toUpperCase()).replace(" De "," de ");
 const bkR=n=>Math.round(n*100)/100,bkM=n=>(n<0?"−":"")+money(Math.abs(n));
 const bkAccs=()=>Object.values(Array.isArray(BK.accounts)?{}:BK.accounts||{});
 const bkTx=()=>BK.tx.filter(t=>BKA==="todas"||t.acc===BKA);
@@ -3068,20 +3079,41 @@ async function bkStart0(){const L=$("bk-lock");let st;
   L.innerHTML=H+`<p class="note">Escribe tu clave numérica.</p>${bkIn("bk-k","Clave de Banco","current-password")}<button class="btn" type="button" onclick="bkUnlock()">Entrar</button>`;setTimeout(()=>$("bk-k")&&$("bk-k").focus(),50)}
 async function bkSetKey(){const a=$("bk-k1").value,b=$("bk-k2").value;if(a!==b)return toast("Las claves no coinciden");try{await api("bk_setkey",{key:a});bkOpen()}catch(e){toast(e.message)}}
 async function bkUnlock(){try{await api("bk_unlock",{key:$("bk-k").value});bkOpen()}catch(e){toast(e.message)}}
-async function bkLock(){try{await api("bk_lock")}catch(e){}BK=null;clearTimeout(BKIDLE);bkStart()}
+async function bkLock(){$("bk-calc")&&$("bk-calc").remove();try{await api("bk_lock")}catch(e){}BK=null;clearTimeout(BKIDLE);bkStart()}
 async function bkOpen(){try{const r=await api("bk_load");BK=r.data;BKCATS=r.cats||[]}catch(e){return bkStart()}
   $("bk-lock").hidden=true;$("bk-lock").classList.remove("bk-modal");$("bk-app").hidden=false;bkIdle();
   document.querySelectorAll("#bk-tabs button").forEach(b=>b.onclick=()=>{BKT=b.dataset.t;bkRender()});bkRender()}
 /* ---- cálculos ---- */
 function bkBal(a){const S=BK.stm.filter(s=>s.acc===a.id&&s.close!=null&&s.to).sort((x,y)=>y.to.localeCompare(x.to))[0],m=a.manual;
-  const base=m&&(!S||m.d>=S.to)?{b:m.bal,d:m.d,src:"saldo anotado a mano el "+bkDate(m.d)}:S?{b:S.close,d:S.to,src:"statement al "+bkDate(S.to)}:null;if(!base)return null;
-  const after=BK.tx.filter(t=>t.acc===a.id&&t.d>base.d).reduce((s,t)=>s+t.amt,0);return {b:bkR(base.b+after),src:base.src,after:bkR(after)}}
+  const base=m&&(!S||m.d>=S.to)?{b:m.bal,d:m.d,at:m.at||"",src:"saldo anotado a mano el "+bkDate(m.d)}:S?{b:S.close,d:S.to,at:S.at||"",src:"statement al "+bkDate(S.to)}:null;if(!base)return null;
+  const after=BK.tx.filter(t=>t.acc===a.id&&(t.d>base.d||(t.man&&t.d===base.d&&t.at>base.at))).reduce((s,t)=>s+t.amt,0);return {b:bkR(base.b+after),src:base.src,after:bkR(after)}}
+function bkTotal(){const A=bkAccs(),k=A.map(a=>bkBal(a)).filter(Boolean);return {n:A.length,k:k.length,t:bkR(k.reduce((s,x)=>s+x.b,0))}}
 function bkMonths(){const s=new Set(bkTx().map(t=>t.d.slice(0,7)));return [...s].sort().reverse()}
+/* ---- saldo siempre visible + calculadora ---- */
+function bkStrip(){const T=bkTotal(),B=$("bk-saldo");if(!B)return;B.innerHTML=`<span>Saldo disponible</span><b class="${T.k&&T.t<0?"bk-out":""}">${T.k?bkM(T.t):"—"}</b><small>${T.k?(T.k<T.n?`${T.k} de ${T.n} cuentas`:T.n>1?`${T.n} cuentas juntas`:"se actualiza solo con cada entrada o salida"):"abre la 🧮 y anota tu saldo de hoy"}</small>`}
+function bkEval(v){v=String(v||"").replace(/[$,\s]/g,"").replace(/x/gi,"*");if(!v||!/^[0-9+\-*/().]+$/.test(v))return null;try{const r=Function('"use strict";return ('+v+')')();return isFinite(r)?bkR(r):null}catch(e){return null}}
+let BKCS=1;
+function bkCalc(){const o=$("bk-calc");if(o){o.remove();return}const A=bkAccs(),one=A.length?"":`<div class="bk-form"><label>Banco<input class="mk-in" id="bc-bank" placeholder="Chase…"></label><label>Últimos 4<input class="mk-in" id="bc-l4" inputmode="numeric" maxlength="4" oninput="this.value=this.value.replace(/\\D/g,'')"></label><label style="grid-column:1/-1">Saldo que tienes hoy en la cuenta<input class="mk-in" id="bc-bal0" inputmode="decimal" placeholder="12450.75" oninput="bkCalcLive()"></label></div>`;
+  const sel=A.length>1?`<select class="mk-in" id="bc-acc" onchange="bkCalcLive()">${A.map(a=>`<option value="${a.id}" ${a.id===BKA?"selected":""}>${esc(a.name)}</option>`).join("")}</select>`:A.length?`<input type="hidden" id="bc-acc" value="${A[0].id}">`:"";
+  const m=document.createElement("div");m.id="bk-calc";m.className="bk-calc";m.innerHTML=`<div class="bk-ch"><b>🧮 Calculadora</b><button type="button" class="cr-x" aria-label="Cerrar" onclick="$('bk-calc').remove()">×</button></div>${one}${sel}
+   <div class="bk-sg"><button type="button" class="on in" id="bc-in" onclick="BKCS=1;bkCalcLive()">＋ Entró</button><button type="button" class="out" id="bc-out" onclick="BKCS=-1;bkCalcLive()">− Salió</button></div>
+   <input class="mk-in bk-amtin" id="bc-amt" inputmode="decimal" placeholder="Monto (puedes sumar: 120+45.50)" oninput="bkCalcLive()" onkeydown="if(event.key==='Enter')bkCalcSave()">
+   <input class="mk-in" id="bc-desc" placeholder="Para qué fue (opcional)" onkeydown="if(event.key==='Enter')bkCalcSave()">
+   <div class="bk-live" id="bc-live"></div><button type="button" class="btn" onclick="bkCalcSave()">Guardar y actualizar saldo</button>`;document.body.appendChild(m);BKCS=1;bkCalcLive();setTimeout(()=>$("bc-amt").focus(),50)}
+function bkCalcLive(){const L=$("bc-live");if(!L)return;$("bc-in").classList.toggle("on",BKCS>0);$("bc-out").classList.toggle("on",BKCS<0);
+  const v=bkEval($("bc-amt").value),acc=$("bc-acc")&&$("bc-acc").value,a=acc&&(BK.accounts||{})[acc];let cur=null;
+  if(a){const b=bkBal(a);cur=b?b.b:null}else{const x=$("bc-bal0")&&bkEval($("bc-bal0").value);cur=x==null?null:x}
+  if(v==null||v===0){L.innerHTML=cur!=null?`Saldo ahora: <b>${bkM(cur)}</b>`:"Escribe el monto";return}
+  const d=BKCS*Math.abs(v);L.innerHTML=cur!=null?`Saldo ahora <b>${bkM(cur)}</b> → quedaría <b class="${cur+d<0?"bk-out":"bk-in"}">${bkM(bkR(cur+d))}</b>`:`${d>0?"Entra":"Sale"} <b>${money(Math.abs(d))}</b>`}
+async function bkCalcSave(){const v=bkEval($("bc-amt").value);if(v==null||v===0)return toast("Escribe un monto válido");const a=$("bc-acc")&&$("bc-acc").value,P={amt:BKCS*Math.abs(v),desc:$("bc-desc").value.trim(),d:new Date().toLocaleDateString("en-CA")};
+  if(a)P.acc=a;else{P.bank=$("bc-bank").value.trim();P.last4=$("bc-l4").value.trim();const b0=bkEval($("bc-bal0").value);if(b0==null)return toast("Escribe el saldo que tienes hoy en la cuenta");P.bal0=b0}
+  try{const r=await api("bk_tx",P);BK=r.data;const T=bkTotal();$("bk-calc")&&$("bk-calc").remove();bkRender();toast(`Listo ✓ Saldo disponible: ${bkM(T.t)}`)}catch(e){bkErr(e)}}
+async function bkTxDel(id){if(!confirm("¿Quitar este movimiento? El saldo se recalcula."))return;try{BK=(await api("bk_txdel",{id})).data;bkRender();toast("Movimiento quitado")}catch(e){bkErr(e)}}
 /* ---- pantalla ---- */
 function bkRender(){if(!BK)return;const A=bkAccs(),ms=bkMonths();if(BKM!=="todos"&&!ms.includes(BKM))BKM=ms[0]||"todos";
   document.querySelectorAll("#bk-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===BKT));
   const chips=`<div class="mk-per bk-accs"><button type="button" class="${BKA==="todas"?"on":""}" onclick="BKA='todas';bkRender()">Todas las cuentas</button>${A.map(a=>`<button type="button" class="${BKA===a.id?"on":""}" onclick="BKA='${a.id}';bkRender()">${esc(a.name)}</button>`).join("")}</div>`;
-  $("bk-body").innerHTML=(BKT==="acc"?"":A.length>1?chips:"")+({res:bkRes,mov:bkMov,est:bkEst,acc:bkAcc}[BKT]||bkRes)(A,ms);if(BKT==="acc")bkAccLoad();bkDrop()}
+  bkStrip();$("bk-body").innerHTML=(BKT==="acc"?"":A.length>1?chips:"")+({res:bkRes,mov:bkMov,est:bkEst,acc:bkAcc}[BKT]||bkRes)(A,ms);if(BKT==="acc")bkAccLoad();bkDrop()}
 function bkKpi(l,v,s,cl){return `<div class="kpi mk-kpi ${cl||""}"><span>${l}</span><b>${v}</b>${s?`<small>${s}</small>`:""}</div>`}
 function bkRes(A,ms){
   if(!A.length)return `<div class="mk-card"><div class="empty">Todavía no hay movimientos. Ve a <b>Statements</b> y sube el primer estado de cuenta del banco (PDF, CSV o foto).</div></div>`+bkNote();
@@ -3104,7 +3136,7 @@ function bkMov(A,ms){const q=BKQ.toLowerCase();
   return `<div class="mk-card"><div class="mk-row"><input class="mk-in" placeholder="Buscar descripción, monto o categoría…" value="${esc(BKQ)}" oninput="BKQ=this.value;clearTimeout(window._bkq);window._bkq=setTimeout(bkRender,300)"><select class="inv-mes" onchange="BKM=this.value;bkRender()">${ms.concat(["todos"]).map(m=>`<option value="${m}" ${m===BKM?"selected":""}>${bkMon(m)}</option>`).join("")}</select><button type="button" class="chip" onclick="bkCsvOut()">⬇ Excel</button></div>
    <div class="mk-per bk-f">${[["todos","Todos"],["in","Entradas"],["out","Salidas"]].map(([k,l])=>`<button type="button" class="${BKF===k?"on":""}" onclick="BKF='${k}';bkRender()">${l}</button>`).join("")}</div>
    <p class="note">${L.length} movimiento${L.length===1?"":"s"} · entró <b class="bk-in">${money(inn)}</b> · salió <b class="bk-out">${money(out)}</b></p>
-   ${L.length?`<div class="bk-list">${L.slice(0,400).map(t=>`<div class="bk-row"><span class="bk-d">${bkDate(t.d)}</span><div class="cr-n"><b>${esc(t.desc||"(sin descripción)")}</b><small>${esc(bkAcc1(t.acc))}</small></div><select class="bk-cs" aria-label="Categoría" onchange="bkSetCat('${t.id}',this.value)">${BKCATS.map(c=>`<option ${c===t.cat?"selected":""}>${esc(c)}</option>`).join("")}</select><b class="bk-amt ${t.amt<0?"bk-out":"bk-in"}">${bkM(t.amt)}</b></div>`).join("")}</div>${L.length>400?`<p class="note">Se muestran 400 de ${L.length}. Usa el buscador o el mes para acotar.</p>`:""}`:'<div class="empty">No hay movimientos con ese filtro.</div>'}</div>`}
+   ${L.length?`<div class="bk-list">${L.slice(0,400).map(t=>`<div class="bk-row"><span class="bk-d">${bkDate(t.d)}</span><div class="cr-n"><b>${esc(t.desc||"(sin descripción)")}</b><small>${esc(bkAcc1(t.acc))}${t.man?" · anotado a mano":""}</small></div><select class="bk-cs" aria-label="Categoría" onchange="bkSetCat('${t.id}',this.value)">${BKCATS.map(c=>`<option ${c===t.cat?"selected":""}>${esc(c)}</option>`).join("")}</select><span class="bk-aw"><b class="bk-amt ${t.amt<0?"bk-out":"bk-in"}">${bkM(t.amt)}</b>${t.man?`<button type="button" class="chip bk-x" title="Quitar (anotado a mano)" aria-label="Quitar" onclick="bkTxDel(\'${t.id}\')">🗑</button>`:""}</span></div>`).join("")}</div>${L.length>400?`<p class="note">Se muestran 400 de ${L.length}. Usa el buscador o el mes para acotar.</p>`:""}`:'<div class="empty">No hay movimientos con ese filtro.</div>'}</div>`}
 const bkAcc1=id=>((BK.accounts||{})[id]||{}).name||"Cuenta";
 async function bkSetCat(id,cat){try{BK=(await api("bk_upd",{id,cat})).data;bkRender()}catch(e){bkErr(e)}}
 async function bkSetBal(acc,clear){const el=$("bk-b-"+acc),v=clear?"":(el.value||"").replace(/[$,\s]/g,"");if(!clear&&(v===""||isNaN(+v)))return toast("Escribe el saldo, por ejemplo 12450.75");
