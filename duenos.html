@@ -721,6 +721,9 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 .vd-rst{background:none;border:0;padding:0;color:inherit;text-decoration:underline;font:inherit;cursor:pointer}
 .vd-ref{border:1px dashed var(--gold,#c9a256);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .o-ref-by{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:6px 0;padding:8px 10px;border:1px solid var(--gold,#c9a256);border-radius:10px;background:rgba(201,162,86,.08);font-size:13.5px}
+/* responder orden */
+.o-reply{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.o-reply .ai{border-color:var(--gold,#c9a256);color:var(--gold2,#e8c77a)}
+.or-ai{display:flex;gap:8px}.or-ai input{flex:1}#or-t{min-height:170px;font-size:15px;line-height:1.5}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -952,7 +955,8 @@ function renderOrders(){
     ${o.conf?`<div class="o-pay">Zelle reportado · Conf. <b>${esc(o.conf)}</b>${o.payer?` · pagó ${esc(o.payer)}`:""}${s==="nueva"?" · <b>revisa tu banco</b>":""}</div>`:""}
     <div class="o-act">${ST.map(([k,l])=>`<button type="button" class="${s===k?"on":""}" onclick="setSt('${o.ref}','${k}')">${l}</button>`).join("")}<span class="sp"></span>${o.items.some(i=>i.sku)?(st.stock?'<span class="chip ok">Descontada del stock</span>':`<button type="button" onclick="discount('${o.ref}')">Descontar del stock</button>`):""}</div>
     ${st.by?`<p class="note">Último cambio: ${esc(st.by)} · ${new Date(st.t).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</p>`:""}
-    <details class="raw"><summary>Ver mensaje completo</summary><pre>${esc(o.text)}</pre></details></article>`}).join(""):`<div class="empty">${OF==="todas"?"Todavía no han llegado órdenes desde la app.":"No hay órdenes en esta vista."}</div>`;
+    <details class="raw"><summary>Ver mensaje completo</summary><pre>${esc(o.text)}</pre></details>
+    <div class="o-reply"><button type="button" class="chip" onclick="orReply('${o.ref}')">💬 Responder</button><button type="button" class="chip ai" onclick="orReply('${o.ref}',1)">✨ Responder con IA</button></div></article>`}).join(""):`<div class="empty">${OF==="todas"?"Todavía no han llegado órdenes desde la app.":"No hay órdenes en esta vista."}</div>`;
 }
 async function setSt(ref,s){try{const r=await api("set_status",{ref,status:s});D.status=r.status;renderOrders();toast(ST.find(x=>x[0]===s)[1])}catch(e){toast("No se guardó. Revisa la conexión")}}
 async function discount(ref){
@@ -2924,6 +2928,32 @@ async function ptDemo(on){if(!SL)return;
   mk("2026-10-05","Franquicia Garden · Orlando",[{t:"Otro",d:"Franquicia Garden — cliente referido y acompañado por Andrés",precio:"15000",costo:"0",com:true}],"10","Ejemplo · comisión de referido 10% del fee",{tax:false});
   slSave();toast("Ejemplo de Andrés cargado ✓ Toca su nombre");await slPortal();const b=document.querySelector('.pt-name[data-k="andrés (ejemplo)"]');if(b){b.scrollIntoView({block:"center"});setTimeout(()=>ptDetail("andrés (ejemplo)"),400)}}
 /* ===== FIN VENTAS PORTAL ===== */
+/* ===== RESPONDER ORDEN ===== (botón bajo cada orden o solicitud: responder tú o con ayuda de la IA, por la app, WhatsApp o correo) */
+const orPlain=t=>String(t||"").replace(/\*/g,"").replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu,"").replace(/━+/g,"———");
+async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(!raw)return;const o=parseOrder(raw),t=orPlain(raw.text),g=re=>(t.match(re)||[])[1]||"";
+  const tel=(o.tel||"").replace(/\D/g,""),wa=tel.length===10?"1"+tel:tel,mail=g(/Correo:\s*(\S+@\S+)/),nm=(o.client||g(/Nombre:\s*(.+)/)||"").trim();
+  const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>Responder a ${esc(nm||o.kind)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>${esc(o.kind)} · ${esc(ref)}${tel?" · 📞 "+esc(o.tel):""}${mail?" · ✉️ "+esc(mail):""}</small></div>
+   <details class="raw"><summary>Ver lo que escribió</summary><pre>${esc(t)}</pre></details>
+   <div class="or-ai"><input class="mk-in" id="or-hint" placeholder="Instrucción para la IA (opcional): ej. ofrecer llamada el jueves a las 3 pm"><button type="button" class="chip" id="or-gen">✨ ${ai?"Otra versión":"Escribir con IA"}</button></div>
+   <textarea class="mk-in" id="or-t" rows="9" placeholder="Escribe tu respuesta…"></textarea>
+   <div class="mk-row" id="or-ch"><button type="button" class="btn" id="or-app" style="width:auto;display:none">Enviar en su chat de la app</button>${wa?`<button type="button" class="chip" id="or-wa">WhatsApp</button>`:""}${mail?`<button type="button" class="chip" id="or-mail">Enviar por correo</button>`:""}<button type="button" class="chip" id="or-cp">Copiar</button></div>
+   <small class="note" id="or-st"></small></div>`;
+  document.body.appendChild(m);const T=m.querySelector("#or-t"),st=m.querySelector("#or-st");
+  let cid="";api("chat_by_ref",{ref}).then(r=>{cid=r.cid||"";if(cid)m.querySelector("#or-app").style.display=""}).catch(()=>{});
+  const gen=async()=>{const b=m.querySelector("#or-gen");b.disabled=true;st.textContent="✨ La IA está escribiendo…";T.disabled=true;
+    const hint=m.querySelector("#or-hint").value.trim();
+    const p=`Eres del equipo de Midnight (Midnight Café Colombia y Midnight Consulting Global, Miami). Escribe la respuesta a este cliente que llenó un formulario en nuestra app. Reglas: en el idioma en que escribió el cliente; cálida, profesional y corta (4 a 8 líneas); llámalo por su nombre; confirma lo que pidió con sus palabras; da el siguiente paso concreto (por ejemplo agendar una llamada o confirmar el pago y la entrega); no inventes precios, fechas ni promesas que no estén en el mensaje; sin asteriscos ni markdown; firma "Equipo Midnight". Devuelve SOLO el texto del mensaje.${hint?"\n\nIndicación de la dueña: "+hint:""}\n\nLo que envió el cliente:\n${t}`;
+    try{const j=await api("ai_chat",{msgs:[{role:"u",text:p}]});T.value=String(j.text||"").replace(/^["“]|["”]$/g,"").trim();st.textContent="Revísalo y cámbialo si quieres antes de enviarlo.";m.querySelector("#or-gen").textContent="✨ Otra versión"}
+    catch(e){st.textContent="La IA no respondió: "+e.message}finally{b.disabled=false;T.disabled=false}};
+  m.querySelector("#or-gen").onclick=gen;if(ai)gen();else T.focus();
+  m.querySelector("#or-cp").onclick=()=>mkCopy(T.value);
+  const need=()=>{if(!T.value.trim()){toast("Escribe la respuesta primero");return false}return true};
+  m.querySelector("#or-app").onclick=async()=>{if(!need())return;try{await api("chat_reply",{cid,text:T.value.trim()});toast("Enviado a su chat en la app ✓");m.remove();if(typeof loadChats==="function")loadChats()}catch(e){toast(e.message)}};
+  const w=m.querySelector("#or-wa");if(w)w.onclick=()=>{if(need())window.open("https://wa.me/"+wa+"?text="+encodeURIComponent(orPlain(T.value)),"_blank","noopener")};
+  const ml=m.querySelector("#or-mail");if(ml)ml.onclick=async()=>{if(!need()||!confirm("¿Enviar este correo a "+mail+"?"))return;try{await api("mail_send",{to:mail,subject:"Midnight · "+(o.kind||"Tu solicitud")+" "+ref,body:T.value.trim()});toast("Correo enviado ✓");m.remove()}catch(e){toast(e.message)}};
+}
+/* ===== FIN RESPONDER ORDEN ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
