@@ -568,7 +568,7 @@ html[data-theme="light"] .mk-con,html[data-theme="light"] .mk-hot p{color:#111}
 html[data-theme="light"] .ia-m,html[data-theme="light"] .ia-hello,html[data-theme="light"] .ia-in textarea{color:#111}
 html[data-theme="light"] .ia-bar{background:#fff}
 .ia-sugg[hidden],.ia-file[hidden]{display:none!important}
-body.ia-on #cmd-fab{display:none}
+body.ia-on #cmd-fab{display:none!important}
 .ia-mic,.cmd-mic{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:none;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .ia-mic.rec,.cmd-mic.rec{background:#e0504a;border-color:#e0504a;animation:micP 1.1s infinite}
 @keyframes micP{0%{box-shadow:0 0 0 0 rgba(224,80,74,.55)}100%{box-shadow:0 0 0 14px rgba(224,80,74,0)}}
@@ -675,6 +675,21 @@ html[data-theme="light"] .wa-box textarea{color:#111}
 html[data-theme="light"] .wa-d{background:#fff}html[data-theme="light"] .wa-b,html[data-theme="light"] .wa-row,html[data-theme="light"] .wa-ht b,html[data-theme="light"] .wa-comp textarea,html[data-theme="light"] .wa-tpb{color:#111}
 html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .wa-b.out small{color:#4a7a5a}
 /* ===== FIN WA BUSINESS ===== */
+/* iconos (micrófono, enviar, asistente) */
+.ic-mic,.ic-send,.ic-spark{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+.ic-mic rect{fill:currentColor;stroke:none}
+.ia-mic,.cmd-mic{color:var(--gold)!important;background:rgba(201,162,86,.10)!important;border:1px solid rgba(201,162,86,.45)!important;transition:transform .15s,background .15s}
+.ia-mic:hover,.cmd-mic:hover{background:rgba(201,162,86,.2)!important;transform:scale(1.05)}
+.ia-mic.rec,.cmd-mic.rec{color:#fff!important;background:#e0504a!important;border-color:#e0504a!important}
+.cmd-mic{display:inline-flex!important;align-items:center;justify-content:center;width:46px!important;height:46px!important;padding:0!important;border-radius:50%!important;flex:none}
+.cmd-mic .ic-mic{width:21px;height:21px}
+.ia-go{display:flex!important;align-items:center;justify-content:center;background:linear-gradient(145deg,#e8c77a,#c9a256 55%,#9c7a35)!important;color:#1a1208!important;border:0!important;box-shadow:0 4px 14px rgba(201,162,86,.35);transition:transform .15s,box-shadow .15s}
+.ia-go:hover{transform:translateY(-1px) scale(1.05);box-shadow:0 6px 20px rgba(201,162,86,.5)}
+.ia-go .ic-send{width:20px;height:20px;stroke-width:2.6}
+.cmd-fab{display:flex!important;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 25%,#f6dea0,#c9a256 55%,#8a6a2c)!important;color:#1a1208!important;border:1px solid rgba(255,235,190,.6)!important;box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 0 6px rgba(201,162,86,.12)!important;transition:transform .2s,box-shadow .2s}
+.cmd-fab:hover{transform:scale(1.07) rotate(-6deg);box-shadow:0 12px 34px rgba(0,0,0,.5),0 0 0 9px rgba(201,162,86,.18)!important}
+.cmd-fab .ic-spark{width:26px;height:26px;fill:currentColor;stroke:none}
+.wa-cr .chip .ic-mic{width:17px;height:17px}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -2059,9 +2074,8 @@ function cmdCtx(){const R=SL&&SL.rules;const c={hoy:new Date().toISOString().sli
 function cmdOpen(){let M=$("cmd-m");if(!M){M=document.createElement("div");M.id="cmd-m";M.className="cmd-m";M.onclick=e=>{if(e.target===M)cmdClose()};document.body.appendChild(M)}
   M.hidden=false;M.innerHTML=`<div class="cmd-c"><button type="button" class="sl-close" onclick="cmdClose()" aria-label="Cerrar">×</button>
    <h2>✨ Asistente Midnight</h2><p class="note" style="margin:0">Pídeme lo que quieras: preguntar, buscar, escribir un correo, calcular… Si es una venta, un pago o una comanda, la organizo donde corresponde y te muestro antes de guardar.</p>
-   <button type="button" class="cmd-mic" onclick="voz('cmd-t',this,cmdGo)">🎤 Hablar</button>
    <textarea id="cmd-t" rows="4" placeholder="Escribe lo que necesites… (ej.: venta a Sushi Único de 10 bolsas 12 oz · o · escríbele un correo a Artizan pidiendo precios)" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();cmdGo()}"></textarea>
-   <div class="cmd-r"><label class="chip" style="cursor:pointer">📷 Foto o PDF<input type="file" accept="image/*,application/pdf" hidden onchange="cmdFile(this)"></label><span id="cmd-fn" class="note" style="margin:0"></span><span class="sp" style="flex:1"></span><button type="button" class="btn" id="cmd-go" style="width:auto;padding:10px 18px" onclick="cmdGo()">✨ Enviar</button></div>
+   <div class="cmd-r"><label class="chip" style="cursor:pointer">📷 Foto o PDF<input type="file" accept="image/*,application/pdf" hidden onchange="cmdFile(this)"></label><span id="cmd-fn" class="note" style="margin:0"></span><span class="sp" style="flex:1"></span><button type="button" class="cmd-mic" onclick="voz('cmd-t',this,cmdGo)" aria-label="Hablar" title="Hablar: dicta y se envía solo"><svg class="ic-mic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6"/></svg></button><button type="button" class="btn" id="cmd-go" style="width:auto;padding:10px 18px" onclick="cmdGo()">✨ Enviar</button></div>
    <div id="cmd-out"></div></div>`;setTimeout(()=>$("cmd-t").focus(),60)}
 function cmdClose(){const M=$("cmd-m");if(M)M.hidden=true;CMDF=null;CMDP=null}
 async function cmdFile(inp){const f=inp.files[0];if(!f)return;
@@ -2123,7 +2137,7 @@ function cmdApply(){const A=CMDP._A;const sel=[...document.querySelectorAll("#cm
   }catch(err){skip++}});
   if(salCh){slSave();if(typeof slRender==="function"&&$("sl-app")&&!$("sl-app").hidden)slRender()}if(mixCh){mxSave();mxRender()}
   toast(`✓ ${n} guardado${n===1?"":"s"}${skip?` · ${skip} sin guardar (falta abrir la sección o un dato)`:""}`);if(n){cmdClose()}}
-function cmdFab(){if($("cmd-fab"))return;const b=document.createElement("button");b.id="cmd-fab";b.type="button";b.className="cmd-fab";b.title="Asistente Midnight";b.setAttribute("aria-label","Asistente Midnight");b.innerHTML="✨";b.onclick=cmdOpen;document.body.appendChild(b)}
+function cmdFab(){if($("cmd-fab"))return;const b=document.createElement("button");b.id="cmd-fab";b.type="button";b.className="cmd-fab";b.title="Asistente Midnight";b.setAttribute("aria-label","Asistente Midnight");b.innerHTML='<svg class="ic-spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg>';b.onclick=cmdOpen;document.body.appendChild(b)}
 setTimeout(cmdFab,300);
 
 /* ===== Pantalla oscura / clara ===== */
@@ -2515,8 +2529,8 @@ function iaStart(){iaLoad();
    <div class="ia-chat" id="ia-chat"></div>
    <div class="ia-sugg" id="ia-sugg">${["📷 ¿Qué es esto? (manda una foto)","✍️ Escríbeme un post para Instagram del café 12 oz","🧮 Si compro a $8.78 y vendo a $22.99, ¿qué margen tengo?","✉️ Escríbele un correo a un cliente ofreciendo café para su restaurante","📄 Resúmeme este contrato (adjunta el PDF)","🌎 Traduce al inglés un mensaje para un cliente","💡 Dame 5 ideas para vender más cafeteras este mes"].map(s=>`<button type="button" class="chip" onclick="iaSug(this.textContent)">${s}</button>`).join("")}</div>
    <div class="ia-bar"><label class="ia-clip" title="Adjuntar foto o PDF"><input type="file" accept="image/*,application/pdf" hidden onchange="iaPick(this.files[0]);this.value=''">📎</label>
-    <div class="ia-in"><div id="ia-file" class="ia-file" hidden></div><textarea id="ia-t" rows="1" placeholder="Escribe o habla 🎤…" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,180)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();iaSend()}"></textarea></div>
-    <button type="button" class="ia-mic" id="ia-mic" onclick="voz('ia-t',this,iaSend)" aria-label="Hablar" title="Habla y se envía solo">🎤</button><button type="button" class="btn ia-go" id="ia-go" onclick="iaSend()" aria-label="Enviar">➤</button></div>`;
+    <div class="ia-in"><div id="ia-file" class="ia-file" hidden></div><textarea id="ia-t" rows="1" placeholder="Escribe o toca el micrófono…" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,180)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();iaSend()}"></textarea></div>
+    <button type="button" class="ia-mic" id="ia-mic" onclick="voz('ia-t',this,iaSend)" aria-label="Hablar" title="Habla y se envía solo"><svg class="ic-mic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6"/></svg></button><button type="button" class="btn ia-go" id="ia-go" onclick="iaSend()" aria-label="Enviar"><svg class="ic-send" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg></button></div>`;
   $("ia-t").addEventListener("paste",e=>{const f=[...(e.clipboardData||{}).files||[]][0];if(f){e.preventDefault();iaPick(f)}});
   const z=$("ia-root");z.ondragover=e=>e.preventDefault();z.ondrop=e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)iaPick(f)};
   iaDraw()}
@@ -2708,7 +2722,7 @@ async function waOpenChat(id,quiet){WAT=id;const d=$("wa-d");if(!quiet)d.innerHT
   d.innerHTML=waHead(esc(waName(id)),1)+`<div class="wa-sub">${waFmt(id)}${open?"":` · <b>ventana de 24 h cerrada</b>`}</div>
    <div class="wa-msgs" id="wa-m">${WATM.map(m=>`<div class="wa-b ${m.dir}">${m.media?`<button type="button" class="chip" onclick="waMedia('${m.media}',this)">${{image:"🖼 Ver foto",audio:"🎧 Escuchar audio",video:"🎬 Ver video",document:"📄 Abrir documento",sticker:"🙂 Sticker"}[m.type]||"📎 Abrir"}</button>`:""}${m.text?`<div>${esc(m.text).replace(/\n/g,"<br>")}</div>`:""}<small>${waTime(m.t)}${m.dir==="out"?` ${{read:"✓✓ leído",delivered:"✓✓",sent:"✓",failed:"⚠️ no enviado"}[m.status]||""}`:""}</small></div>`).join("")||'<div class="empty">Sin mensajes.</div>'}</div>
    ${open?`<div class="wa-comp"><textarea id="wa-t" rows="2" placeholder="Escribe un mensaje…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();waSendTxt()}">${esc(draft)}</textarea>
-     <div class="wa-cr"><button type="button" class="chip" onclick="waAI(this)">✨ Sugerir respuesta</button><button type="button" class="chip" onclick="voz('wa-t',this)">🎤</button><span class="sp" style="flex:1"></span><button type="button" class="btn wa-send" onclick="waSendTxt()">Enviar</button></div></div>`
+     <div class="wa-cr"><button type="button" class="chip" onclick="waAI(this)">✨ Sugerir respuesta</button><button type="button" class="chip" onclick="voz('wa-t',this)" aria-label="Dictar"><svg class="ic-mic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6"/></svg></button><span class="sp" style="flex:1"></span><button type="button" class="btn wa-send" onclick="waSendTxt()">Enviar</button></div></div>`
    :`<div class="wa-comp"><p class="mk-small">Pasaron más de 24 h desde que el cliente escribió. WhatsApp solo deja retomar la conversación con una <b>plantilla aprobada</b>.</p><button type="button" class="btn wa-send" onclick="waTplPick('${id}')">📋 Enviar plantilla</button></div>`}`;
   const m=$("wa-m");if(m)m.scrollTop=m.scrollHeight;if(!quiet&&$("wa-t"))$("wa-t").focus();waLoad()}
 async function waSendTxt(){const t=$("wa-t"),v=t.value.trim();if(!v)return;t.disabled=true;
