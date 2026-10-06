@@ -594,6 +594,7 @@ body.ia-on #cmd-fab{display:none}
 .ia-spk.on{border-color:var(--gold);color:var(--gold)}
 .ia-acts{display:flex;gap:14px}
 .cmd-mic{width:auto;height:auto;border-radius:20px;padding:7px 14px;font-size:14px;color:var(--cream);gap:6px}
+.ia-m a{color:var(--gold);word-break:break-all}
 /* ===== FIN IA GENERAL ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
@@ -2444,7 +2445,7 @@ let IAM=null,IAF=null,IAB=false;
 function iaLoad(){if(IAM)return;try{IAM=JSON.parse(localStorage.getItem("mdn-ia")||"[]")}catch(e){IAM=[]}}
 function iaKeep(){try{localStorage.setItem("mdn-ia",JSON.stringify(IAM.slice(-40).map(m=>({role:m.role,text:m.text,had:m.had||!!m.file,fn:m.fn}))))}catch(e){}}
 function iaMd(t){return esc(t).replace(/^### (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^## (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^# (.+)$/gm,"<b class='ia-h'>$1</b>")
-  .replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|\s)\*(\S.+?)\*(?=\s|$)/g,"$1<i>$2</i>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/^\s*[-•*]\s+/gm,"• ").replace(/\n/g,"<br>")}
+  .replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|\s)\*(\S.+?)\*(?=\s|$)/g,"$1<i>$2</i>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/^\s*[-•*]\s+/gm,"• ").replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>")}
 function iaStart(){iaLoad();
   $("ia-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">✨ IA de Midnight</h2><p class="mk-sub">Pregúntale lo que sea · manda fotos o PDF para que los identifique</p></div><div class="mk-per"><button type="button" class="chip ia-spk${IASPK?" on":""}" onclick="iaSpkT(this)">${IASPK?"🔊 Voz activada":"🔈 Leer respuestas"}</button><button type="button" class="chip" onclick="iaNew()">+ Nueva conversación</button></div></div>
    <div class="ia-chat" id="ia-chat"></div>
