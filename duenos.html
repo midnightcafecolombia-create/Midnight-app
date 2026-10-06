@@ -716,6 +716,9 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 .vd-it{list-style:none;margin:0;padding:0;font-size:13.5px}.vd-it li{display:flex;justify-content:space-between;gap:10px;padding:2px 0}.vd-it small{opacity:.7}
 .vd-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;opacity:.9}
 .vd-st{padding:1px 8px;border-radius:10px;border:1px solid currentColor}.vd-st.s-nueva{color:#e7b94c}.vd-st.s-pagada,.vd-st.s-preparada{color:#6aa7ff}.vd-st.s-entregada{color:#5bc489}.vd-st.s-cancelada{color:#9a8f80}
+.vd-pct{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.vd-pct label{display:flex;align-items:center;gap:4px;border:1px solid var(--gold,#c9a256);border-radius:10px;padding:3px 8px;background:rgba(201,162,86,.08)}
+.vd-pin{width:52px;border:0;background:transparent;color:inherit;font:inherit;font-size:16px;font-weight:600;text-align:right;outline:0}.vd-pct small{opacity:.75;font-size:12px}.vd-pct b{font-weight:600;color:var(--gold2,#e8c77a)}
+.vd-rst{background:none;border:0;padding:0;color:inherit;text-decoration:underline;font:inherit;cursor:pointer}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -1792,10 +1795,10 @@ function slCalc(e){const R=SL.rules;const L=[];
   else if(e.rama==="Consulting"){i=slNum(e.insumos);(e.gx||[]).forEach(g=>{const m=slNum(g.m);if(m){AX.push({n:g.cat||"Gasto",v:m});c+=m}});R.consult.forEach(o=>{const m=slNum((e.areas||{})[o.id]);if(m){AX.push({n:o.n,v:m});c+=m}})}
   else i=slNum(e.insumos);
   const base=rd(Math.max(0,v-c-i));const cBase=cb==null?base:Math.min(cb,base);
-  if(e.rama==="Café"&&e.ds&&e.ds.length){e.ds.forEach((d,j)=>{const nm=(d.n||"").trim();const p=d.p===""||d.p==null?R.dist:slNum(d.p);if(!nm&&!slNum(d.p)&&d.p!=="0")return;const m=rd(cBase*p/100);dist=rd(dist+m);L.push({k:"dist",id:(nm||"Distribuidor "+(j+1)).toLowerCase(),n:nm||"Distribuidor "+(j+1),t:`${p}% de ${$$(cBase)}`,v:m})})}
-  else if(e.rama==="Café"&&e.dist){const d=R.distributors.find(x=>x.id===e.dist);const p=d&&d.p!=null?+d.p:R.dist;dist=rd(base*p/100);L.push({k:"dist",id:e.dist,n:(d?d.n:"Distribuidor"),t:`Comisión distribuidor ${p}% de la base neta`,v:dist})}
+  if(e.rama==="Café"&&e.ds&&e.ds.length){e.ds.forEach((d,j)=>{const nm=(d.n||"").trim();const p=d.p===""||d.p==null?R.dist:slNum(d.p);if(!nm&&!slNum(d.p)&&d.p!=="0")return;const m=rd(cBase*p/100);dist=rd(dist+m);L.push({k:"dist",id:(nm||"Distribuidor "+(j+1)).toLowerCase(),n:nm||"Distribuidor "+(j+1),t:`${p}% de ${$$(cBase)}`,v:m,pct:p,j,own:!(d.p===""||d.p==null)})})}
+  else if(e.rama==="Café"&&e.dist){const d=R.distributors.find(x=>x.id===e.dist);const own=e.dp!=null&&e.dp!=="";const p=own?slNum(e.dp):d&&d.p!=null?+d.p:R.dist;dist=rd(base*p/100);L.push({k:"dist",id:e.dist,n:(d?d.n:"Distribuidor"),t:`Comisión distribuidor ${p}% de la base neta`,v:dist,pct:p,own,legacy:1})}
   const comp=rd(base-dist-op);let cont=0;if(e.cont&&+R.cont){cont=rd(comp*R.cont/100);L.push({k:"cont",id:"cont",n:"Contadora",t:`${R.cont}% de la utilidad neta de la cuenta`,v:cont})}
-  const net0=rd(comp-cont);let emp=0;(R.emps||[]).forEach(x=>{const p=slNum(x.p);if(!p)return;const m=rd(net0*p/100);emp=rd(emp+m);L.push({k:"emp",id:x.id,n:x.n||"Empleado",t:`${p}% de la entrada neta${x.r?" · "+x.r:""}`,v:m})});
+  const net0=rd(comp-cont);let emp=0;(R.emps||[]).forEach(x=>{const o=e.ep&&e.ep[x.id],own=o!=null&&o!=="",p=own?slNum(o):slNum(x.p);if(!p&&!own)return;const m=rd(net0*p/100);emp=rd(emp+m);L.push({k:"emp",id:x.id,n:x.n||"Empleado",t:`${p}% de la entrada neta${x.r?" · "+x.r:""}${own?" · % propio de esta cuenta":""}`,v:m,pct:p,own})});
   const net=rd(net0-emp);const PE=slPartners(e,R);const ops=rd(net*R.ops/100);const ptot=PE.list.reduce((t,p)=>t+(p.on?rd(net*p.pe/100):0),0);const fund=PE.fund>0?rd(net-ops-ptot):0;
   L.push({k:"ops",id:"ops",n:R.ops_name,t:`Retención ${R.ops}% de la entrada neta de la compañía`,v:ops});
   const FD=slFund(R,fund);FD.forEach(f=>L.push(f));
@@ -2872,7 +2875,7 @@ setInterval(()=>{if(SL&&!document.hidden)vdImport()},180000);
 /* detalle de una persona */
 const VD_ST={nueva:"Por verificar",pagada:"Pago verificado",preparada:"Preparada",entregada:"Entregada",cancelada:"Cancelada"};
 function ptDetail(k){if(!SL)return;const P=ptPeople().find(p=>p.k===k);if(!P)return;const R=SL.rules,rows=[];
-  (SL.entries||[]).forEach(e=>{let K;try{K=slCalcSnap(e)}catch(x){return}(K.L||[]).forEach(l=>{if(["dist","emp","st"].includes(l.k)&&l.v>0&&ptKey(ptName(l))===k)rows.push({e,l,K})})});
+  (SL.entries||[]).forEach(e=>{let K;try{K=slCalcSnap(e)}catch(x){return}(K.L||[]).forEach(l=>{if(["dist","emp","st"].includes(l.k)&&(l.v>0||l.own)&&ptKey(ptName(l))===k)rows.push({e,l,K})})});
   rows.sort((a,b)=>String(b.e.fecha).localeCompare(String(a.e.fecha)));
   const itemsOf=e=>e.vd?e.vd.items.map(i=>({q:i.q,n:i.n,t:i.t,lb:i.lb,bag:i.id!=="caps"})):(e.items||[]).filter(it=>slPrice(it,R)||it.d||it.prod).map(it=>slIsCat(it)?{q:slNum(it.q),n:(slProd(it,R)||{}).n||"Producto",t:slPrice(it,R),lb:0,bag:true}:{q:0,n:it.t+(it.d?": "+it.d:""),t:slPrice(it,R),lb:it.t==="Café"?slNum(it.lb):0,bag:false});
   const sales=rows.filter(r=>r.l.k==="dist");let bags=0,lb=0,vend=0;sales.forEach(r=>{vend+=r.K.v||0;itemsOf(r.e).forEach(i=>{if(i.bag)bags+=i.q;lb+=i.lb||0})});
@@ -2882,9 +2885,16 @@ function ptDetail(k){if(!SL)return;const P=ptPeople().find(p=>p.k===k);if(!P)ret
    <div class="vd-k"><div><span>Ganado en total</span><b>${$$(gan)}</b></div>${sales.length?`<div><span>Ventas</span><b>${sales.length}</b></div><div><span>Total vendido</span><b>${$$(vend)}</b></div><div><span>Bolsas</span><b>${bags}</b></div><div><span>Café</span><b>${Math.round(lb*100)/100} lb</b></div>`:""}${pay?`<div><span>Salario fijo</span><b>${$$(pay)}</b></div>`:""}</div>
    ${rows.length?rows.map(({e,l,K})=>{const v=e.vd,its=itemsOf(e),st=v?((D.status||{})[v.ref]||{}).s||v.st||"nueva":"";
      return `<div class="vd-row"><div class="vd-h"><div><b>${esc(e.cuenta||e.rama)}</b><small>${fdt(e.fecha)} · ${esc(e.rama)}${v?" · "+esc(v.ref):""}</small></div><div class="vd-m">${K.v?`<b>${$$(K.v)}</b>`:""}<small class="vd-g">+${$$(l.v)} ${l.k==="dist"?"comisión":l.k==="st"?"servicio":"participación"}</small></div></div>
+      ${l.pct!=null?`<div class="vd-pct"><label><input class="vd-pin" type="text" inputmode="decimal" value="${l.pct}" data-e="${esc(e.id)}" data-t="${l.k}" data-x="${l.k==="emp"?esc(l.id):l.legacy?"":l.j}" data-p="${esc(k)}" onchange="ptPct(this)" aria-label="Porcentaje de ${esc(P.n)} en ${esc(e.cuenta||"esta cuenta")}"><span>%</span></label><small>${l.k==="emp"?"de la entrada neta":"de la ganancia"} · ${l.own?`<b>propio de esta cuenta</b> · <button type="button" class="vd-rst" data-e="${esc(e.id)}" data-t="${l.k}" data-x="${l.k==="emp"?esc(l.id):l.legacy?"":l.j}" data-p="${esc(k)}" onclick="ptPct(this,1)">volver al general</button>`:"el general · cámbialo solo para esta cuenta"}</small></div>`:""}
       ${its.length&&l.k!=="st"?`<ul class="vd-it">${its.map(i=>`<li><span>${i.q?i.q+" × ":""}${esc(i.n)}${i.lb?` <small>· ${i.lb} lb</small>`:""}</span><span>${$$(i.t)}</span></li>`).join("")}</ul>`:`<small>${esc(l.t)}</small>`}
       ${v?`<div class="vd-meta"><span>${v.entrega==="envio"?"🚚":v.entrega==="recoge"?"🏪":"🤝"} ${esc(v.entrega_t)}${v.dir?" · "+esc(v.dir):""}</span>${v.fecha?`<span>📅 Para el ${esc(v.fecha)}</span>`:""}<span>💳 ${esc(v.pago)}</span><span>📞 ${esc(v.tel)}</span>${v.email?`<span>✉️ ${esc(v.email)}</span>`:""}<span class="vd-st s-${st}">${VD_ST[st]||st}</span></div>${v.nota?`<small>📝 ${esc(v.nota)}</small>`:""}`:e.nota?`<small>📝 ${esc(e.nota)}</small>`:""}</div>`}).join(""):'<div class="empty">Todavía no tiene ventas registradas.</div>'}</div>`;
   document.body.appendChild(m)}
+
+function ptPct(el,reset){const e=(SL.entries||[]).find(x=>x.id===el.dataset.e);if(!e)return;const t=el.dataset.t,x=el.dataset.x;let v=reset?"":String(el.value).replace(",",".").replace("%","").trim();
+  if(v!==""&&(isNaN(+v)||+v<0||+v>100)){toast("Escribe un % entre 0 y 100");el.value="";return}
+  if(t==="emp"){e.ep=e.ep||{};if(v==="")delete e.ep[x];else e.ep[x]=v}else if(x===""){e.dp=v}else if(e.ds&&e.ds[+x]){e.ds[+x].p=v}
+  slSave();const box=el.closest(".cr-modal"),sc=box?box.scrollTop:0;box&&box.remove();ptDetail(el.dataset.p);const nb=document.querySelector(".cr-modal");if(nb)nb.scrollTop=sc;
+  toast(v===""?"Volvió al % general":"Listo: "+v+"% solo para "+(e.cuenta||"esta cuenta"));if(document.querySelector("#v-emp:not([hidden])"))slPortal()}
 /* ejemplo de Andrés (se carga y se borra con un botón; marcado demo) */
 const PT_DEMO="andres";
 function ptHasDemo(){return !!(SL&&(SL.entries||[]).some(e=>e.demo===PT_DEMO))}
