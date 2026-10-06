@@ -1129,14 +1129,20 @@ function renderThread(scroll){
   let lastM="";
   $("q-msgs").innerHTML=(c.msgs||[]).map(m=>{const showM=m.from==="c"&&m.machine&&m.machine!==lastM;if(m.from==="c"&&m.machine)lastM=m.machine;return `<div class="bub ${m.from}">${showM?`<span class="mc">${esc(m.machine)}</span>`:""}${esc(m.text)}<small>${m.from==="m"?esc(m.by||m.who||"Midnight")+" · ":""}${hhmm(m.t)}</small></div>`}).join("");
   if(scroll){const t=$("q-msgs");t.scrollTop=t.scrollHeight}
-  $("q-send").textContent=c.src==="orden"?"Guardar y enviar por WhatsApp":"Responder como Midnight Sales";
-  const on=$("q-ordnote");if(c.src==="orden"&&!on)$("q-quick").insertAdjacentHTML("beforebegin",'<p class="note" id="q-ordnote">Llegó por formulario: tu respuesta se guarda aquí y se abre WhatsApp para enviársela.</p>');else if(c.src!=="orden"&&on)on.remove();
+  const em=qMail(c);$("q-send").textContent=c.src==="orden"?(em?"Enviar a su correo":"Enviar"):"Responder como Midnight Sales";
+  const on=$("q-ordnote");if(on)on.remove();if(c.src==="orden")$("q-quick").insertAdjacentHTML("beforebegin",`<p class="note" id="q-ordnote">${em?`Llegó por formulario: tu respuesta le llega directo a <b>${esc(em)}</b> desde hola@midnightcgo.com y queda guardada aquí.`:"Llegó por formulario sin correo: tu respuesta se envía por WhatsApp Business si está conectado; si no, queda guardada aquí."}</p>`);
   if(c.lang&&c.lang!=="es"&&!$("q-langnote")){$("q-quick").insertAdjacentHTML("beforebegin",`<p class="note" id="q-langnote">Este cliente usa la app en ${lang}. Puedes responderle en ese idioma.</p>`)}else if((!c.lang||c.lang==="es")&&$("q-langnote"))$("q-langnote").remove();
 }
 $("q-quick").innerHTML=QUICK.map((q,i)=>`<button type="button" data-i="${i}">${esc(q.length>34?q.slice(0,32)+"…":q)}</button>`).join("");
 $("q-quick").onclick=e=>{const b=e.target.closest("button");if(!b)return;const t=$("q-text");t.value=(t.value?t.value.trim()+" ":"")+QUICK[+b.dataset.i];t.focus()};
 $("q-form").onsubmit=async e=>{e.preventDefault();const text=$("q-text").value.trim();if(!text||!QCID)return;$("q-send").disabled=true;
-  try{const r=await api("chat_reply",{cid:QCID,text});QCHAT=r.chat;$("q-text").value="";renderThread(true);if(QCHAT.src==="orden"){const tl=(QCHAT.tel||"").replace(/\D/g,"");if(tl){window.open("https://wa.me/"+(tl.length===10?"1"+tl:tl)+"?text="+encodeURIComponent(text),"_blank","noopener");toast("Guardada en el hilo · se abrió WhatsApp para enviársela")}else toast("Guardada en el hilo (no dejó teléfono)")}else toast("Respuesta enviada");$("q-text").style.height=""}catch(err){toast("No se envió. Revisa la conexión")}$("q-send").disabled=false};
+  try{const r=await api("chat_reply",{cid:QCID,text});QCHAT=r.chat;$("q-text").value="";renderThread(true);if(QCHAT.src==="orden")await qDirect(text);else toast("Respuesta enviada");$("q-text").style.height=""}catch(err){toast("No se envió. Revisa la conexión")}$("q-send").disabled=false};
+/* respuestas directas a quien llegó por formulario (sin abrir WhatsApp) */
+function qMail(c){const m=((c&&c.msgs)||[]).map(x=>x.text).join("\n").match(/Correo:\s*([^\s@]+@[^\s@]+\.[^\s]+)/);return m?m[1]:""}
+async function qDirect(text,C){C=C||QCHAT;const em=qMail(C),tl=(C.tel||"").replace(/\D/g,"");
+  if(em){try{await api("mail_send",{to:em,subject:"Midnight · "+(C.machine||"Tu solicitud"),body:text});toast("Enviado a su correo ✓");return}catch(e){toast("No salió el correo: "+e.message);return}}
+  if(tl){try{const w=await api("wa_cfg");if(w.ok){await api("wa_send",{to:tl,text});toast("Enviado por WhatsApp Business ✓");return}}catch(e){toast("WhatsApp Business no lo pudo enviar: "+e.message);return}}
+  toast("Guardado en la conversación. Este cliente no dejó correo y WhatsApp Business aún no está conectado.")}
 async function archChat(v){try{const r=await api("chat_arch",{cid:QCID,arch:v});QS=r.chats;toast(v?"Archivada":"Movida a activas");closeChat()}catch(e){toast("No se guardó")}}
 setInterval(async()=>{if(document.hidden)return;
   if(QCID){try{const r=await api("chat",{cid:QCID});const n=(QCHAT.msgs||[]).length;QCHAT=r.chat;if(QCHAT.msgs.length!==n){const t=$("q-msgs"),near=t.scrollHeight-t.scrollTop-t.clientHeight<80;renderThread(near)}}catch(e){}}
@@ -2945,6 +2951,9 @@ async function ptDemo(on){if(!SL)return;
   mk("2026-10-05","Franquicia Garden · Orlando",[{t:"Otro",d:"Franquicia Garden — cliente referido y acompañado por Andrés",precio:"15000",costo:"0",com:true}],"10","Ejemplo · comisión de referido 10% del fee",{tax:false});
   slSave();toast("Ejemplo de Andrés cargado ✓ Toca su nombre");await slPortal();const b=document.querySelector('.pt-name[data-k="andrés (ejemplo)"]');if(b){b.scrollIntoView({block:"center"});setTimeout(()=>ptDetail("andrés (ejemplo)"),400)}}
 /* ===== FIN VENTAS PORTAL ===== */
+/* ===== COMPOSER PREGUNTAS ===== */
+(function(){const t=document.getElementById("q-text");if(!t||t._ag)return;t._ag=1;t.rows=1;const fit=()=>{t.style.height="44px";t.style.height=Math.min(170,t.scrollHeight+2)+"px"};t.addEventListener("input",fit);t.addEventListener("focus",fit);new MutationObserver(fit).observe(t,{attributes:true,attributeFilter:["value"]});setInterval(()=>{if(document.activeElement!==t&&t.value&&t.scrollHeight>t.clientHeight+4)fit()},800)})();
+/* ===== FIN COMPOSER PREGUNTAS ===== */
 /* ===== RESPONDER ORDEN ===== (botón bajo cada orden o solicitud: responder tú o con ayuda de la IA, por la app, WhatsApp o correo) */
 const orPlain=t=>String(t||"").replace(/\*/g,"").replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu,"").replace(/━+/g,"———");
 async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(!raw)return;
@@ -2955,7 +2964,7 @@ async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(
    <details class="raw"><summary>Ver lo que escribió</summary><pre>${esc(t)}</pre></details>
    <div class="or-ai"><input class="mk-in" id="or-hint" placeholder="Instrucción para la IA (opcional): ej. ofrecer llamada el jueves a las 3 pm"><button type="button" class="chip" id="or-gen">✨ ${ai?"Otra versión":"Escribir con IA"}</button></div>
    <textarea class="mk-in" id="or-t" rows="9" placeholder="Escribe tu respuesta…"></textarea>
-   <div class="mk-row" id="or-ch"><button type="button" class="btn" id="or-app" style="width:auto;display:none">Enviar en su conversación (Preguntas)</button>${wa?`<button type="button" class="chip" id="or-wa">WhatsApp</button>`:""}${mail?`<button type="button" class="chip" id="or-mail">Enviar por correo</button>`:""}<button type="button" class="chip" id="or-cp">Copiar</button></div>
+   <div class="mk-row" id="or-ch"><button type="button" class="btn" id="or-app" style="width:auto;display:none">Enviar</button>${mail?`<button type="button" class="chip" id="or-mail">Enviar por correo</button>`:""}<button type="button" class="chip" id="or-cp">Copiar</button></div>
    <small class="note" id="or-st"></small></div>`;
   document.body.appendChild(m);const T=m.querySelector("#or-t"),st=m.querySelector("#or-st");
   let cid="";api("chat_by_ref",{ref}).then(r=>{cid=r.cid||"";if(cid)m.querySelector("#or-app").style.display=""}).catch(()=>{});
@@ -2967,14 +2976,11 @@ async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(
   m.querySelector("#or-gen").onclick=gen;if(ai)gen();else T.focus();
   m.querySelector("#or-cp").onclick=()=>mkCopy(T.value);
   const need=()=>{if(!T.value.trim()){toast("Escribe la respuesta primero");return false}return true};
-  m.querySelector("#or-app").onclick=async()=>{if(!need())return;try{await api("chat_reply",{cid,text:T.value.trim()});toast("Enviado a su chat en la app ✓");m.remove();if(typeof loadChats==="function")loadChats()}catch(e){toast(e.message)}};
+  m.querySelector("#or-app").onclick=async()=>{if(!need())return;try{const r=await api("chat_reply",{cid,text:T.value.trim()});if(r.chat&&r.chat.src==="orden")await qDirect(T.value.trim(),r.chat);else toast("Enviado a su chat en la app ✓");m.remove();if(typeof loadChats==="function")loadChats()}catch(e){toast(e.message)}};
   const w=m.querySelector("#or-wa");if(w)w.onclick=()=>{if(need())window.open("https://wa.me/"+wa+"?text="+encodeURIComponent(orPlain(T.value)),"_blank","noopener")};
   const ml=m.querySelector("#or-mail");if(ml)ml.onclick=async()=>{if(!need()||!confirm("¿Enviar este correo a "+mail+"?"))return;try{await api("mail_send",{to:mail,subject:"Midnight · "+(o.kind||"Tu solicitud")+" "+ref,body:T.value.trim()});toast("Correo enviado ✓");m.remove()}catch(e){toast(e.message)}};
 }
 /* ===== FIN RESPONDER ORDEN ===== */
-/* ===== COMPOSER PREGUNTAS ===== */
-(function(){const t=document.getElementById("q-text");if(!t||t._ag)return;t._ag=1;t.rows=1;const fit=()=>{t.style.height="44px";t.style.height=Math.min(170,t.scrollHeight+2)+"px"};t.addEventListener("input",fit);t.addEventListener("focus",fit);new MutationObserver(fit).observe(t,{attributes:true,attributeFilter:["value"]});setInterval(()=>{if(document.activeElement!==t&&t.value&&t.scrollHeight>t.clientHeight+4)fit()},800)})();
-/* ===== FIN COMPOSER PREGUNTAS ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
