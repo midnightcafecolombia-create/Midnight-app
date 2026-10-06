@@ -741,6 +741,36 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 @media (max-width:560px){#q-form.reply{grid-template-columns:1fr 1fr}#q-form .send-row .btn{grid-column:1/-1}#q-thread .thread{height:calc(100vh - 300px)}}
 .vd-send{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 4px}.vd-tel{flex:1 1 150px;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid var(--line,#c9a45c66);background:transparent;color:inherit;font:inherit}.vd-wa{width:auto;flex:0 0 auto;padding:10px 16px}
 .cr-row{position:relative}.cr-row:has(.cr-trash){padding-right:52px}.cr-trash{position:absolute;top:50%;right:8px;transform:translateY(-50%);z-index:2;background:none;border:1px solid var(--line);border-radius:999px;color:var(--cream);width:34px;height:34px;font:inherit;cursor:pointer;display:grid;place-items:center;padding:0}.cr-trash:hover{border-color:var(--gold);background:rgba(201,162,86,.12)}.pt-trash{min-width:36px}
+/* ===== BANCO ===== */
+#bk-lock[hidden]{display:none!important}
+#bk-lock.bk-modal{position:fixed;inset:0;width:auto;max-width:none;min-height:0;border-radius:0;z-index:90;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;margin:0;border:0}
+#bk-lock .sl-card{position:relative;width:min(380px,100%);background:var(--ink);border:1px solid var(--gold);border-radius:18px;padding:26px 22px 22px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#bk-lock .sl-card input{width:100%;box-sizing:border-box;text-align:center;letter-spacing:.3em;font-size:18px}
+#bk-lock .sl-close{position:absolute;top:8px;right:12px;background:none;border:0;color:inherit;font-size:24px;cursor:pointer}
+#bk-lock .big{font-size:38px}
+#v-bank .bk-accs,#v-bank .bk-f{margin-bottom:10px}
+.bk-big{font-size:20px;white-space:nowrap}
+.bk-acc{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.bk-acc .cr-n{flex:1;min-width:160px}
+.bk-bal{display:flex;gap:6px;width:100%}.bk-bal .mk-in{flex:1;min-width:0}
+.bk-in{color:#3ecf8e}.bk-out{color:#ff6b6b}
+.bk-chart{display:flex;gap:10px;align-items:flex-end;height:150px;padding-top:8px}
+.bk-col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;gap:4px}
+.bk-bars{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px}
+.bk-bars i{display:block;width:40%;max-width:26px;border-radius:4px 4px 0 0}
+.bk-bars i.in,.bk-k.in{background:#3ecf8e}.bk-bars i.out,.bk-k.out{background:#ff6b6b}
+.bk-k{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:middle}
+.bk-cat{display:grid;grid-template-columns:130px 1fr auto;gap:10px;align-items:center;padding:5px 0;font-size:13px}
+.bk-cat .mk-bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden}.bk-cat .mk-bar i{display:block;height:100%;background:var(--gold);border-radius:6px}
+.bk-row{display:grid;grid-template-columns:86px 1fr 150px auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.bk-d{font-size:12px;opacity:.7}.bk-amt{text-align:right;white-space:nowrap}
+.bk-cs{background:transparent;color:inherit;border:1px solid var(--line);border-radius:8px;padding:4px;font-size:12px;max-width:150px}
+.bk-help summary{cursor:pointer;font-weight:600}
+.bk-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.bk-form label{display:flex;flex-direction:column;gap:4px;font-size:12px}
+.bk-sum{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0}.bk-good{color:#3ecf8e}
+.bk-pv{max-height:220px;overflow:auto}
+@media(max-width:640px){.bk-row{grid-template-columns:1fr auto;grid-template-areas:"n a" "d c"}.bk-row .bk-d{grid-area:d}.bk-row .cr-n{grid-area:n}.bk-row .bk-amt{grid-area:a}.bk-row .bk-cs{grid-area:c;justify-self:end}.bk-cat{grid-template-columns:100px 1fr auto}.bk-form{grid-template-columns:1fr}}
+/* ===== FIN BANCO ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -767,7 +797,7 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
     <button type="button" data-v="stock">Stock</button>
     <button type="button" data-v="costos">Costos</button>
     <button type="button" data-v="mix">Mixología 🔒</button>
-    <button type="button" data-v="sal">Distribución 🔒</button>
+    <button type="button" data-v="sal">Distribución 🔒</button><button type="button" data-v="bank">Banco 🔒</button>
     <button type="button" data-v="equipo">Equipo</button>
     <button type="button" data-v="emp">🪪 Empleados</button>
     <button type="button" data-v="mkt">📣 Marketing</button>
@@ -879,7 +909,15 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
     <div class="mx-modal" id="mx-modal" hidden onclick="if(event.target===this)mxClose()"><div class="mx-card" id="mx-mbody"></div></div>
   </section>
 
-  <section class="view" id="v-sal" hidden>
+    <section class="view" id="v-bank" hidden>
+    <div id="bk-lock" class="mx-lock"></div>
+    <div id="bk-app" hidden>
+      <div class="mx-head"><div class="mx-brand"><b>BANCO</b><small>Statements · entradas · salidas · saldo · confidencial</small></div><button type="button" class="chip" onclick="bkLock()">🔒 Cerrar</button></div>
+      <div class="mx-tabs" id="bk-tabs"><button type="button" data-t="res">Resumen</button><button type="button" data-t="mov">Movimientos</button><button type="button" data-t="est">Statements</button><button type="button" data-t="acc">Acceso</button></div>
+      <div id="bk-body"></div>
+    </div>
+  </section>
+<section class="view" id="v-sal" hidden>
     <div id="sl-lock" class="mx-lock"></div>
     <div id="sl-app" hidden>
       <div class="mx-head"><div class="mx-brand"><b>DISTRIBUCIÓN DE LA COMPAÑÍA</b><small>Comisiones · Midnight Operaciones · socios · nómina · confidencial</small></div>
@@ -937,7 +975,7 @@ async function api(action,body={}){
 }
 let D=null;
 /* ===== Pestañas ===== */
-let PREVV="ordenes";function showView(v){if(v!=="sal")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="mkt"&&!MK)mkStart();if(v==="inv"&&!INV)invStart();if(v==="ia"&&!$("ia-chat"))iaStart();if(v==="emp")slPortal();document.body.classList.toggle("ia-on",v==="ia")}
+let PREVV="ordenes";function showView(v){if(v!=="sal"&&v!=="bank")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="bank"&&!BK)bkStart();if(v==="mkt"&&!MK)mkStart();if(v==="inv"&&!INV)invStart();if(v==="ia"&&!$("ia-chat"))iaStart();if(v==="emp")slPortal();document.body.classList.toggle("ia-on",v==="ia")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 
 /* ===== Órdenes ===== */
@@ -3004,6 +3042,133 @@ async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(
   const ml=m.querySelector("#or-mail");if(ml)ml.onclick=async()=>{if(!need()||!confirm("¿Enviar este correo a "+mail+"?"))return;try{await api("mail_send",{to:mail,subject:"Midnight · "+(o.kind||"Tu solicitud")+" "+ref,body:T.value.trim()});toast("Correo enviado ✓");m.remove()}catch(e){toast(e.message)}};
 }
 /* ===== FIN RESPONDER ORDEN ===== */
+/* ===== BANCO ===== (statements, entradas, salidas y saldo · clave numérica aparte · datos solo en el servidor) */
+let BK=null,BKCATS=[],BKA="todas",BKT="res",BKM="",BKQ="",BKF="todos",BKIDLE=null;
+const bkDate=d=>d?new Date(d+"T12:00").toLocaleDateString("es-US",{day:"numeric",month:"short",year:"numeric"}):"—";
+const bkMon=m=>m==="todos"?"Todos los meses":new Date(m+"-15T12:00").toLocaleDateString("es-US",{month:"long",year:"numeric"});
+const bkR=n=>Math.round(n*100)/100,bkM=n=>(n<0?"−":"")+money(Math.abs(n));
+const bkAccs=()=>Object.values(Array.isArray(BK.accounts)?{}:BK.accounts||{});
+const bkTx=()=>BK.tx.filter(t=>BKA==="todas"||t.acc===BKA);
+function bkIdle(){clearTimeout(BKIDLE);BKIDLE=setTimeout(()=>{if(BK)bkLock()},10*60*1000)}
+["click","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{if(BK)bkIdle()},{passive:true}));
+function bkErr(e){if(e&&e.message==="bklock"){BK=null;bkStart();return}toast((e&&e.message)||"Error")}
+/* ---- candado ---- */
+async function bkStart(){await bkStart0();const L=$("bk-lock");if(L.hidden){L.classList.remove("bk-modal");return}
+  if(!L.querySelector(".sl-card"))L.innerHTML=`<div class="sl-card"><button type="button" class="sl-close" aria-label="Cerrar" onclick="bkModalClose()">×</button>${L.innerHTML}</div>`;
+  L.classList.add("bk-modal");setTimeout(()=>{const i=L.querySelector("input");i&&i.focus()},60)}
+function bkModalClose(){$("bk-lock").classList.remove("bk-modal");showView(PREVV||"ordenes")}
+const bkIn=(id,ph,ac)=>`<input id="${id}" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="${ph}" autocomplete="${ac||"off"}" oninput="this.value=this.value.replace(/\\D/g,'')" onkeydown="if(event.key==='Enter')this.form?0:bkEnter('${id}')">`;
+function bkEnter(id){if(id==="bk-k")bkUnlock();else if(id==="bk-k2")bkSetKey()}
+async function bkStart0(){const L=$("bk-lock");let st;
+  try{st=await api("bk_status")}catch(e){L.hidden=false;L.innerHTML=`<div class="empty">No se pudo cargar. El servidor todavía tiene el api.php viejo.<br><small style="opacity:.6">Detalle: ${esc(e.message||"")}</small></div>`;return}
+  if(st.open)return bkOpen();$("bk-app").hidden=true;L.hidden=false;const H='<div class="big">🏦</div><h2>Banco</h2>';
+  if(!st.set){L.innerHTML=BOOT.role==="admin"?H+`<p class="note">Quien crea la primera clave queda como <b>principal</b> y decide quién más entra. La clave son <b>solo números (6 a 12)</b> y es distinta a la del panel. Evita fechas y secuencias como 123456.</p>${bkIn("bk-k1","Nueva clave (solo números)","new-password")}${bkIn("bk-k2","Repite la clave","new-password")}<button class="btn" type="button" onclick="bkSetKey()">Crear clave y entrar</button>`:H+'<p class="note">Todavía no se ha creado la clave de Banco. Pídele a un administrador que la cree primero.</p>';return}
+  if(!st.can){L.innerHTML=`${H}<p class="note">Entraste como <b>${esc(BOOT.name)}</b> y este usuario no tiene acceso a Banco.</p><p class="note">${st.ownerName?`Pídele a <b>${esc(st.ownerName)}</b> (principal)`:"Pídele al principal"} que entre a Banco → <b>Acceso</b> y te dé permiso.</p>`;return}
+  if(!st.haskey){L.innerHTML=H+`<p class="note">Te dieron acceso. Crea tu clave personal para Banco (solo números, 6 a 12).</p>${bkIn("bk-k1","Tu clave","new-password")}${bkIn("bk-k2","Repite la clave","new-password")}<button class="btn" type="button" onclick="bkSetKey()">Crear clave y entrar</button>`;return}
+  L.innerHTML=H+`<p class="note">Escribe tu clave numérica.</p>${bkIn("bk-k","Clave de Banco","current-password")}<button class="btn" type="button" onclick="bkUnlock()">Entrar</button>`;setTimeout(()=>$("bk-k")&&$("bk-k").focus(),50)}
+async function bkSetKey(){const a=$("bk-k1").value,b=$("bk-k2").value;if(a!==b)return toast("Las claves no coinciden");try{await api("bk_setkey",{key:a});bkOpen()}catch(e){toast(e.message)}}
+async function bkUnlock(){try{await api("bk_unlock",{key:$("bk-k").value});bkOpen()}catch(e){toast(e.message)}}
+async function bkLock(){try{await api("bk_lock")}catch(e){}BK=null;clearTimeout(BKIDLE);bkStart()}
+async function bkOpen(){try{const r=await api("bk_load");BK=r.data;BKCATS=r.cats||[]}catch(e){return bkStart()}
+  $("bk-lock").hidden=true;$("bk-lock").classList.remove("bk-modal");$("bk-app").hidden=false;bkIdle();
+  document.querySelectorAll("#bk-tabs button").forEach(b=>b.onclick=()=>{BKT=b.dataset.t;bkRender()});bkRender()}
+/* ---- cálculos ---- */
+function bkBal(a){const S=BK.stm.filter(s=>s.acc===a.id&&s.close!=null&&s.to).sort((x,y)=>y.to.localeCompare(x.to))[0],m=a.manual;
+  const base=m&&(!S||m.d>=S.to)?{b:m.bal,d:m.d,src:"saldo anotado a mano el "+bkDate(m.d)}:S?{b:S.close,d:S.to,src:"statement al "+bkDate(S.to)}:null;if(!base)return null;
+  const after=BK.tx.filter(t=>t.acc===a.id&&t.d>base.d).reduce((s,t)=>s+t.amt,0);return {b:bkR(base.b+after),src:base.src,after:bkR(after)}}
+function bkMonths(){const s=new Set(bkTx().map(t=>t.d.slice(0,7)));return [...s].sort().reverse()}
+/* ---- pantalla ---- */
+function bkRender(){if(!BK)return;const A=bkAccs(),ms=bkMonths();if(BKM!=="todos"&&!ms.includes(BKM))BKM=ms[0]||"todos";
+  document.querySelectorAll("#bk-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===BKT));
+  const chips=`<div class="mk-per bk-accs"><button type="button" class="${BKA==="todas"?"on":""}" onclick="BKA='todas';bkRender()">Todas las cuentas</button>${A.map(a=>`<button type="button" class="${BKA===a.id?"on":""}" onclick="BKA='${a.id}';bkRender()">${esc(a.name)}</button>`).join("")}</div>`;
+  $("bk-body").innerHTML=(BKT==="acc"?"":A.length>1?chips:"")+({res:bkRes,mov:bkMov,est:bkEst,acc:bkAcc}[BKT]||bkRes)(A,ms);if(BKT==="acc")bkAccLoad();bkDrop()}
+function bkKpi(l,v,s,cl){return `<div class="kpi mk-kpi ${cl||""}"><span>${l}</span><b>${v}</b>${s?`<small>${s}</small>`:""}</div>`}
+function bkRes(A,ms){
+  if(!A.length)return `<div class="mk-card"><div class="empty">Todavía no hay movimientos. Ve a <b>Statements</b> y sube el primer estado de cuenta del banco (PDF, CSV o foto).</div></div>`+bkNote();
+  const sel=A.filter(a=>BKA==="todas"||a.id===BKA),bals=sel.map(a=>({a,v:bkBal(a)})),known=bals.filter(x=>x.v),tot=known.reduce((s,x)=>s+x.v.b,0);
+  const T=bkTx().filter(t=>BKM==="todos"||t.d.startsWith(BKM)),inn=T.filter(t=>t.amt>0).reduce((s,t)=>s+t.amt,0),out=-T.filter(t=>t.amt<0).reduce((s,t)=>s+t.amt,0);
+  const last=ms.slice(0,6).reverse(),sum=m=>{const x=bkTx().filter(t=>t.d.startsWith(m));return {i:x.filter(t=>t.amt>0).reduce((s,t)=>s+t.amt,0),o:-x.filter(t=>t.amt<0).reduce((s,t)=>s+t.amt,0)}},mx=Math.max(1,...last.map(m=>Math.max(sum(m).i,sum(m).o)));
+  const cats={};T.filter(t=>t.amt<0).forEach(t=>cats[t.cat]=(cats[t.cat]||0)+(-t.amt));const cl=Object.entries(cats).sort((a,b)=>b[1]-a[1]),cm=Math.max(1,...cl.map(x=>x[1]));
+  return `<div class="mk-kpis">${bkKpi("Dinero en el banco",known.length?bkM(tot):"—",known.length?(known.length<sel.length?`${known.length} de ${sel.length} cuentas con saldo`:"según tus statements y saldos"):"sube un statement o anota el saldo","hi")}${bkKpi("Entró",money(inn),bkMon(BKM))}${bkKpi("Salió",money(out),bkMon(BKM))}${bkKpi("Neto del periodo",bkM(inn-out),inn>=out?"entró más de lo que salió":"salió más de lo que entró")}</div>
+   <div class="mk-card"><div class="mk-ct"><b>Saldo por cuenta</b><small>El saldo sale del último statement más los movimientos posteriores. Anota el saldo de hoy si quieres que quede exacto.</small></div>
+    <div class="cr-list">${bals.map(({a,v})=>`<div class="bk-acc"><div class="cr-n"><b>${esc(a.name)}</b><small>${v?esc(v.src)+(v.after?` · ${bkM(v.after)} en movimientos nuevos`:""):"sin saldo todavía"}</small></div><b class="bk-big">${v?bkM(v.b):"—"}</b>
+     <div class="bk-bal"><input class="mk-in" inputmode="decimal" placeholder="Saldo de hoy" id="bk-b-${a.id}" onkeydown="if(event.key==='Enter')bkSetBal('${a.id}')"><button type="button" class="chip" onclick="bkSetBal('${a.id}')">Anotar</button>${a.manual?`<button type="button" class="chip" title="Quitar saldo anotado" onclick="bkSetBal('${a.id}',1)">↺</button>`:""}</div></div>`).join("")}</div></div>
+   <div class="mk-card"><div class="mk-ct"><b>Entradas y salidas por mes</b><small><i class="bk-k in"></i> entró · <i class="bk-k out"></i> salió</small></div>
+    <div class="bk-chart">${last.map(m=>{const s=sum(m);return `<div class="bk-col" title="${bkMon(m)}: entró ${money(s.i)} · salió ${money(s.o)}"><div class="bk-bars"><i class="in" style="height:${Math.max(2,s.i/mx*100)}%"></i><i class="out" style="height:${Math.max(2,s.o/mx*100)}%"></i></div><small>${new Date(m+"-15T12:00").toLocaleDateString("es-US",{month:"short"})}</small></div>`}).join("")||'<div class="empty">Sin datos todavía.</div>'}</div></div>
+   <div class="mk-card"><div class="mk-ct"><b>En qué salió el dinero</b><small>${bkMon(BKM)}</small><select class="inv-mes" onchange="BKM=this.value;bkRender()">${ms.concat(["todos"]).map(m=>`<option value="${m}" ${m===BKM?"selected":""}>${bkMon(m)}</option>`).join("")}</select></div>
+    ${cl.length?cl.map(([c,v])=>`<div class="bk-cat"><span>${esc(c)}</span><div class="mk-bar"><i style="width:${Math.max(3,v/cm*100)}%"></i></div><b>${money(v)}</b></div>`).join(""):'<div class="empty">No salió dinero en este periodo.</div>'}</div>`+bkNote()}
+function bkNote(){return `<details class="mk-card bk-help"><summary>¿Puedo enlazar el banco con la ruta y el número de cuenta?</summary><p class="note">No. La ruta (routing) y el número de cuenta solo sirven para <b>depositar o cobrar</b>; con ellos nadie puede ver tu saldo ni tus movimientos. Por seguridad <b>no los escribas aquí ni en el chat</b>.</p><p class="note">Hay dos caminos: <b>1)</b> subir los statements (lo que ya hace esta pantalla) y anotar el saldo de hoy; o <b>2)</b> conectar el banco con un servicio como <b>Plaid</b>, donde tú misma entras a tu banco y autorizas solo lectura. El 2 requiere abrir una cuenta de Plaid; si la abres, lo conectamos aquí.</p></details>`}
+function bkMov(A,ms){const q=BKQ.toLowerCase();
+  const L=bkTx().filter(t=>(BKM==="todos"||t.d.startsWith(BKM))&&(BKF==="todos"||(BKF==="in"?t.amt>0:t.amt<0))&&(!q||[t.desc,t.cat,String(t.amt)].join(" ").toLowerCase().includes(q))).sort((a,b)=>b.d.localeCompare(a.d)||b.amt-a.amt),
+   inn=L.filter(t=>t.amt>0).reduce((s,t)=>s+t.amt,0),out=-L.filter(t=>t.amt<0).reduce((s,t)=>s+t.amt,0);
+  return `<div class="mk-card"><div class="mk-row"><input class="mk-in" placeholder="Buscar descripción, monto o categoría…" value="${esc(BKQ)}" oninput="BKQ=this.value;clearTimeout(window._bkq);window._bkq=setTimeout(bkRender,300)"><select class="inv-mes" onchange="BKM=this.value;bkRender()">${ms.concat(["todos"]).map(m=>`<option value="${m}" ${m===BKM?"selected":""}>${bkMon(m)}</option>`).join("")}</select><button type="button" class="chip" onclick="bkCsvOut()">⬇ Excel</button></div>
+   <div class="mk-per bk-f">${[["todos","Todos"],["in","Entradas"],["out","Salidas"]].map(([k,l])=>`<button type="button" class="${BKF===k?"on":""}" onclick="BKF='${k}';bkRender()">${l}</button>`).join("")}</div>
+   <p class="note">${L.length} movimiento${L.length===1?"":"s"} · entró <b class="bk-in">${money(inn)}</b> · salió <b class="bk-out">${money(out)}</b></p>
+   ${L.length?`<div class="bk-list">${L.slice(0,400).map(t=>`<div class="bk-row"><span class="bk-d">${bkDate(t.d)}</span><div class="cr-n"><b>${esc(t.desc||"(sin descripción)")}</b><small>${esc(bkAcc1(t.acc))}</small></div><select class="bk-cs" aria-label="Categoría" onchange="bkSetCat('${t.id}',this.value)">${BKCATS.map(c=>`<option ${c===t.cat?"selected":""}>${esc(c)}</option>`).join("")}</select><b class="bk-amt ${t.amt<0?"bk-out":"bk-in"}">${bkM(t.amt)}</b></div>`).join("")}</div>${L.length>400?`<p class="note">Se muestran 400 de ${L.length}. Usa el buscador o el mes para acotar.</p>`:""}`:'<div class="empty">No hay movimientos con ese filtro.</div>'}</div>`}
+const bkAcc1=id=>((BK.accounts||{})[id]||{}).name||"Cuenta";
+async function bkSetCat(id,cat){try{BK=(await api("bk_upd",{id,cat})).data;bkRender()}catch(e){bkErr(e)}}
+async function bkSetBal(acc,clear){const el=$("bk-b-"+acc),v=clear?"":(el.value||"").replace(/[$,\s]/g,"");if(!clear&&(v===""||isNaN(+v)))return toast("Escribe el saldo, por ejemplo 12450.75");
+  try{BK=(await api("bk_upd",{acc,bal:clear?null:+v,d:new Date().toLocaleDateString("en-CA")})).data;bkRender();toast(clear?"Saldo anotado quitado":"Saldo anotado ✓")}catch(e){bkErr(e)}}
+function bkCsvOut(){const q=v=>`"${String(v??"").replace(/"/g,'""')}"`,L=bkTx().filter(t=>BKM==="todos"||t.d.startsWith(BKM)).sort((a,b)=>a.d.localeCompare(b.d));
+  const csv="Fecha,Cuenta,Descripción,Categoría,Monto\n"+L.map(t=>[t.d,bkAcc1(t.acc),t.desc,t.cat,t.amt].map(q).join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv"}));a.download="banco-"+BKM+".csv";a.click()}
+/* ---- statements ---- */
+function bkEst(A){const S=BK.stm.filter(s=>BKA==="todas"||s.acc===BKA).sort((a,b)=>(b.to||"").localeCompare(a.to||""));
+  return `<label class="inv-drop" id="bk-drop"><input type="file" accept="application/pdf,image/*,.csv,text/csv" multiple hidden onchange="bkFiles(this.files);this.value=''"><b>📎 Subir statements</b><span>PDF, CSV o foto del estado de cuenta · puedes soltar varios</span><small>Lo ideal es el CSV que baja tu banco; el PDF también lo lee la IA. Antes de guardar lo revisas.</small></label>
+   <div class="mk-card"><div class="mk-ct"><b>Statements guardados</b><small>Si subes uno que se cruza con otro, los movimientos repetidos no se duplican.</small></div>
+   ${S.length?`<div class="cr-list">${S.map(s=>`<div class="inv-row"><div class="cr-n"><b>${esc(bkAcc1(s.acc))} · ${bkDate(s.from)} → ${bkDate(s.to)}</b><small>${s.n} movimiento${s.n===1?"":"s"}${s.dups?` · ${s.dups} repetidos omitidos`:""}${s.open!=null?` · inicial ${bkM(s.open)}`:""}${s.close!=null?` · final ${bkM(s.close)}`:""} · subido ${bkDate((s.at||"").slice(0,10))}${s.by?" por "+esc(s.by):""}</small></div>
+    <div class="inv-act">${s.file?`<button type="button" class="chip" onclick="bkView('${esc(s.file)}')">📎 Ver</button>`:""}<button type="button" class="chip" title="Borrar este statement y sus movimientos" aria-label="Borrar statement" onclick="bkDelStm('${s.id}')">🗑</button></div></div>`).join("")}</div>`:'<div class="empty">Todavía no has subido ningún statement.</div>'}</div>`}
+function bkDrop(){const dz=$("bk-drop");if(!dz)return;["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.add("over")}));["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.remove("over")}));dz.addEventListener("drop",x=>{if(x.dataTransfer&&x.dataTransfer.files.length)bkFiles(x.dataTransfer.files)})}
+async function bkView(f){try{const r=await api("bk_file",{file:f}),b=Uint8Array.from(atob(r.data),c=>c.charCodeAt(0)),u=URL.createObjectURL(new Blob([b],{type:r.mime}));window.open(u,"_blank");setTimeout(()=>URL.revokeObjectURL(u),60000)}catch(e){bkErr(e)}}
+async function bkDelStm(id){if(!confirm("¿Borrar este statement? También se borran sus movimientos (los de otros statements no)."))return;try{BK=(await api("bk_del",{stm:id})).data;bkRender();toast("Statement borrado")}catch(e){bkErr(e)}}
+async function bkFiles(fs){for(const f of [...fs]){try{await bkOne(f)}catch(e){if(e&&e.message==="bklock")return bkErr(e);toast(e.message||"No se pudo leer "+f.name)}}}
+async function bkOne(f){
+  if(/\.(csv|txt)$/i.test(f.name)||/csv|text\/plain/.test(f.type)){const txt=await f.text(),P=bkParseCsv(txt);P.fname=f.name;P.csv=txt;return bkPreview(P)}
+  toast("Leyendo "+f.name+"… puede tardar un minuto");const x=await invRead(f);const r=await api("bk_read",{mime:x.mime,file:x.file});r.fname=f.name;bkPreview(r)}
+/* ---- lector de CSV (Chase, Bank of America, Wells Fargo con encabezado, Capital One, etc.) ---- */
+function bkCsvRows(t){t=t.replace(/^﻿/,"");const l1=t.split(/\r?\n/).find(x=>x.trim())||"",dl=[",",";","\t"].map(d=>[d,l1.split(d).length]).sort((a,b)=>b[1]-a[1])[0][0],R=[];let row=[],c="",q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}else if(ch==='"')q=true;else if(ch===dl){row.push(c);c=""}else if(ch==="\n"||ch==="\r"){if(ch==="\r"&&t[i+1]==="\n")i++;row.push(c);c="";if(row.some(x=>x.trim()))R.push(row);row=[]}else c+=ch}
+  row.push(c);if(row.some(x=>x.trim()))R.push(row);return R}
+function bkNum(v){let s=String(v??"").trim();if(!s)return null;const neg=/^\(.*\)$/.test(s)||/-\s*$/.test(s)||/^-/.test(s);s=s.replace(/[()$\s-]/g,"").replace(/,/g,"");const n=parseFloat(s);return isNaN(n)?null:neg?-Math.abs(n):n}
+function bkDay(v){v=String(v||"").trim();let m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
+  m=v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);if(m){const y=m[3].length===2?"20"+m[3]:m[3];return `${y}-${m[1].padStart(2,"0")}-${m[2].padStart(2,"0")}`}
+  const d=new Date(v+" 12:00");return isNaN(d)?"":d.toLocaleDateString("en-CA")}
+function bkCat(d,a){d=String(d).toLowerCase();if(/zelle/.test(d))return a>0?"Zelle recibido":"Zelle enviado";if(/\batm\b|cash withdrawal|retiro/.test(d))return"Retiro";if(/service fee|monthly fee|overdraft|\bfee\b|comisi/.test(d))return"Comisión del banco";
+  if(/payroll|n[oó]mina|\badp\b|gusto/.test(d))return"Nómina";if(/\birs\b|dept of revenue|sales tax|usataxpymt|tax pymt/.test(d))return"Impuestos";if(/shell|chevron|exxon|sunoco|mobil|racetrac|wawa|\bbp\b|gas station/.test(d)&&a<0)return"Gasolina";
+  if(/deposit|dep[oó]sito|stripe|square inc|paypal.*transfer/.test(d)&&a>0)return"Depósito";if(/transfer|xfer|wire|online banking/.test(d))return"Transferencia";if(/\bcheck\b|cheque|\bchk\b/.test(d))return"Cheque";
+  if(a<0&&/purchase|pos |debit card|visa|mastercard|amazon|walmart|costco|publix|target|home depot|uber|lyft/.test(d))return"Compras con tarjeta";return a>0?"Depósito":"Otros"}
+function bkParseCsv(t){const R=bkCsvRows(t);let hi=R.findIndex(r=>r.some(c=>/date|fecha/i.test(c))&&r.some(c=>/amount|monto|importe|debit|credit|d[eé]bito|cr[eé]dito|withdraw|deposit/i.test(c)));
+  if(hi<0)throw new Error("No reconocí las columnas de ese CSV. Debe tener una fila de títulos con Fecha, Descripción y Monto (o Débito/Crédito). Si tu banco no lo trae así, sube el PDF.");
+  const H=R[hi].map(c=>c.trim().toLowerCase()),ix=re=>H.findIndex(h=>re.test(h)),iD=ix(/(post|trans|date|fecha)/),iDesc=(()=>{const a=H.findIndex(h=>/descri|payee|concepto/.test(h));return a>=0?a:ix(/memo|detail|detalle/)})(),iA=ix(/^(amount|monto|importe)$|amount/),iDb=ix(/debit|withdraw|retiro|cargo|money out|d[eé]bito/),iCr=ix(/credit|deposit|abono|money in|cr[eé]dito|dep[oó]sito/),iB=ix(/balance|saldo|running/);
+  const tx=[];let order=[];R.slice(hi+1).forEach(r=>{const d=bkDay(r[iD]);if(!d)return;let a=iA>=0?bkNum(r[iA]):null;if(a==null&&(iDb>=0||iCr>=0)){const db=iDb>=0?bkNum(r[iDb]):null,cr=iCr>=0?bkNum(r[iCr]):null;if(db==null&&cr==null)return;a=(cr?Math.abs(cr):0)-(db?Math.abs(db):0)}
+    if(a==null)return;const desc=(iDesc>=0?r[iDesc]:r.filter((c,i)=>i!==iD&&i!==iA&&isNaN(bkNum(c))).join(" ")).trim().replace(/\s+/g," ");tx.push({d,desc,amt:bkR(a),cat:bkCat(desc,a)});order.push(iB>=0?bkNum(r[iB]):null)});
+  if(!tx.length)throw new Error("El CSV no trae movimientos que pueda leer.");
+  const first=tx[0].d>=tx[tx.length-1].d,ci=first?0:tx.length-1,oi=first?tx.length-1:0;let close=order[ci],open=order[oi]!=null?bkR(order[oi]-tx[oi].amt):null;
+  const ds=tx.map(x=>x.d).sort();return {bank:"",last4:"",type:"checking",from:ds[0],to:ds[ds.length-1],open,close:close!=null?bkR(close):null,tx}}
+/* ---- revisar antes de guardar ---- */
+let BKP=null;
+function bkPreview(P){BKP=P;{const A=bkAccs(),a=A.length===1?A[0]:(BKA!=="todas"?(BK.accounts||{})[BKA]:null);if(a&&!P.bank&&!P.last4){P.bank=a.bank||"";P.last4=a.last4||""}}const inn=P.tx.filter(t=>t.amt>0).reduce((s,t)=>s+t.amt,0),out=-P.tx.filter(t=>t.amt<0).reduce((s,t)=>s+t.amt,0),net=bkR(inn-out);
+  const ok=P.open!=null&&P.close!=null?bkR(P.open+net-P.close):null,known=[...new Set(bkAccs().map(a=>a.bank))];
+  const m=document.createElement("div");m.className="cr-modal";m.id="bk-pre";m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>Revisa ${esc(P.fname||"el statement")}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>${P.tx.length} movimientos · ${bkDate(P.from)} → ${bkDate(P.to)}</small></div>
+   <div class="bk-form"><label>Banco<input class="mk-in" id="bk-p-bank" list="bk-banks" value="${esc(P.bank||"")}" placeholder="Chase, Bank of America…"><datalist id="bk-banks">${known.map(b=>`<option value="${esc(b)}">`).join("")}</datalist></label>
+    <label>Últimos 4 de la cuenta<input class="mk-in" id="bk-p-l4" inputmode="numeric" maxlength="4" value="${esc(P.last4||"")}" placeholder="1234" oninput="this.value=this.value.replace(/\\D/g,'')"></label>
+    <label>Saldo inicial<input class="mk-in" id="bk-p-open" inputmode="decimal" value="${P.open??""}" placeholder="opcional"></label><label>Saldo final<input class="mk-in" id="bk-p-close" inputmode="decimal" value="${P.close??""}" placeholder="opcional"></label></div>
+   <div class="bk-sum"><span>Entró <b class="bk-in">${money(inn)}</b></span><span>Salió <b class="bk-out">${money(out)}</b></span><span>Neto <b>${bkM(net)}</b></span></div>
+   ${ok==null?'<p class="note">Sin saldo inicial y final no puedo comprobar que estén todos los movimientos. Si los tienes, escríbelos.</p>':Math.abs(ok)<0.015?'<p class="note bk-good">✓ Cuadra: saldo inicial + movimientos = saldo final.</p>':`<p class="note mk-err">⚠️ No cuadra por ${money(Math.abs(ok))}: puede faltar o sobrar un movimiento. Revisa la lista contra tu statement antes de guardar.</p>`}
+   <div class="bk-list bk-pv">${P.tx.slice(0,8).map(t=>`<div class="bk-row"><span class="bk-d">${bkDate(t.d)}</span><div class="cr-n"><b>${esc(t.desc)}</b><small>${esc(t.cat)}</small></div><b class="bk-amt ${t.amt<0?"bk-out":"bk-in"}">${bkM(t.amt)}</b></div>`).join("")}${P.tx.length>8?`<p class="note">…y ${P.tx.length-8} más</p>`:""}</div>
+   <div class="mk-row"><button type="button" class="btn" style="width:auto" onclick="bkSave()">Guardar statement</button><button type="button" class="chip" onclick="this.closest('.cr-modal').remove()">Cancelar</button></div></div>`;document.body.appendChild(m)}
+async function bkSave(){const P=BKP;if(!P)return;const bank=$("bk-p-bank").value.trim(),l4=$("bk-p-l4").value.trim(),n=v=>{v=String(v).replace(/[$,\s]/g,"");return v===""||isNaN(+v)?null:+v};
+  if(!bank&&!l4)return toast("Escribe el banco o los últimos 4 de la cuenta");
+  try{const r=await api("bk_add",{bank,last4:l4,type:P.type,from:P.from,to:P.to,open:n($("bk-p-open").value),close:n($("bk-p-close").value),fid:P.fid||"",csv:P.csv||"",fname:P.fname||"",tx:P.tx});BK=r.data;$("bk-pre")&&$("bk-pre").remove();BKP=null;BKT="res";BKA="todas";BKM="";bkRender();toast(`Guardado: ${r.added} movimiento${r.added===1?"":"s"} nuevo${r.added===1?"":"s"}${r.dups?` · ${r.dups} repetidos omitidos`:""}`)}catch(e){bkErr(e)}}
+/* ---- acceso ---- */
+function bkAcc(){return '<div class="mk-card" id="bk-acc"><div class="empty">Cargando…</div></div>'}
+async function bkAccLoad(){let r;try{r=await api("bk_access")}catch(e){return bkErr(e)}const B=$("bk-acc");if(!B)return;
+  B.innerHTML=`<div class="mk-ct"><b>Quién puede entrar a Banco</b><small>${r.isOwner?"Eres el principal: tú decides quién entra. Cada persona crea su propia clave numérica al entrar por primera vez.":"Solo el principal puede dar o quitar acceso."}</small></div>
+   <div class="cr-list">${r.users.map(u=>{const on=r.allow.includes(u.user),own=u.user===r.owner;return `<div class="pt-row"><div class="cr-n"><b>${esc(u.name)}</b><small>${own?"Principal":on?(r.haskey.includes(u.user)?"Con acceso y clave":"Con acceso · todavía no crea su clave"):"Sin acceso"}</small></div><div class="pt-act">${r.isOwner&&!own?`<button type="button" class="chip" onclick="bkGrant('${esc(u.user)}',${on?"false":"true"})">${on?"Quitar acceso":"Dar acceso"}</button>`:""}</div></div>`}).join("")}</div>
+   <div class="mk-row"><button type="button" class="chip" onclick="bkChangeKey()">🔑 Cambiar mi clave</button><button type="button" class="chip" onclick="bkLock()">🔒 Cerrar Banco</button></div>`}
+async function bkGrant(user,on){try{await api("bk_access",{user,on});bkAccLoad()}catch(e){bkErr(e)}}
+async function bkChangeKey(){const old=prompt("Tu clave actual (solo números):");if(old==null)return;const nw=prompt("Tu clave nueva (solo números, 6 a 12):");if(nw==null)return;try{await api("bk_setkey",{old,key:nw});toast("Clave cambiada ✓")}catch(e){toast(e.message)}}
+/* ===== FIN BANCO ===== */
+
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
