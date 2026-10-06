@@ -603,6 +603,9 @@ html[data-theme="light"] .inv-cat,html[data-theme="light"] .inv-mes,html[data-th
 .inv-paste{margin-top:6px;font-size:13px;padding:7px 14px;border-color:var(--gold);color:var(--gold)}
 .inv-hint{font-size:11.5px;color:var(--muted)}
 /* ===== FIN INVOICES ===== */
+.cmd-ans{max-height:55vh;overflow:auto;font-size:14.5px;line-height:1.55}
+.cmd-q{font-size:12.5px;color:var(--muted);border-left:2px solid var(--gold);padding-left:8px;margin-bottom:6px}
+.cmd-ans a{color:var(--gold);word-break:break-all}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -1986,17 +1989,30 @@ function cmdCtx(){const R=SL&&SL.rules;const c={hoy:new Date().toISOString().sli
   return JSON.stringify(c)}
 function cmdOpen(){let M=$("cmd-m");if(!M){M=document.createElement("div");M.id="cmd-m";M.className="cmd-m";M.onclick=e=>{if(e.target===M)cmdClose()};document.body.appendChild(M)}
   M.hidden=false;M.innerHTML=`<div class="cmd-c"><button type="button" class="sl-close" onclick="cmdClose()" aria-label="Cerrar">×</button>
-   <h2>✨ Asistente Midnight</h2><p class="note" style="margin:0">Escríbeme o mándame la foto de la comanda y la organizo donde corresponde. Antes de guardar te muestro lo que voy a hacer.</p>
-   <button type="button" class="cmd-mic" onclick="voz('cmd-t',this)">🎤 Dictar la comanda</button>
-   <textarea id="cmd-t" rows="4" placeholder="Ej.: Venta a Sushi Único: 10 bolsas 12 oz La Vela directo, distribuidor Carlos 30%. También renta de cafetera 3 meses a $150 al mes."></textarea>
-   <div class="cmd-r"><label class="chip" style="cursor:pointer">📷 Foto o PDF<input type="file" accept="image/*,application/pdf" hidden onchange="cmdFile(this)"></label><span id="cmd-fn" class="note" style="margin:0"></span><span class="sp" style="flex:1"></span><button type="button" class="btn" id="cmd-go" style="width:auto;padding:10px 18px" onclick="cmdGo()">✨ Organizar</button></div>
+   <h2>✨ Asistente Midnight</h2><p class="note" style="margin:0">Pídeme lo que quieras: preguntar, buscar, escribir un correo, calcular… Si es una venta, un pago o una comanda, la organizo donde corresponde y te muestro antes de guardar.</p>
+   <button type="button" class="cmd-mic" onclick="voz('cmd-t',this,cmdGo)">🎤 Hablar</button>
+   <textarea id="cmd-t" rows="4" placeholder="Escribe lo que necesites… (ej.: venta a Sushi Único de 10 bolsas 12 oz · o · escríbele un correo a Artizan pidiendo precios)" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();cmdGo()}"></textarea>
+   <div class="cmd-r"><label class="chip" style="cursor:pointer">📷 Foto o PDF<input type="file" accept="image/*,application/pdf" hidden onchange="cmdFile(this)"></label><span id="cmd-fn" class="note" style="margin:0"></span><span class="sp" style="flex:1"></span><button type="button" class="btn" id="cmd-go" style="width:auto;padding:10px 18px" onclick="cmdGo()">✨ Enviar</button></div>
    <div id="cmd-out"></div></div>`;setTimeout(()=>$("cmd-t").focus(),60)}
 function cmdClose(){const M=$("cmd-m");if(M)M.hidden=true;CMDF=null;CMDP=null}
 async function cmdFile(inp){const f=inp.files[0];if(!f)return;
   if(f.type==="application/pdf"){if(f.size>3.5e6)return toast("El PDF es muy pesado (máx. 3.5 MB)");const r=new FileReader();r.onload=()=>{CMDF={data:r.result.split(",")[1],mime:"application/pdf"};$("cmd-fn").textContent="📄 "+f.name};r.readAsDataURL(f);return}
   const img=new Image();img.onload=()=>{const k=Math.min(1,1600/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=img.width*k;c.height=img.height*k;c.getContext("2d").drawImage(img,0,0,c.width,c.height);CMDF={data:c.toDataURL("image/jpeg",.85).split(",")[1],mime:"image/jpeg"};$("cmd-fn").textContent="🖼 Foto lista";URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f)}
-async function cmdGo(){const t=$("cmd-t").value.trim();if(!t&&!CMDF)return toast("Escribe la comanda o adjunta una foto");const b=$("cmd-go");b.disabled=true;b.textContent="Leyendo…";
-  try{const r=await api("cmd_ai",{text:t,image:CMDF?CMDF.data:"",mime:CMDF?CMDF.mime:"",ctx:cmdCtx()});CMDP=r.plan;cmdShow()}catch(e){toast(e.message)}b.disabled=false;b.textContent="✨ Organizar"}
+async function cmdGo(){const t=$("cmd-t").value.trim();if(!t&&!CMDF)return toast("Escribe lo que necesites o adjunta una foto");const b=$("cmd-go");b.disabled=true;b.textContent="Leyendo…";
+  let done=false;
+  try{const r=await api("cmd_ai",{text:t,image:CMDF?CMDF.data:"",mime:CMDF?CMDF.mime:"",ctx:cmdCtx()});if(r.plan&&(r.plan.acciones||[]).some(a=>CMD_LBL[a.tipo])){CMDP=r.plan;cmdShow();done=true}}catch(e){}
+  if(!done){b.textContent="Pensando…";try{await cmdChat(t)}catch(e){toast(e.message)}}
+  b.disabled=false;b.textContent="✨ Enviar"}
+/* lo que no es comanda va a la IA general (misma conversación que la pestaña ✨ IA) */
+async function cmdChat(t){iaLoad();const m={role:"u",text:t};if(CMDF){m.file="data:"+CMDF.mime+";base64,"+CMDF.data;m.mime=CMDF.mime;m.had=true;m.fn=CMDF.mime==="application/pdf"?"PDF":"foto";if(CMDF.mime!=="application/pdf")m.img=m.file}
+  IAM.push(m);let ans;
+  try{const j=await api("ai_chat",{msgs:IAM.slice(-16).map((x,i,a)=>({role:x.role,text:x.text,had:x.had,...(i===a.length-1&&x.file?{file:x.file,mime:x.mime}:{})})),ctx:typeof iaCtx==="function"?iaCtx():""});ans=j.text}
+  catch(e){ans="⚠️ "+e.message}
+  IAM.push({role:"a",text:ans});IAM.forEach(x=>{if(x.file&&x!==m)delete x.file});iaKeep();if(typeof iaSay==="function")iaSay(ans);
+  const i=IAM.length-1;CMDF=null;$("cmd-fn").textContent="";$("cmd-t").value="";
+  $("cmd-out").innerHTML=`<div class="cmd-res cmd-ans"><div class="cmd-q">${esc(t)}</div><div>${iaMd(iaMail(ans).rest)}</div>${iaMailCard(IAM[i],i)}
+   <div class="cmd-r"><button type="button" class="chip" onclick="iaCopy(${i})">Copiar</button><span class="sp" style="flex:1"></span><button type="button" class="chip" onclick="cmdClose();showView('ia')">Seguir conversando en ✨ IA →</button></div></div>`;
+  if($("ia-chat"))iaDraw();$("cmd-t").focus()}
 const CMD_LBL={venta_cafe:"☕ Venta de café → Distribución",consultoria:"💼 Consultoría → Distribución",pago_personal:"🍸 Pago a personal → Distribución",otro_ingreso:"• Otro ingreso → Distribución",empleado_pct:"👔 Empleado con % → Distribución",inventario_mix:"📦 Ingrediente → Inventario de Mixología",estado_orden:"🧾 Estado de una orden → Órdenes"};
 const cmdNeedSal=a=>["venta_cafe","consultoria","pago_personal","otro_ingreso","empleado_pct"].includes(a.tipo);
 function cmdProd(n){const R=SL.rules;n=(n||"").toLowerCase().trim();if(!n)return null;return (R.products||[]).find(p=>p.n.toLowerCase()===n)||(R.products||[]).find(p=>p.n.toLowerCase().includes(n)||n.includes(p.n.toLowerCase()))||null}
