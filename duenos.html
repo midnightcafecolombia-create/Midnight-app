@@ -614,6 +614,7 @@ html[data-theme="light"] .inv-cat,html[data-theme="light"] .inv-mes,html[data-th
 .inv-due{font-size:12.5px;color:var(--muted)}.inv-due.p{color:#e0a03a}.inv-due.v{color:#e07a6b;font-weight:600}
 .inv-pay{width:auto!important;padding:8px 16px!important;font-size:13px}
 html[data-theme="light"] .inv-mode button{color:#111}
+.inv-catp{border-top:1px dashed var(--line);margin-top:4px;padding-top:10px!important}.inv-catp span,.inv-catp b{color:#e0a03a}.inv-catp .mk-bar i{background:#e0a03a}
 /* ===== FIN INVOICES ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
@@ -2514,7 +2515,7 @@ function invRender(){
   const PEND=INV.filter(e=>e.pend).sort((a,b)=>(a.due||"9").localeCompare(b.due||"9")),pendT=PEND.reduce((s,e)=>s+(+e.total||0),0),hoy=new Date().toLocaleDateString("en-CA");
   const L=INV.filter(e=>!e.pend&&(INVM==="todo"||(e.paidAt||e.d).startsWith(INVM))),tot=L.reduce((s,e)=>s+(+e.total||0),0),tax=L.reduce((s,e)=>s+(+e.tax||0),0);
   const by=INVCATS.map(([c,i])=>({c,i,n:L.filter(e=>e.cat===c).length,t:L.filter(e=>e.cat===c).reduce((s,e)=>s+(+e.total||0),0)}));const mx=Math.max(...by.map(b=>b.t),1);
-  const list=L.filter(e=>INVC==="todas"||e.cat===INVC||(INVC==="rev"&&e.rev)).sort((a,b)=>b.d.localeCompare(a.d)||b.at.localeCompare(a.at));
+  const list=(INVC==="pend"?PEND:L.filter(e=>INVC==="todas"||e.cat===INVC||(INVC==="rev"&&e.rev))).sort((a,b)=>INVC==="pend"?(a.due||"9").localeCompare(b.due||"9"):b.d.localeCompare(a.d)||b.at.localeCompare(a.at));
   const rev=L.filter(e=>e.rev).length;
   $("inv-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">Invoices y gastos</h2><p class="mk-sub">Sube la foto o el PDF · la IA lo lee y lo pone en su categoría</p></div>
     <div class="mk-per"><select class="inv-mes" onchange="INVM=this.value;invRender()">${invMonths().concat(["todo"]).map(m=>`<option value="${m}" ${m===INVM?"selected":""}>${invMN(m)}</option>`).join("")}</select><button type="button" class="chip" onclick="invCsv()">⬇ Excel</button></div></div>
@@ -2524,19 +2525,15 @@ function invRender(){
     <div class="kpi mk-kpi"><span>Taxes pagados</span><b>${money(tax)}</b><small>incluidos en el total</small></div>
     <div class="kpi mk-kpi${PEND.length?" inv-kp":""}"><span>Pendiente por pagar</span><b>${money(pendT)}</b><small>${PEND.length} recibo${PEND.length===1?"":"s"}${PEND.some(e=>e.due&&e.due<hoy)?" · ⚠️ vencidos":""}</small></div>
     <div class="kpi mk-kpi"><span>Por revisar</span><b>${rev}</b><small>la IA no leyó todo claro</small></div></div>
-   <div class="mk-card inv-pend"><div class="mk-ct"><b>⏳ Recibos pendientes</b><small>${PEND.length?"toca ✓ Pagar y se va solo a su categoría":"sube un recibo como “Pendiente por pagar” y aparece aquí"}</small></div>
-    ${PEND.length?`<div class="cr-list">${PEND.map(e=>{const ven=e.due&&e.due<hoy,pr=e.due&&!ven&&e.due<=new Date(Date.now()+3*864e5).toLocaleDateString("en-CA");return `<div class="inv-row${ven?" rev":""}"><div class="cr-n"><b>${esc(e.prov)}</b><small>${invIc(e.cat)} ${esc(e.cat)}${e.desc?" · "+esc(e.desc):""}</small></div>
-      <b class="inv-tot">${e.total==null?"¿?":money(e.total)}</b>
-      <div class="inv-act"><span class="inv-due${ven?" v":pr?" p":""}">${e.due?(ven?"⚠️ Venció ":"Vence ")+crDate(e.due):"Sin fecha límite"}</span><span class="sp" style="flex:1"></span>
-       <button type="button" class="chip" onclick="invEdit('${e.id}')">✎</button><button type="button" class="chip" onclick="invView('${esc(e.file)}')">📎 Ver</button><button type="button" class="btn inv-pay" onclick="invPay('${e.id}')">✓ Pagar</button></div></div>`}).join("")}</div>`:""}</div>
    <div class="mk-card"><div class="mk-ct"><b>Por categoría</b><small>toca una para ver solo esos</small></div>
-    <div class="inv-cats">${by.map(b=>`<button type="button" class="inv-cat${INVC===b.c?" on":""}" onclick="INVC=INVC==='${b.c}'?'todas':'${b.c}';invRender()"><span>${b.i} ${b.c}</span><div class="mk-bar"><i style="width:${b.t?Math.max(3,b.t/mx*100):0}%"></i></div><b>${money(b.t)}</b><small>${b.n}</small></button>`).join("")}</div></div>
-   <div class="mk-card"><div class="mk-ct"><b>${INVC==="todas"?"Todos los invoices":INVC==="rev"?"Por revisar":invIc(INVC)+" "+INVC}</b>${INVC!=="todas"?`<button type="button" class="chip" onclick="INVC='todas';invRender()">Ver todos</button>`:rev?`<button type="button" class="chip" onclick="INVC='rev';invRender()">⚠️ Ver los ${rev} por revisar</button>`:""}</div>
+    <div class="inv-cats">${by.map(b=>`<button type="button" class="inv-cat${INVC===b.c?" on":""}" onclick="INVC=INVC==='${b.c}'?'todas':'${b.c}';invRender()"><span>${b.i} ${b.c}</span><div class="mk-bar"><i style="width:${b.t?Math.max(3,b.t/mx*100):0}%"></i></div><b>${money(b.t)}</b><small>${b.n}</small></button>`).join("")}
+     <button type="button" class="inv-cat inv-catp${INVC==="pend"?" on":""}" onclick="INVC=INVC==='pend'?'todas':'pend';invRender();setTimeout(()=>$('inv-list')&&$('inv-list').scrollIntoView({behavior:'smooth',block:'start'}),50)"><span>⏳ Pendientes por pagar</span><div class="mk-bar"><i style="width:${pendT?Math.max(3,Math.min(100,pendT/Math.max(mx,pendT)*100)):0}%"></i></div><b>${money(pendT)}</b><small>${PEND.length}</small></button></div></div>
+   <div class="mk-card${INVC==="pend"?" inv-pend":""}" id="inv-list"><div class="mk-ct"><b>${INVC==="todas"?"Todos los invoices":INVC==="rev"?"Por revisar":INVC==="pend"?"⏳ Pendientes por pagar":invIc(INVC)+" "+INVC}</b>${INVC!=="todas"?`<button type="button" class="chip" onclick="INVC='todas';invRender()">Ver todos</button>`:rev?`<button type="button" class="chip" onclick="INVC='rev';invRender()">⚠️ Ver los ${rev} por revisar</button>`:""}</div>
     ${list.length?`<div class="cr-list">${list.map(e=>`<div class="inv-row${e.rev?" rev":""}"><div class="cr-n"><b>${esc(e.prov)}</b><small>${crDate(e.d)}${e.desc?" · "+esc(e.desc):""}${e.pay?" · "+esc(e.pay):""}</small></div>
       <b class="inv-tot">${e.total==null?"¿?":money(e.total)}</b>
       <div class="inv-act"><select onchange="invUpd('${e.id}',{cat:this.value,rev:false})" aria-label="Categoría">${INVCATS.map(([c,i])=>`<option value="${c}" ${e.cat===c?"selected":""}>${i} ${c}</option>`).join("")}</select>
-       <button type="button" class="chip" onclick="invEdit('${e.id}')">✎</button><button type="button" class="chip" onclick="invView('${esc(e.file)}')">📎 Ver</button><button type="button" class="chip" onclick="invDel('${e.id}')" aria-label="Borrar">×</button></div>
-      ${e.rev?'<small class="mk-err">⚠️ Revisa el monto o la fecha</small>':""}</div>`).join("")}</div>`:'<div class="empty">No hay invoices aquí todavía. Sube el primero arriba.</div>'}</div>`;
+       <button type="button" class="chip" onclick="invEdit('${e.id}')">✎</button><button type="button" class="chip" onclick="invView('${esc(e.file)}')">📎 Ver</button><button type="button" class="chip" onclick="invDel('${e.id}')" aria-label="Borrar">×</button>${e.pend?`<span class="inv-due${e.due&&e.due<hoy?" v":""}">${e.due?(e.due<hoy?"⚠️ Venció ":"Vence ")+crDate(e.due):"Sin fecha límite"}</span><span class="sp" style="flex:1"></span><button type="button" class="btn inv-pay" onclick="invPay('${e.id}')">✓ Pagar</button>`:""}</div>
+      ${e.rev?'<small class="mk-err">⚠️ Revisa el monto o la fecha</small>':""}</div>`).join("")}</div>`:(INVC==="pend"?'<div class="empty">No hay recibos pendientes. Elige “⏳ Pendiente por pagar” arriba antes de subir uno.</div>':'<div class="empty">No hay invoices aquí todavía. Sube el primero arriba.</div>')}</div>`;
   const dz=$("inv-drop");["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.add("over")}));["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.remove("over")}));dz.addEventListener("drop",x=>invFiles(x.dataTransfer.files))}
 async function invPasteBtn(){
   if(!navigator.clipboard||!navigator.clipboard.read)return toast("Copia la imagen y presiona ⌘ V en esta pantalla");
