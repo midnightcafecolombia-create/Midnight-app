@@ -1114,12 +1114,14 @@ function renderThread(scroll){
   let lastM="";
   $("q-msgs").innerHTML=(c.msgs||[]).map(m=>{const showM=m.from==="c"&&m.machine&&m.machine!==lastM;if(m.from==="c"&&m.machine)lastM=m.machine;return `<div class="bub ${m.from}">${showM?`<span class="mc">${esc(m.machine)}</span>`:""}${esc(m.text)}<small>${m.from==="m"?esc(m.by||m.who||"Midnight")+" · ":""}${hhmm(m.t)}</small></div>`}).join("");
   if(scroll){const t=$("q-msgs");t.scrollTop=t.scrollHeight}
+  $("q-send").textContent=c.src==="orden"?"Guardar en el hilo y enviar por WhatsApp":"Responder como Midnight Sales";
+  const on=$("q-ordnote");if(c.src==="orden"&&!on)$("q-quick").insertAdjacentHTML("beforebegin",'<p class="note" id="q-ordnote">Este cliente envió un formulario y no tiene el chat de la app abierto: tu respuesta queda guardada en este hilo y se abre WhatsApp para mandársela.</p>');else if(c.src!=="orden"&&on)on.remove();
   if(c.lang&&c.lang!=="es"&&!$("q-langnote")){$("q-quick").insertAdjacentHTML("beforebegin",`<p class="note" id="q-langnote">Este cliente usa la app en ${lang}. Puedes responderle en ese idioma.</p>`)}else if((!c.lang||c.lang==="es")&&$("q-langnote"))$("q-langnote").remove();
 }
 $("q-quick").innerHTML=QUICK.map((q,i)=>`<button type="button" data-i="${i}">${esc(q.length>34?q.slice(0,32)+"…":q)}</button>`).join("");
 $("q-quick").onclick=e=>{const b=e.target.closest("button");if(!b)return;const t=$("q-text");t.value=(t.value?t.value.trim()+" ":"")+QUICK[+b.dataset.i];t.focus()};
 $("q-form").onsubmit=async e=>{e.preventDefault();const text=$("q-text").value.trim();if(!text||!QCID)return;$("q-send").disabled=true;
-  try{const r=await api("chat_reply",{cid:QCID,text});QCHAT=r.chat;$("q-text").value="";renderThread(true);toast("Respuesta enviada");$("q-text").style.height=""}catch(err){toast("No se envió. Revisa la conexión")}$("q-send").disabled=false};
+  try{const r=await api("chat_reply",{cid:QCID,text});QCHAT=r.chat;$("q-text").value="";renderThread(true);if(QCHAT.src==="orden"){const tl=(QCHAT.tel||"").replace(/\D/g,"");if(tl){window.open("https://wa.me/"+(tl.length===10?"1"+tl:tl)+"?text="+encodeURIComponent(text),"_blank","noopener");toast("Guardada en el hilo · se abrió WhatsApp para enviársela")}else toast("Guardada en el hilo (no dejó teléfono)")}else toast("Respuesta enviada");$("q-text").style.height=""}catch(err){toast("No se envió. Revisa la conexión")}$("q-send").disabled=false};
 async function archChat(v){try{const r=await api("chat_arch",{cid:QCID,arch:v});QS=r.chats;toast(v?"Archivada":"Movida a activas");closeChat()}catch(e){toast("No se guardó")}}
 setInterval(async()=>{if(document.hidden)return;
   if(QCID){try{const r=await api("chat",{cid:QCID});const n=(QCHAT.msgs||[]).length;QCHAT=r.chat;if(QCHAT.msgs.length!==n){const t=$("q-msgs"),near=t.scrollHeight-t.scrollTop-t.clientHeight<80;renderThread(near)}}catch(e){}}
@@ -2930,14 +2932,15 @@ async function ptDemo(on){if(!SL)return;
 /* ===== FIN VENTAS PORTAL ===== */
 /* ===== RESPONDER ORDEN ===== (botón bajo cada orden o solicitud: responder tú o con ayuda de la IA, por la app, WhatsApp o correo) */
 const orPlain=t=>String(t||"").replace(/\*/g,"").replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu,"").replace(/━+/g,"———");
-async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(!raw)return;const o=parseOrder(raw),t=orPlain(raw.text),g=re=>(t.match(re)||[])[1]||"";
+async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(!raw)return;
+  if(!ai){try{const r=await api("chat_by_ref",{ref});if(r.cid){showView("preguntas");await loadChats();openChat(r.cid);return}}catch(e){}}const o=parseOrder(raw),t=orPlain(raw.text),g=re=>(t.match(re)||[])[1]||"";
   const tel=(o.tel||"").replace(/\D/g,""),wa=tel.length===10?"1"+tel:tel,mail=g(/Correo:\s*(\S+@\S+)/),nm=(o.client||g(/Nombre:\s*(.+)/)||"").trim();
   const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
   m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>Responder a ${esc(nm||o.kind)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>${esc(o.kind)} · ${esc(ref)}${tel?" · 📞 "+esc(o.tel):""}${mail?" · ✉️ "+esc(mail):""}</small></div>
    <details class="raw"><summary>Ver lo que escribió</summary><pre>${esc(t)}</pre></details>
    <div class="or-ai"><input class="mk-in" id="or-hint" placeholder="Instrucción para la IA (opcional): ej. ofrecer llamada el jueves a las 3 pm"><button type="button" class="chip" id="or-gen">✨ ${ai?"Otra versión":"Escribir con IA"}</button></div>
    <textarea class="mk-in" id="or-t" rows="9" placeholder="Escribe tu respuesta…"></textarea>
-   <div class="mk-row" id="or-ch"><button type="button" class="btn" id="or-app" style="width:auto;display:none">Enviar en su chat de la app</button>${wa?`<button type="button" class="chip" id="or-wa">WhatsApp</button>`:""}${mail?`<button type="button" class="chip" id="or-mail">Enviar por correo</button>`:""}<button type="button" class="chip" id="or-cp">Copiar</button></div>
+   <div class="mk-row" id="or-ch"><button type="button" class="btn" id="or-app" style="width:auto;display:none">Enviar en su conversación (Preguntas)</button>${wa?`<button type="button" class="chip" id="or-wa">WhatsApp</button>`:""}${mail?`<button type="button" class="chip" id="or-mail">Enviar por correo</button>`:""}<button type="button" class="chip" id="or-cp">Copiar</button></div>
    <small class="note" id="or-st"></small></div>`;
   document.body.appendChild(m);const T=m.querySelector("#or-t"),st=m.querySelector("#or-st");
   let cid="";api("chat_by_ref",{ref}).then(r=>{cid=r.cid||"";if(cid)m.querySelector("#or-app").style.display=""}).catch(()=>{});
