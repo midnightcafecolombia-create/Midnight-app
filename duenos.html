@@ -783,6 +783,7 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
       <button type="button" data-f="nueva">Por verificar</button>
       <button type="button" data-f="hoy">Hoy</button>
       <button type="button" data-f="todas">Todas</button>
+      <button type="button" data-f="papelera">🗑 Papelera</button>
     </div>
     <div id="o-list" class="view"></div>
     <p class="note">Una orden aparece aquí cuando el cliente la envía desde midnightcgo.com. Marca «Pago verificado» solo después de ver el dinero en tu banco.</p>
@@ -955,7 +956,7 @@ let OF="activas";
 document.querySelectorAll("#o-filter button").forEach(b=>b.onclick=()=>{OF=b.dataset.f;document.querySelectorAll("#o-filter button").forEach(x=>x.classList.toggle("on",x===b));renderOrders()});
 function stOf(ref){return (D.status[ref]||{}).s||"nueva"}
 function renderOrders(){
-  const all=D.orders.map(parseOrder),today=new Date().toDateString();
+  const HID=(typeof MK!=="undefined"&&MK&&MK.hiddenOrd)||{},allAll=D.orders.map(parseOrder),all=allAll.filter(o=>!HID[o.ref]),today=new Date().toDateString();
   const isToday=o=>o.at.toDateString()===today;
   const paid=s=>["pagada","preparada","entregada"].includes(s);
   const sales=all.filter(o=>/^(MC|VD)-/.test(o.ref)&&paid(stOf(o.ref)));
@@ -963,9 +964,9 @@ function renderOrders(){
   const nNew=all.filter(o=>stOf(o.ref)==="nueva").length;
   $("n-new").hidden=!nNew;$("n-new").textContent=nNew;
   $("kpis").innerHTML=`<div class="kpi"><span>Por verificar</span><b>${nNew}</b></div><div class="kpi hi"><span>Ventas verificadas hoy</span><b>${money(sales.filter(isToday).reduce((a,o)=>a+o.totalN,0))}</b></div><div class="kpi"><span>Últimos 7 días</span><b>${money(sales.filter(o=>o.at>week).reduce((a,o)=>a+o.totalN,0))}</b></div><div class="kpi"><span>Órdenes recibidas</span><b>${all.length}</b></div>`;
-  const list=all.filter(o=>{const s=stOf(o.ref);return OF==="todas"||(OF==="hoy"&&isToday(o))||(OF==="nueva"&&s==="nueva")||(OF==="activas"&&!["entregada","cancelada"].includes(s))});
+  const list=(OF==="papelera"?allAll.filter(o=>HID[o.ref]):all).filter(o=>{const s=stOf(o.ref);return OF==="papelera"||OF==="todas"||(OF==="hoy"&&isToday(o))||(OF==="nueva"&&s==="nueva")||(OF==="activas"&&!["entregada","cancelada"].includes(s))});
   $("o-list").innerHTML=list.length?list.map(o=>{const s=stOf(o.ref),st=D.status[o.ref]||{};
-    return `<article class="order s-${s}"><div class="o-head"><div><b>${esc(o.client||o.kind)}</b> <span class="chip">${o.kind}</span><div class="o-ref">${o.ref} · ${o.at.toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</div></div>${o.total?`<div class="o-total">${o.total}</div>`:""}</div>
+    return `<article class="order s-${s}"><div class="o-head"><div><b>${esc(o.client||o.kind)}</b> <span class="chip">${o.kind}</span><div class="o-ref">${o.ref} · ${o.at.toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</div></div>${o.total?`<div class="o-total">${o.total}</div>`:""}<button type="button" class="chip o-trash" title="${OF==="papelera"?"Restaurar":"Mandar a la papelera"}" aria-label="${OF==="papelera"?"Restaurar":"Mandar a la papelera"}" onclick="ordTrash('${o.ref}',${OF==="papelera"?"false":"true"})">${OF==="papelera"?"↩ Restaurar":"🗑"}</button></div>
     ${o.rr&&REFS[o.rr]?`<div class="o-ref-by"><span>🤝 Referido por <b>${esc(REFS[o.rr].n)}</b> · ${esc(o.rr)}</span><a class="chip" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Hola "+REFS[o.rr].n+", entró una orden de un cliente tuyo:\n\n"+o.text.replace(/\*/g,"").replace(/[\u{1F000}-\u{1FFFF}\u2600-\u27BF\uFE0F\u200D]/gu,"").replace(/━+/g,"———"))}">📲 Pasársela a ${esc(REFS[o.rr].n)}</a></div>`:o.rr?`<div class="o-ref-by"><span>🤝 Referido · código ${esc(o.rr)} (no está asignado a nadie)</span></div>`:""}
     <div class="o-meta">${(o.text.match(/Vendedor:\s*(.+)/)||[])[1]?`<span>🧑‍💼 ${esc(o.text.match(/Vendedor:\s*(.+)/)[1])}</span>`:""}${(o.text.match(/Pago:\s*(.+)/)||[])[1]?`<span>💳 ${esc(o.text.match(/Pago:\s*(.+)/)[1])}</span>`:""}${o.tel?`<span>📞 ${esc(o.tel)}</span>`:""}${o.mode?`<span>${esc(o.mode)}</span>`:""}${(o.text||"").match(/Origen:\s*(\S+)/)?`<span>📣 ${esc((o.text.match(/Origen:\s*(\S+)/)||[])[1])}</span>`:""}${o.date?`<span>Para el ${esc(o.date)}</span>`:""}</div>
     ${o.items.length?`<ul class="o-items">${o.items.map(i=>`<li>${i.n} × ${esc(i.name)}</li>`).join("")}</ul>`:""}
@@ -975,6 +976,8 @@ function renderOrders(){
     <details class="raw"><summary>Ver mensaje completo</summary><pre>${esc(o.text)}</pre></details>
     <div class="o-reply"><button type="button" class="chip" onclick="orReply('${o.ref}')">💬 Responder</button><button type="button" class="chip ai" onclick="orReply('${o.ref}',1)">✨ Responder con IA</button></div></article>`}).join(""):`<div class="empty">${OF==="todas"?"Todavía no han llegado órdenes desde la app.":"No hay órdenes en esta vista."}</div>`;
 }
+async function ordHidLoad(){if(MK)return;try{const r=await api("mkt_load");if(MK)return;MK=Array.isArray(r.mk)||!r.mk?{}:r.mk;MKA=r.auto||{};MKV=r.visits||{};MKW=!!r.windsor;MKADM=!!r.admin;renderOrders()}catch(e){}}
+async function ordTrash(ref,on){await ordHidLoad();if(!MK)return toast("No se pudo guardar. Intenta de nuevo");MK.hiddenOrd=MK.hiddenOrd||{};if(on)MK.hiddenOrd[ref]=new Date().toISOString().slice(0,10);else delete MK.hiddenOrd[ref];mkSave();renderOrders();toast(on?"Mandada a la papelera (la puedes restaurar)":"Restaurada")}
 async function setSt(ref,s){try{const r=await api("set_status",{ref,status:s});D.status=r.status;renderOrders();toast(ST.find(x=>x[0]===s)[1])}catch(e){toast("No se guardó. Revisa la conexión")}}
 async function discount(ref){
   const o=parseOrder(D.orders.find(x=>x.ref===ref));const it=o.items.filter(i=>i.sku);if(!it.length)return;
@@ -2672,22 +2675,24 @@ async function fxApply(){if(FXD!=="a")return toast("Para un invoice usa “De ot
   try{const e=INV.find(x=>x.id===id),res=await api("inv_upd",{id,patch:{total:usd,cur:"USD",orig,desc:((e&&e.desc?e.desc+" · ":"")+"convertido: "+orig).slice(0,160),rev:false}});INV=res.inv;invRender();toast(`Invoice actualizado: $${fxN(usd)} USD`);$("fx-m").remove()}catch(e){toast(e.message)}}
 /* ===== FIN CONVERTIDOR ===== */
 /* ===== INVOICES ===== (sube fotos o PDF; la IA los lee y los acomoda por categoría) */
-let INV=null,INVM="",INVC="todas",INVQ=0,INVP=false;
+let INVT=false,INV=null,INVM="",INVC="todas",INVQ=0,INVP=false;
 const INVCATS=[["Gasolina","⛽"],["Viaje","✈️"],["Hotel","🏨"],["Comida","🍽️"],["Accesorios","🧰"],["Máquinas","☕"],["Insumos","📦"],["Otros","🗂️"]];
 const invIc=c=>(INVCATS.find(x=>x[0]===c)||["","🗂️"])[1];
-async function invStart(){$("inv-root").innerHTML='<div class="empty">Cargando invoices…</div>';
+const invH=id=>!!((typeof MK!=="undefined"&&MK&&MK.hiddenInv)||{})[id];
+async function invTrash(id,on){await ordHidLoad();if(!MK)return toast("No se pudo guardar. Intenta de nuevo");MK.hiddenInv=MK.hiddenInv||{};if(on)MK.hiddenInv[id]=new Date().toISOString().slice(0,10);else delete MK.hiddenInv[id];mkSave();invRender();toast(on?"Mandado a la papelera (lo puedes restaurar)":"Restaurado")}
+async function invStart(){await ordHidLoad();$("inv-root").innerHTML='<div class="empty">Cargando invoices…</div>';
   try{INV=(await api("inv_list")).inv||[]}catch(e){INV=null;$("inv-root").innerHTML='<div class="empty">No se pudo abrir. Sube el api.php nuevo a la carpeta duenos y recarga.</div>';return}
   if(!INVM)INVM=new Date().toLocaleDateString("en-CA").slice(0,7);invRender()}
 function invMonths(){const s=new Set(INV.map(e=>e.d.slice(0,7)));s.add(new Date().toLocaleDateString("en-CA").slice(0,7));return [...s].sort().reverse()}
 const invMN=m=>m==="todo"?"Todo":new Date(m+"-15T12:00").toLocaleDateString("es-US",{month:"long",year:"numeric"});
 function invRender(){
-  const PEND=INV.filter(e=>e.pend).sort((a,b)=>(a.due||"9").localeCompare(b.due||"9")),pendT=PEND.reduce((s,e)=>s+(+e.total||0),0),hoy=new Date().toLocaleDateString("en-CA");
-  const L=INV.filter(e=>!e.pend&&(INVM==="todo"||(e.paidAt||e.d).startsWith(INVM))),tot=L.reduce((s,e)=>s+(+e.total||0),0),tax=L.reduce((s,e)=>s+(+e.tax||0),0);
+  const PEND=INV.filter(e=>e.pend&&!invH(e.id)).sort((a,b)=>(a.due||"9").localeCompare(b.due||"9")),pendT=PEND.reduce((s,e)=>s+(+e.total||0),0),hoy=new Date().toLocaleDateString("en-CA");
+  const L=INV.filter(e=>!e.pend&&!invH(e.id)&&(INVM==="todo"||(e.paidAt||e.d).startsWith(INVM))),tot=L.reduce((s,e)=>s+(+e.total||0),0),tax=L.reduce((s,e)=>s+(+e.tax||0),0);
   const by=INVCATS.map(([c,i])=>({c,i,n:L.filter(e=>e.cat===c).length,t:L.filter(e=>e.cat===c).reduce((s,e)=>s+(+e.total||0),0)}));const mx=Math.max(...by.map(b=>b.t),1);
-  const list=(INVC==="pend"?PEND:L.filter(e=>INVC==="todas"||e.cat===INVC||(INVC==="rev"&&e.rev))).sort((a,b)=>INVC==="pend"?(a.due||"9").localeCompare(b.due||"9"):b.d.localeCompare(a.d)||b.at.localeCompare(a.at));
+  const list=(INVT?INV.filter(e=>invH(e.id)):INVC==="pend"?PEND:L.filter(e=>INVC==="todas"||e.cat===INVC||(INVC==="rev"&&e.rev))).sort((a,b)=>INVC==="pend"?(a.due||"9").localeCompare(b.due||"9"):b.d.localeCompare(a.d)||b.at.localeCompare(a.at));
   const rev=L.filter(e=>e.rev).length;
   $("inv-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">Invoices y gastos</h2><p class="mk-sub">Sube la foto o el PDF · la IA lo lee y lo pone en su categoría</p></div>
-    <div class="mk-per"><select class="inv-mes" onchange="INVM=this.value;invRender()">${invMonths().concat(["todo"]).map(m=>`<option value="${m}" ${m===INVM?"selected":""}>${invMN(m)}</option>`).join("")}</select><button type="button" class="chip fx-btn" onclick="fxOpen()">💱 Convertir moneda</button><button type="button" class="chip" onclick="invCsv()">⬇ Excel</button></div></div>
+    <div class="mk-per"><select class="inv-mes" onchange="INVM=this.value;invRender()">${invMonths().concat(["todo"]).map(m=>`<option value="${m}" ${m===INVM?"selected":""}>${invMN(m)}</option>`).join("")}</select><button type="button" class="chip fx-btn" onclick="fxOpen()">💱 Convertir moneda</button><button type="button" class="chip" onclick="invCsv()">⬇ Excel</button><button type="button" class="chip ${INVT?"on":""}" onclick="INVT=!INVT;invRender()">🗑 Papelera · ${INV.filter(e=>invH(e.id)).length}</button></div></div>
    <div class="inv-mode"><button type="button" class="${INVP?"":"on"}" onclick="INVP=false;INVC='todas';invRender();invGoList()">✅ Ya pagados <i>${L.length}</i></button><button type="button" class="${INVP?"on":""}" onclick="INVP=true;INVC='pend';invRender();invGoList()">⏳ Pendientes por pagar <i>${PEND.length}</i></button><span>${INVP?"Lo que subas se guarda como pendiente":"Lo que subas se guarda como pagado"}</span></div>
    <label class="inv-drop${INVP?" pend":""}" id="inv-drop"><input type="file" accept="image/*,application/pdf" multiple hidden onchange="invFiles(this.files);this.value=''"><b>📷 Subir invoices${INVP?" pendientes":""}</b><span>Foto o PDF · puedes elegir varios a la vez</span><button type="button" class="chip inv-paste" onclick="event.preventDefault();event.stopPropagation();invPasteBtn()">📋 Pegar imagen copiada</button><small class="inv-hint">o presiona ⌘ V aquí · también puedes arrastrar</small><small id="inv-q">${INVQ?`Leyendo ${INVQ}…`:""}</small></label>
    <div class="mk-kpis"><div class="kpi mk-kpi hi"><span>Gastos de ${esc(invMN(INVM))}</span><b>${money(tot)}</b><small>${L.length} invoice${L.length===1?"":"s"}</small></div>
@@ -2701,7 +2706,7 @@ function invRender(){
     ${list.length?`<div class="cr-list">${list.map(e=>`<div class="inv-row${e.rev?" rev":""}"><div class="cr-n"><b>${esc(e.prov)}</b><small>${crDate(e.d)}${e.desc?" · "+esc(e.desc):""}${e.pay?" · "+esc(e.pay):""}</small></div>
       <b class="inv-tot">${e.total==null?"¿?":money(e.total)}</b>
       <div class="inv-act"><select onchange="invMove('${e.id}',this.value)" aria-label="Categoría">${INVCATS.map(([c,i])=>`<option value="${c}" ${!e.pend&&e.cat===c?"selected":""}>${i} ${c}</option>`).join("")}<option value="__pend" ${e.pend?"selected":""}>⏳ Pendiente por pagar</option></select>
-       <button type="button" class="chip" onclick="invEdit('${e.id}')">✎</button><button type="button" class="chip" onclick="invView('${esc(e.file)}')">📎 Ver</button><button type="button" class="chip" onclick="invDel('${e.id}')" aria-label="Borrar">×</button>${e.pend?`<span class="inv-due${e.due&&e.due<hoy?" v":""}">${e.due?(e.due<hoy?"⚠️ Venció ":"Vence ")+crDate(e.due):"Sin fecha límite"}</span><span class="sp" style="flex:1"></span><button type="button" class="btn inv-pay" onclick="invPay('${e.id}')">✓ Pagar</button>`:""}</div>
+       <button type="button" class="chip" onclick="invEdit('${e.id}')">✎</button><button type="button" class="chip" onclick="invView('${esc(e.file)}')">📎 Ver</button><button type="button" class="chip" onclick="invTrash('${e.id}',${INVT?"false":"true"})" title="${INVT?"Restaurar":"Mandar a la papelera"}" aria-label="${INVT?"Restaurar":"Mandar a la papelera"}">${INVT?"↩":"🗑"}</button>${INVT?`<button type="button" class="chip" onclick="invDel('${e.id}')" title="Borrar para siempre" aria-label="Borrar para siempre">× para siempre</button>`:""}${e.pend?`<span class="inv-due${e.due&&e.due<hoy?" v":""}">${e.due?(e.due<hoy?"⚠️ Venció ":"Vence ")+crDate(e.due):"Sin fecha límite"}</span><span class="sp" style="flex:1"></span><button type="button" class="btn inv-pay" onclick="invPay('${e.id}')">✓ Pagar</button>`:""}</div>
       ${e.rev?'<small class="mk-err">⚠️ Revisa el monto o la fecha</small>':""}</div>`).join("")}</div>`:(INVC==="pend"?'<div class="empty">No hay recibos pendientes. Elige “⏳ Pendiente por pagar” arriba antes de subir uno.</div>':'<div class="empty">No hay invoices aquí todavía. Sube el primero arriba.</div>')}</div>`;
   const dz=$("inv-drop");["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.add("over")}));["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.remove("over")}));dz.addEventListener("drop",x=>invFiles(x.dataTransfer.files))}
 async function invPasteBtn(){
@@ -3002,7 +3007,7 @@ async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
-  renderOrders();renderStock();renderUsers();setChatBadge(D.chatsUnread||0);loadChats();aiStatus();tempGate();
+  renderOrders();ordHidLoad();renderStock();renderUsers();setChatBadge(D.chatsUnread||0);loadChats();aiStatus();tempGate();
   let v="ordenes";try{v=localStorage.getItem("mdn-tab")||v}catch(e){}showView(v);
   setInterval(async()=>{if(document.hidden)return;try{const r=await api("load");const had=new Set(D.orders.map(o=>o.ref));const fresh=r.orders.filter(o=>!had.has(o.ref));D.orders=r.orders;D.status=r.status;if(!sDirty()){D.stock=r.stock;SW=null;renderStock()}renderOrders();if(fresh.length)toast(fresh.length===1?"Nueva orden recibida":fresh.length+" órdenes nuevas")}catch(e){}},60000);
 }
