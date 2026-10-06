@@ -2584,19 +2584,24 @@ function invCsv(){const L=INV.filter(e=>e.pend||INVM==="todo"||(e.paidAt||e.d).s
 /* ===== CONVERTIDOR ===== (monto + país → dólares, con la tasa del día) */
 let FXR=null,FXU="",FXC="COP",FXD="a";
 const FXL=[["COP","🇨🇴","Colombia","peso colombiano"],["MXN","🇲🇽","México","peso mexicano"],["VES","🇻🇪","Venezuela","bolívar"],["ARS","🇦🇷","Argentina","peso argentino"],["PEN","🇵🇪","Perú","sol"],["CLP","🇨🇱","Chile","peso chileno"],["DOP","🇩🇴","Rep. Dominicana","peso dominicano"],["BRL","🇧🇷","Brasil","real"],["EUR","🇪🇺","España / Italia / Europa","euro"],["GBP","🇬🇧","Reino Unido","libra"],["CAD","🇨🇦","Canadá","dólar canadiense"],["GTQ","🇬🇹","Guatemala","quetzal"],["HNL","🇭🇳","Honduras","lempira"],["CRC","🇨🇷","Costa Rica","colón"],["NIO","🇳🇮","Nicaragua","córdoba"],["UYU","🇺🇾","Uruguay","peso uruguayo"],["PYG","🇵🇾","Paraguay","guaraní"],["BOB","🇧🇴","Bolivia","boliviano"],["CUP","🇨🇺","Cuba","peso cubano"],["JMD","🇯🇲","Jamaica","dólar jamaiquino"],["TTD","🇹🇹","Trinidad y Tobago","dólar"],["CNY","🇨🇳","China","yuan"],["JPY","🇯🇵","Japón","yen"],["KRW","🇰🇷","Corea del Sur","won"],["INR","🇮🇳","India","rupia"],["AUD","🇦🇺","Australia","dólar australiano"],["CHF","🇨🇭","Suiza","franco"],["TRY","🇹🇷","Turquía","lira"],["AED","🇦🇪","Emiratos","dírham"]];
-const fxN=(n,d=2)=>(+n||0).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fxN=(n,d=2)=>(+n||0).toLocaleString("es-CO",{minimumFractionDigits:d,maximumFractionDigits:d});
 async function fxOpen(){
   const m=document.createElement("div");m.className="cr-modal";m.id="fx-m";m.onclick=e=>{if(e.target===m)m.remove()};
   m.innerHTML=`<div class="cr-box fx-box"><div class="mk-ct"><b>💱 Convertir moneda</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()" aria-label="Cerrar">×</button><small id="fx-upd">Buscando la tasa de hoy…</small></div>
    <div class="fx-dir"><button type="button" data-d="a" onclick="FXD='a';fxCalc()">De otra moneda → 🇺🇸 dólares</button><button type="button" data-d="d" onclick="FXD='d';fxCalc()">🇺🇸 Dólares → otra moneda</button></div>
    <label class="fx-l">País o moneda<select id="fx-c" onchange="FXC=this.value;fxCalc()">${FXL.map(([c,f,p,n])=>`<option value="${c}" ${c===FXC?"selected":""}>${f} ${p} · ${n} (${c})</option>`).join("")}</select></label>
-   <label class="fx-l"><span id="fx-lab">Monto</span><input id="fx-a" inputmode="decimal" placeholder="Ej.: 12,235,000" oninput="fxCalc()" autofocus></label>
+   <label class="fx-l"><span id="fx-lab">Monto</span><input id="fx-a" inputmode="decimal" placeholder="Ej.: 12.235.000" oninput="fxFmt(this);fxCalc()" autofocus></label>
    <div class="fx-res" id="fx-res">—</div><p class="mk-small" id="fx-rate"></p>
    ${typeof INV!=="undefined"&&INV&&INV.length?`<details class="mk-add"><summary>🧾 Poner este resultado en un invoice</summary><div class="mk-row" style="margin-top:8px"><select id="fx-inv" class="mk-in">${INV.slice().sort((a,b)=>b.at.localeCompare(a.at)).slice(0,40).map(e=>`<option value="${e.id}">${esc(e.prov)} · ${e.total==null?"¿?":fxN(e.total)} · ${esc(e.d)}</option>`).join("")}</select><button type="button" class="btn" onclick="fxApply()">Actualizar</button></div></details>`:""}</div>`;
   document.body.appendChild(m);setTimeout(()=>$("fx-a").focus(),50);
   if(!FXR){try{const r=await api("fx");FXR=r.rates;FXU=r.upd}catch(e){$("fx-upd").textContent=e.message;return}}
   $("fx-upd").textContent="Tasa del día · actualizada "+(FXU?new Date(FXU).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}):"hoy");fxCalc()}
-function fxVal(){return mkNum($("fx-a").value)}
+/* escribe los miles con puntos mientras teclea (12.352.000) y los decimales con coma (12.352.000,50) */
+function fxFmt(el){const pos=el.selectionStart,before=el.value.slice(0,pos).replace(/[^\d,]/g,"").length;
+  let v=el.value.replace(/[^\d,]/g,"");const i=v.indexOf(",");let ent=i<0?v:v.slice(0,i),dec=i<0?"":v.slice(i+1).replace(/,/g,"").slice(0,2);
+  ent=ent.replace(/^0+(?=\d)/,"");const out=ent.replace(/\B(?=(\d{3})+(?!\d))/g,".")+(i<0?"":","+dec);el.value=out;
+  let k=0,c=0;while(k<out.length&&c<before){if(/[\d,]/.test(out[k]))c++;k++}try{el.setSelectionRange(k,k)}catch(e){}}
+function fxVal(){return +(($("fx-a").value||"").replace(/\./g,"").replace(",","."))||0}
 function fxCalc(){if(!$("fx-res"))return;document.querySelectorAll(".fx-dir button").forEach(b=>b.classList.toggle("on",b.dataset.d===FXD));
   const c=FXL.find(x=>x[0]===FXC)||FXL[0];$("fx-lab").textContent=FXD==="a"?`Monto en ${c[3]} (${c[0]})`:"Monto en dólares (USD)";
   if(!FXR||!FXR[FXC]){$("fx-res").textContent="—";return}const r=FXR[FXC],v=fxVal();
