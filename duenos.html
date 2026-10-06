@@ -631,6 +631,16 @@ html[data-theme="light"] .inv-mode button{color:#111}
 .inv-mode button i{font-style:normal;opacity:.7;margin-left:4px}
 .inv-mode span{flex-basis:100%;font-size:12px}
 /* ===== FIN INVOICES ===== */
+/* ===== WHATSAPP ===== */
+.tabs .wa-tab{color:#25d366!important;display:inline-flex;align-items:center;gap:6px}
+.wa-ic{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#25d366;color:#fff;font-size:12px;line-height:1}
+.wa-box{max-width:480px;background:#14100b!important;border-color:#25d366!important}
+html[data-theme="light"] .wa-box{background:#fff!important}
+.wa-main{background:#25d366!important;color:#fff!important;border-color:#25d366!important;text-align:center;text-decoration:none}
+.wa-sep{font-size:12px;color:var(--muted);text-align:center;border-top:1px solid var(--line);padding-top:10px}
+.wa-box textarea{padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--cream);font:inherit;font-size:15px}
+html[data-theme="light"] .wa-box textarea{color:#111}
+/* ===== FIN WHATSAPP ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -2617,6 +2627,24 @@ function invCsv(){const L=INV.filter(e=>e.pend||INVM==="todo"||(e.paidAt||e.d).s
   const rows=[["Fecha","Proveedor","Categoría","Qué se compró","Total","Tax","Estado","Pagado el","Vence","Pago","Número","Subido por"]].concat(L.map(e=>[e.d,e.prov,e.cat,e.desc,e.total??"",e.tax||0,e.pend?"Pendiente":"Pagado",e.paidAt||"",e.due||"",e.pay,e.num,e.by]));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"}));a.download="invoices-"+INVM+".csv";a.click()}
 /* ===== FIN INVOICES ===== */
+/* ===== WHATSAPP ===== (botón de la compañía en la barra de arriba) */
+const WA_CO="17866850823";
+function waOpen(){
+  const tels=[];try{(D&&D.orders||[]).map(parseOrder).forEach(o=>{const t=String(o.tel||"").replace(/\D/g,"");if(t.length>=10&&!tels.some(x=>x.t===t))tels.push({t,n:o.client||""})})}catch(e){}
+  const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="cr-box wa-box"><div class="mk-ct"><b>💬 WhatsApp de Midnight</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()" aria-label="Cerrar">×</button><small>(786) 685-0823</small></div>
+   <a class="btn wa-main" href="https://web.whatsapp.com/" target="_blank" rel="noopener">Abrir WhatsApp de la compañía</a>
+   <p class="mk-small">Se abre WhatsApp Web. La primera vez escanea el código con el teléfono de la compañía: WhatsApp → ⋮ / Configuración → <b>Dispositivos vinculados</b>.</p>
+   <div class="wa-sep">o escríbele directo a alguien</div>
+   <label class="fx-l">Número (con código de país)<input id="wa-n" type="tel" inputmode="tel" placeholder="305 123 4567" list="wa-l"></label>
+   <datalist id="wa-l">${tels.slice(0,60).map(x=>`<option value="${esc(x.t)}">${esc(x.n)}</option>`).join("")}</datalist>
+   <label class="fx-l">Mensaje<textarea id="wa-t" rows="4" placeholder="Hola, te escribo de Midnight Café ☕…"></textarea></label>
+   <div class="mk-row"><button type="button" class="btn" onclick="waSend()">💬 Abrir chat</button><button type="button" class="chip" onclick="waSend(1)">Usar la app de WhatsApp de la Mac</button></div></div>`;
+  document.body.appendChild(m)}
+function waSend(app){let n=$("wa-n").value.replace(/\D/g,"");if(n.length===10)n="1"+n;if(n.length<11)return toast("Escribe el número completo");
+  const t=encodeURIComponent($("wa-t").value.trim());window.open(app?`whatsapp://send?phone=${n}&text=${t}`:`https://web.whatsapp.com/send?phone=${n}&text=${t}`,"_blank")}
+(function(){const nav=document.querySelector(".tabs");if(!nav||nav.querySelector(".wa-tab"))return;const b=document.createElement("button");b.type="button";b.className="wa-tab";b.innerHTML='<span class="wa-ic">✆</span> WhatsApp';b.onclick=waOpen;nav.appendChild(b)})();
+/* ===== FIN WHATSAPP ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
