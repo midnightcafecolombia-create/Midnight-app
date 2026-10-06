@@ -616,6 +616,19 @@ html[data-theme="light"] .inv-cat,html[data-theme="light"] .inv-mes,html[data-th
 html[data-theme="light"] .inv-mode button{color:#111}
 .inv-catp{border-top:1px dashed var(--line);margin-top:4px;padding-top:10px!important}.inv-catp span,.inv-catp b{color:#e0a03a}.inv-catp .mk-bar i{background:#e0a03a}
 /* ===== FIN INVOICES ===== */
+/* ===== CONVERTIDOR ===== */
+.fx-box{max-width:520px}
+.fx-dir{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.fx-dir button{padding:9px 8px;border:1px solid var(--line);border-radius:12px;background:none;color:var(--cream);font:inherit;font-size:13px;cursor:pointer}
+.fx-dir button.on{background:var(--gold);color:#120d07;border-color:var(--gold)}
+.fx-l{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.fx-l select,.fx-l input{padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--cream);font:inherit;font-size:16px}
+.fx-l input{font-size:22px;font-variant-numeric:tabular-nums}
+.fx-l select option{color:#111}
+.fx-res{display:flex;flex-direction:column;align-items:center;gap:2px;padding:16px;border-radius:14px;background:rgba(201,162,86,.1);color:var(--cream);font-size:15px}
+.fx-res small{font-size:13px;color:var(--muted)}.fx-res b{font-size:30px;color:var(--gold);font-variant-numeric:tabular-nums}
+html[data-theme="light"] .fx-dir button,html[data-theme="light"] .fx-l select,html[data-theme="light"] .fx-l input,html[data-theme="light"] .fx-res{color:#111}
+/* ===== FIN CONVERTIDOR ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -2518,7 +2531,7 @@ function invRender(){
   const list=(INVC==="pend"?PEND:L.filter(e=>INVC==="todas"||e.cat===INVC||(INVC==="rev"&&e.rev))).sort((a,b)=>INVC==="pend"?(a.due||"9").localeCompare(b.due||"9"):b.d.localeCompare(a.d)||b.at.localeCompare(a.at));
   const rev=L.filter(e=>e.rev).length;
   $("inv-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">Invoices y gastos</h2><p class="mk-sub">Sube la foto o el PDF · la IA lo lee y lo pone en su categoría</p></div>
-    <div class="mk-per"><select class="inv-mes" onchange="INVM=this.value;invRender()">${invMonths().concat(["todo"]).map(m=>`<option value="${m}" ${m===INVM?"selected":""}>${invMN(m)}</option>`).join("")}</select><button type="button" class="chip" onclick="invCsv()">⬇ Excel</button></div></div>
+    <div class="mk-per"><select class="inv-mes" onchange="INVM=this.value;invRender()">${invMonths().concat(["todo"]).map(m=>`<option value="${m}" ${m===INVM?"selected":""}>${invMN(m)}</option>`).join("")}</select><button type="button" class="chip fx-btn" onclick="fxOpen()">💱 Convertir moneda</button><button type="button" class="chip" onclick="invCsv()">⬇ Excel</button></div></div>
    <div class="inv-mode"><span>Al subir, guardar como:</span><button type="button" class="${INVP?"":"on"}" onclick="INVP=false;invRender()">✅ Ya pagado</button><button type="button" class="${INVP?"on":""}" onclick="INVP=true;invRender()">⏳ Pendiente por pagar</button></div>
    <label class="inv-drop${INVP?" pend":""}" id="inv-drop"><input type="file" accept="image/*,application/pdf" multiple hidden onchange="invFiles(this.files);this.value=''"><b>📷 Subir invoices${INVP?" pendientes":""}</b><span>Foto o PDF · puedes elegir varios a la vez</span><button type="button" class="chip inv-paste" onclick="event.preventDefault();event.stopPropagation();invPasteBtn()">📋 Pegar imagen copiada</button><small class="inv-hint">o presiona ⌘ V aquí · también puedes arrastrar</small><small id="inv-q">${INVQ?`Leyendo ${INVQ}…`:""}</small></label>
    <div class="mk-kpis"><div class="kpi mk-kpi hi"><span>Gastos de ${esc(invMN(INVM))}</span><b>${money(tot)}</b><small>${L.length} invoice${L.length===1?"":"s"}</small></div>
@@ -2568,6 +2581,31 @@ function invCsv(){const L=INV.filter(e=>e.pend||INVM==="todo"||(e.paidAt||e.d).s
   const rows=[["Fecha","Proveedor","Categoría","Qué se compró","Total","Tax","Estado","Pagado el","Vence","Pago","Número","Subido por"]].concat(L.map(e=>[e.d,e.prov,e.cat,e.desc,e.total??"",e.tax||0,e.pend?"Pendiente":"Pagado",e.paidAt||"",e.due||"",e.pay,e.num,e.by]));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"}));a.download="invoices-"+INVM+".csv";a.click()}
 /* ===== FIN INVOICES ===== */
+/* ===== CONVERTIDOR ===== (monto + país → dólares, con la tasa del día) */
+let FXR=null,FXU="",FXC="COP",FXD="a";
+const FXL=[["COP","🇨🇴","Colombia","peso colombiano"],["MXN","🇲🇽","México","peso mexicano"],["VES","🇻🇪","Venezuela","bolívar"],["ARS","🇦🇷","Argentina","peso argentino"],["PEN","🇵🇪","Perú","sol"],["CLP","🇨🇱","Chile","peso chileno"],["DOP","🇩🇴","Rep. Dominicana","peso dominicano"],["BRL","🇧🇷","Brasil","real"],["EUR","🇪🇺","España / Italia / Europa","euro"],["GBP","🇬🇧","Reino Unido","libra"],["CAD","🇨🇦","Canadá","dólar canadiense"],["GTQ","🇬🇹","Guatemala","quetzal"],["HNL","🇭🇳","Honduras","lempira"],["CRC","🇨🇷","Costa Rica","colón"],["NIO","🇳🇮","Nicaragua","córdoba"],["UYU","🇺🇾","Uruguay","peso uruguayo"],["PYG","🇵🇾","Paraguay","guaraní"],["BOB","🇧🇴","Bolivia","boliviano"],["CUP","🇨🇺","Cuba","peso cubano"],["JMD","🇯🇲","Jamaica","dólar jamaiquino"],["TTD","🇹🇹","Trinidad y Tobago","dólar"],["CNY","🇨🇳","China","yuan"],["JPY","🇯🇵","Japón","yen"],["KRW","🇰🇷","Corea del Sur","won"],["INR","🇮🇳","India","rupia"],["AUD","🇦🇺","Australia","dólar australiano"],["CHF","🇨🇭","Suiza","franco"],["TRY","🇹🇷","Turquía","lira"],["AED","🇦🇪","Emiratos","dírham"]];
+const fxN=(n,d=2)=>(+n||0).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+async function fxOpen(){
+  const m=document.createElement("div");m.className="cr-modal";m.id="fx-m";m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="cr-box fx-box"><div class="mk-ct"><b>💱 Convertir moneda</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()" aria-label="Cerrar">×</button><small id="fx-upd">Buscando la tasa de hoy…</small></div>
+   <div class="fx-dir"><button type="button" data-d="a" onclick="FXD='a';fxCalc()">De otra moneda → 🇺🇸 dólares</button><button type="button" data-d="d" onclick="FXD='d';fxCalc()">🇺🇸 Dólares → otra moneda</button></div>
+   <label class="fx-l">País o moneda<select id="fx-c" onchange="FXC=this.value;fxCalc()">${FXL.map(([c,f,p,n])=>`<option value="${c}" ${c===FXC?"selected":""}>${f} ${p} · ${n} (${c})</option>`).join("")}</select></label>
+   <label class="fx-l"><span id="fx-lab">Monto</span><input id="fx-a" inputmode="decimal" placeholder="Ej.: 12,235,000" oninput="fxCalc()" autofocus></label>
+   <div class="fx-res" id="fx-res">—</div><p class="mk-small" id="fx-rate"></p>
+   ${typeof INV!=="undefined"&&INV&&INV.length?`<details class="mk-add"><summary>🧾 Poner este resultado en un invoice</summary><div class="mk-row" style="margin-top:8px"><select id="fx-inv" class="mk-in">${INV.slice().sort((a,b)=>b.at.localeCompare(a.at)).slice(0,40).map(e=>`<option value="${e.id}">${esc(e.prov)} · ${e.total==null?"¿?":fxN(e.total)} · ${esc(e.d)}</option>`).join("")}</select><button type="button" class="btn" onclick="fxApply()">Actualizar</button></div></details>`:""}</div>`;
+  document.body.appendChild(m);setTimeout(()=>$("fx-a").focus(),50);
+  if(!FXR){try{const r=await api("fx");FXR=r.rates;FXU=r.upd}catch(e){$("fx-upd").textContent=e.message;return}}
+  $("fx-upd").textContent="Tasa del día · actualizada "+(FXU?new Date(FXU).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}):"hoy");fxCalc()}
+function fxVal(){return mkNum($("fx-a").value)}
+function fxCalc(){if(!$("fx-res"))return;document.querySelectorAll(".fx-dir button").forEach(b=>b.classList.toggle("on",b.dataset.d===FXD));
+  const c=FXL.find(x=>x[0]===FXC)||FXL[0];$("fx-lab").textContent=FXD==="a"?`Monto en ${c[3]} (${c[0]})`:"Monto en dólares (USD)";
+  if(!FXR||!FXR[FXC]){$("fx-res").textContent="—";return}const r=FXR[FXC],v=fxVal();
+  const out=FXD==="a"?v/r:v*r;$("fx-res").innerHTML=v?(FXD==="a"?`<small>${c[1]} ${fxN(v,0)} ${c[0]} =</small><b>$${fxN(out)} USD</b>`:`<small>$${fxN(v)} USD =</small><b>${c[1]} ${fxN(out,r>100?0:2)} ${c[0]}</b>`):"Escribe el monto";
+  $("fx-rate").textContent=`1 USD = ${fxN(r,r>100?2:4)} ${c[0]} · 1 ${c[0]} = $${fxN(1/r,6)} USD`}
+async function fxApply(){if(FXD!=="a")return toast("Para un invoice usa “De otra moneda → dólares”");const id=$("fx-inv").value,v=fxVal(),r=FXR&&FXR[FXC];if(!v||!r)return toast("Escribe el monto");
+  const usd=Math.round(v/r*100)/100,orig=`${fxN(v,0)} ${FXC} a ${fxN(r,2)} ${FXC}/USD (${new Date().toLocaleDateString("es-US")})`;
+  try{const e=INV.find(x=>x.id===id),res=await api("inv_upd",{id,patch:{total:usd,cur:"USD",orig,desc:((e&&e.desc?e.desc+" · ":"")+"convertido: "+orig).slice(0,160),rev:false}});INV=res.inv;invRender();toast(`Invoice actualizado: $${fxN(usd)} USD`);$("fx-m").remove()}catch(e){toast(e.message)}}
+/* ===== FIN CONVERTIDOR ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
