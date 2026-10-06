@@ -563,6 +563,32 @@ html[data-theme="light"] .mk-con,html[data-theme="light"] .mk-hot p{color:#111}
 @media (max-width:560px){.inv-cat{grid-template-columns:110px 1fr 76px 18px;font-size:12.5px}}
 html[data-theme="light"] .inv-cat,html[data-theme="light"] .inv-mes,html[data-theme="light"] .inv-act select,html[data-theme="light"] .inv-drop small{color:#111}
 /* ===== FIN INVOICES ===== */
+/* ===== IA GENERAL ===== */
+#ia-root{display:flex;flex-direction:column;gap:12px;min-height:calc(100dvh - 190px)}
+.ia-chat{flex:1;display:flex;flex-direction:column;gap:10px;padding:4px 0;min-height:200px}
+.ia-hello{border:1px dashed var(--gold);border-radius:14px;padding:14px;font-size:14.5px;line-height:1.5;color:var(--cream)}
+.ia-m{max-width:min(720px,88%);padding:10px 14px;border-radius:16px;font-size:14.5px;line-height:1.55;color:var(--cream);word-wrap:break-word}
+.ia-m.u{align-self:flex-end;background:rgba(201,162,86,.18);border-bottom-right-radius:4px;display:flex;flex-direction:column;gap:6px}
+.ia-m.u img{max-width:240px;max-height:240px;border-radius:10px;object-fit:cover}
+.ia-m.a{align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:4px}
+.ia-m.a .ia-h{display:block;color:var(--gold);margin:6px 0 2px}
+.ia-m code{font-size:13px;padding:1px 5px;border-radius:5px;background:rgba(127,127,127,.18)}
+.ia-cp{margin-top:6px;border:0;background:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0}
+.ia-att{font-size:12.5px;color:var(--muted)}
+.ia-wait{display:flex;gap:5px;padding:14px}.ia-wait span{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:iaB 1s infinite alternate}.ia-wait span:nth-child(2){animation-delay:.2s}.ia-wait span:nth-child(3){animation-delay:.4s}
+@keyframes iaB{from{opacity:.25;transform:translateY(0)}to{opacity:1;transform:translateY(-4px)}}
+.ia-sugg{display:flex;flex-wrap:wrap;gap:8px}.ia-sugg .chip{font-size:13px;padding:8px 12px;text-align:left}
+.ia-bar{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;align-items:flex-end;padding:8px;border:1px solid var(--line);border-radius:18px;background:var(--ink)}
+.ia-clip{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex:none;border-radius:12px}
+.ia-in{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ia-in textarea{width:100%;resize:none;border:0;background:transparent;color:var(--cream);font:inherit;font-size:15px;line-height:1.4;padding:10px 4px;outline:none;max-height:180px}
+.ia-file{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}.ia-file img{height:56px;border-radius:8px}.ia-file button{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer}
+.ia-go{flex:none;width:44px;height:44px;padding:0;border-radius:50%;font-size:18px}
+html[data-theme="light"] .ia-m,html[data-theme="light"] .ia-hello,html[data-theme="light"] .ia-in textarea{color:#111}
+html[data-theme="light"] .ia-bar{background:#fff}
+.ia-sugg[hidden],.ia-file[hidden]{display:none!important}
+body.ia-on #cmd-fab{display:none}
+/* ===== FIN IA GENERAL ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -593,6 +619,7 @@ html[data-theme="light"] .inv-cat,html[data-theme="light"] .inv-mes,html[data-th
     <button type="button" data-v="equipo">Equipo</button>
     <button type="button" data-v="mkt">📣 Marketing</button>
     <button type="button" data-v="inv">🧾 Invoices</button>
+    <button type="button" data-v="ia">✨ IA</button>
   </nav>
 </header>
 <main>
@@ -739,6 +766,7 @@ html[data-theme="light"] .inv-cat,html[data-theme="light"] .inv-mes,html[data-th
   </section>
   <section class="view" id="v-mkt" hidden><div id="mk-root"></div></section>
   <section class="view" id="v-inv" hidden><div id="inv-root"></div></section>
+  <section class="view" id="v-ia" hidden><div id="ia-root"></div></section>
 </main>
 <div class="toast" id="toast"></div>
 <script>
@@ -754,7 +782,7 @@ async function api(action,body={}){
 }
 let D=null;
 /* ===== Pestañas ===== */
-let PREVV="ordenes";function showView(v){if(v!=="sal")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="mkt"&&!MK)mkStart();if(v==="inv"&&!INV)invStart()}
+let PREVV="ordenes";function showView(v){if(v!=="sal")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="mkt"&&!MK)mkStart();if(v==="inv"&&!INV)invStart();if(v==="ia"&&!$("ia-chat"))iaStart();document.body.classList.toggle("ia-on",v==="ia")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 
 /* ===== Órdenes ===== */
@@ -2404,6 +2432,46 @@ function invCsv(){const L=INV.filter(e=>INVM==="todo"||e.d.startsWith(INVM)).sor
   const rows=[["Fecha","Proveedor","Categoría","Qué se compró","Total","Tax","Pago","Número","Subido por"]].concat(L.map(e=>[e.d,e.prov,e.cat,e.desc,e.total??"",e.tax||0,e.pay,e.num,e.by]));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"}));a.download="invoices-"+INVM+".csv";a.click()}
 /* ===== FIN INVOICES ===== */
+/* ===== IA GENERAL ===== (pregúntale lo que sea: fotos, PDF, cálculos, textos) */
+let IAM=null,IAF=null,IAB=false;
+function iaLoad(){if(IAM)return;try{IAM=JSON.parse(localStorage.getItem("mdn-ia")||"[]")}catch(e){IAM=[]}}
+function iaKeep(){try{localStorage.setItem("mdn-ia",JSON.stringify(IAM.slice(-40).map(m=>({role:m.role,text:m.text,had:m.had||!!m.file,fn:m.fn}))))}catch(e){}}
+function iaMd(t){return esc(t).replace(/^### (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^## (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^# (.+)$/gm,"<b class='ia-h'>$1</b>")
+  .replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|\s)\*(\S.+?)\*(?=\s|$)/g,"$1<i>$2</i>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/^\s*[-•*]\s+/gm,"• ").replace(/\n/g,"<br>")}
+function iaStart(){iaLoad();
+  $("ia-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">✨ IA de Midnight</h2><p class="mk-sub">Pregúntale lo que sea · manda fotos o PDF para que los identifique</p></div><div class="mk-per"><button type="button" class="chip" onclick="iaNew()">+ Nueva conversación</button></div></div>
+   <div class="ia-chat" id="ia-chat"></div>
+   <div class="ia-sugg" id="ia-sugg">${["📷 ¿Qué es esto? (manda una foto)","✍️ Escríbeme un post para Instagram del café 12 oz","🧮 Si compro a $8.78 y vendo a $22.99, ¿qué margen tengo?","📄 Resúmeme este contrato (adjunta el PDF)","🌎 Traduce al inglés un mensaje para un cliente","💡 Dame 5 ideas para vender más cafeteras este mes"].map(s=>`<button type="button" class="chip" onclick="iaSug(this.textContent)">${s}</button>`).join("")}</div>
+   <div class="ia-bar"><label class="ia-clip" title="Adjuntar foto o PDF"><input type="file" accept="image/*,application/pdf" hidden onchange="iaPick(this.files[0]);this.value=''">📎</label>
+    <div class="ia-in"><div id="ia-file" class="ia-file" hidden></div><textarea id="ia-t" rows="1" placeholder="Escribe o pega una foto…" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,180)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();iaSend()}"></textarea></div>
+    <button type="button" class="btn ia-go" id="ia-go" onclick="iaSend()" aria-label="Enviar">➤</button></div>`;
+  $("ia-t").addEventListener("paste",e=>{const f=[...(e.clipboardData||{}).files||[]][0];if(f){e.preventDefault();iaPick(f)}});
+  const z=$("ia-root");z.ondragover=e=>e.preventDefault();z.ondrop=e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)iaPick(f)};
+  iaDraw()}
+function iaDraw(){const c=$("ia-chat");if(!c)return;$("ia-sugg").hidden=IAM.length>0;
+  c.innerHTML=IAM.length?IAM.map((m,i)=>m.role==="u"?`<div class="ia-m u">${m.img?`<img src="${m.img}" alt="">`:m.had?`<span class="ia-att">📎 ${esc(m.fn||"archivo")}</span>`:""}${m.text?`<div>${esc(m.text).replace(/\n/g,"<br>")}</div>`:""}</div>`
+   :`<div class="ia-m a"><div>${iaMd(m.text)}</div><button type="button" class="ia-cp" onclick="iaCopy(${i})">Copiar</button></div>`).join("")+(IAB?'<div class="ia-m a ia-wait"><span></span><span></span><span></span></div>':"")
+   :'<div class="ia-hello">Hola 👋 Soy la IA de Midnight. Mándame una foto de cualquier cosa (una máquina, una pieza, una etiqueta, un recibo, una planta) y te digo qué es, o pregúntame lo que necesites para el negocio.</div>';
+  c.scrollTop=c.scrollHeight;setTimeout(()=>{const l=c.lastElementChild;l&&l.scrollIntoView({block:"end",behavior:"smooth"})},30)}
+function iaSug(t){t=t.replace(/^\S+\s/,"");if(/foto|PDF/.test(t)){$("ia-t").value=t.replace(/\s*\((manda|adjunta)[^)]*\)/,"");document.querySelector(".ia-clip input").click()}else{$("ia-t").value=t;iaSend()}}
+function iaPick(f){if(!f)return;if(f.type==="application/pdf"){if(f.size>2.6e6)return toast("El PDF pesa mucho (máx. 2.5 MB)");const r=new FileReader();r.onload=()=>{IAF={mime:f.type,file:r.result,fn:f.name};iaFileShow()};r.readAsDataURL(f)}
+  else if(/^image\//.test(f.type)){const img=new Image();img.onload=()=>{const s=Math.min(1,1600/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);IAF={mime:"image/jpeg",file:c.toDataURL("image/jpeg",.85),fn:f.name};iaFileShow()};img.onerror=()=>toast("No se pudo abrir la imagen");img.src=URL.createObjectURL(f)}
+  else toast("Manda una foto o un PDF")}
+function iaFileShow(){const b=$("ia-file");b.hidden=!IAF;b.innerHTML=IAF?`${IAF.mime==="application/pdf"?"📄 "+esc(IAF.fn):`<img src="${IAF.file}" alt="">`}<button type="button" onclick="IAF=null;iaFileShow()" aria-label="Quitar">×</button>`:"";$("ia-t").focus()}
+function iaCtx(){const c={hoy:new Date().toLocaleDateString("en-CA")};
+  try{if(D){c.ordenes_recibidas=D.orders.length;c.stock=(D.stock&&D.stock.items||D.stock||[]).slice?.(0,30)}}catch(e){}
+  try{if(SL&&SL.rules)c.productos_cafe=(SL.rules.products||[]).map(p=>p.n)}catch(e){}
+  try{if(INV)c.gastos_mes=INV.filter(e=>e.d.startsWith(c.hoy.slice(0,7))).reduce((s,e)=>s+(+e.total||0),0)}catch(e){}
+  return JSON.stringify(c).slice(0,6000)}
+async function iaSend(){if(IAB)return;const t=$("ia-t").value.trim();if(!t&&!IAF)return;
+  const m={role:"u",text:t};if(IAF){m.file=IAF.file;m.mime=IAF.mime;m.fn=IAF.fn;m.had=true;if(IAF.mime!=="application/pdf")m.img=IAF.file}
+  IAM.push(m);IAF=null;iaFileShow();$("ia-t").value="";$("ia-t").style.height="auto";IAB=true;iaDraw();
+  try{const j=await api("ai_chat",{msgs:IAM.slice(-16).map((x,i,a)=>({role:x.role,text:x.text,had:x.had,...(i===a.length-1&&x.file?{file:x.file,mime:x.mime}:{})})),ctx:iaCtx()});IAM.push({role:"a",text:j.text})}
+  catch(e){IAM.push({role:"a",text:"⚠️ "+e.message})}
+  IAB=false;IAM.forEach(x=>{if(x.file&&x!==IAM[IAM.length-2]){delete x.file}});iaKeep();iaDraw()}
+function iaCopy(i){const t=IAM[i].text;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copiado"),()=>prompt("Copia:",t))}
+function iaNew(){if(IAM.length&&!confirm("¿Empezar una conversación nueva?"))return;IAM=[];iaKeep();iaDraw()}
+/* ===== FIN IA GENERAL ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
