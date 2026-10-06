@@ -640,6 +640,7 @@ html[data-theme="light"] .wa-box{background:#fff!important}
 .wa-sep{font-size:12px;color:var(--muted);text-align:center;border-top:1px solid var(--line);padding-top:10px}
 .wa-box textarea{padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--cream);font:inherit;font-size:15px}
 html[data-theme="light"] .wa-box textarea{color:#111}
+.tabs .wa-new{padding-left:6px!important;padding-right:6px!important;font-size:15px}
 /* ===== FIN WHATSAPP ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
@@ -2629,12 +2630,16 @@ function invCsv(){const L=INV.filter(e=>e.pend||INVM==="todo"||(e.paidAt||e.d).s
 /* ===== FIN INVOICES ===== */
 /* ===== WHATSAPP ===== (botón de la compañía en la barra de arriba) */
 const WA_CO="17866850823";
+let WAW=null;function waWin(u){const w=Math.min(480,screen.availWidth-40),h=Math.min(760,screen.availHeight-60),l=screen.availLeft+screen.availWidth-w-16,t=(screen.availTop||0)+30;
+  if(WAW&&!WAW.closed){try{WAW.location.href=u}catch(e){}WAW.focus();return}
+  WAW=window.open(u,"midnight-wa",`popup=yes,width=${w},height=${h},left=${l},top=${t},resizable=yes,scrollbars=yes`);
+  if(!WAW)toast("Safari bloqueó la ventanita: permite ventanas emergentes para app.midnightcgo.com");else{WAW.focus();document.querySelector(".wa-box")?.closest(".cr-modal")?.remove()}}
 function waOpen(){
   const tels=[];try{(D&&D.orders||[]).map(parseOrder).forEach(o=>{const t=String(o.tel||"").replace(/\D/g,"");if(t.length>=10&&!tels.some(x=>x.t===t))tels.push({t,n:o.client||""})})}catch(e){}
   const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
   m.innerHTML=`<div class="cr-box wa-box"><div class="mk-ct"><b>💬 WhatsApp de Midnight</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()" aria-label="Cerrar">×</button><small>(786) 685-0823</small></div>
-   <a class="btn wa-main" href="https://web.whatsapp.com/" target="_blank" rel="noopener">Abrir WhatsApp de la compañía</a>
-   <p class="mk-small">Se abre WhatsApp Web. La primera vez escanea el código con el teléfono de la compañía: WhatsApp → ⋮ / Configuración → <b>Dispositivos vinculados</b>.</p>
+   <button type="button" class="btn wa-main" onclick="waWin('https://web.whatsapp.com/')">Abrir WhatsApp de la compañía</button>
+   <p class="mk-small">Se abre en una ventanita al lado, sin salir de Midnight Accounting. La primera vez escanea el código con el teléfono de la compañía: WhatsApp → ⋮ / Configuración → <b>Dispositivos vinculados</b>.</p>
    <div class="wa-sep">o escríbele directo a alguien</div>
    <label class="fx-l">Número (con código de país)<input id="wa-n" type="tel" inputmode="tel" placeholder="305 123 4567" list="wa-l"></label>
    <datalist id="wa-l">${tels.slice(0,60).map(x=>`<option value="${esc(x.t)}">${esc(x.n)}</option>`).join("")}</datalist>
@@ -2642,8 +2647,8 @@ function waOpen(){
    <div class="mk-row"><button type="button" class="btn" onclick="waSend()">💬 Abrir chat</button><button type="button" class="chip" onclick="waSend(1)">Usar la app de WhatsApp de la Mac</button></div></div>`;
   document.body.appendChild(m)}
 function waSend(app){let n=$("wa-n").value.replace(/\D/g,"");if(n.length===10)n="1"+n;if(n.length<11)return toast("Escribe el número completo");
-  const t=encodeURIComponent($("wa-t").value.trim());window.open(app?`whatsapp://send?phone=${n}&text=${t}`:`https://web.whatsapp.com/send?phone=${n}&text=${t}`,"_blank")}
-(function(){const nav=document.querySelector(".tabs");if(!nav||nav.querySelector(".wa-tab"))return;const b=document.createElement("button");b.type="button";b.className="wa-tab";b.innerHTML='<span class="wa-ic">✆</span> WhatsApp';b.onclick=waOpen;nav.appendChild(b)})();
+  const t=encodeURIComponent($("wa-t").value.trim());if(app)location.href=`whatsapp://send?phone=${n}&text=${t}`;else waWin(`https://web.whatsapp.com/send?phone=${n}&text=${t}`);document.querySelector(".wa-box")?.closest(".cr-modal")?.remove()}
+(function(){const nav=document.querySelector(".tabs");if(!nav||nav.querySelector(".wa-tab"))return;const b=document.createElement("button");b.type="button";b.className="wa-tab";b.innerHTML='<span class="wa-ic">✆</span> WhatsApp';b.onclick=e=>{if(e.altKey||e.shiftKey)waOpen();else waWin("https://web.whatsapp.com/")};b.title="Abrir WhatsApp · ⌥ clic: escribir a un número";const s=document.createElement("button");s.type="button";s.className="wa-tab wa-new";s.title="Escribir a un número";s.textContent="✎";s.onclick=waOpen;nav.appendChild(b);nav.appendChild(s);return;nav.appendChild(b)})();
 /* ===== FIN WHATSAPP ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
