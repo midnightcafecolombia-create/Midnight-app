@@ -595,6 +595,11 @@ body.ia-on #cmd-fab{display:none}
 .ia-acts{display:flex;gap:14px}
 .cmd-mic{width:auto;height:auto;border-radius:20px;padding:7px 14px;font-size:14px;color:var(--cream);gap:6px}
 .ia-m a{color:var(--gold);word-break:break-all}
+.ia-mail{margin-top:10px;border:1px solid var(--gold);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.ia-mail label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--muted)}
+.ia-mail input,.ia-mail textarea{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--cream);font:inherit;font-size:14px;width:100%}
+.ia-mail small{font-size:11px;color:var(--muted)}.ia-ok{color:#5bc489;font-size:13.5px}
+html[data-theme="light"] .ia-mail input,html[data-theme="light"] .ia-mail textarea{color:#111}
 /* ===== FIN IA GENERAL ===== */
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
@@ -2443,13 +2448,26 @@ function invCsv(){const L=INV.filter(e=>INVM==="todo"||e.d.startsWith(INVM)).sor
 /* ===== IA GENERAL ===== (pregúntale lo que sea: fotos, PDF, cálculos, textos) */
 let IAM=null,IAF=null,IAB=false;
 function iaLoad(){if(IAM)return;try{IAM=JSON.parse(localStorage.getItem("mdn-ia")||"[]")}catch(e){IAM=[]}}
-function iaKeep(){try{localStorage.setItem("mdn-ia",JSON.stringify(IAM.slice(-40).map(m=>({role:m.role,text:m.text,had:m.had||!!m.file,fn:m.fn}))))}catch(e){}}
+function iaKeep(){try{localStorage.setItem("mdn-ia",JSON.stringify(IAM.slice(-40).map(m=>({role:m.role,text:m.text,had:m.had||!!m.file,fn:m.fn,sent:m.sent}))))}catch(e){}}
 function iaMd(t){return esc(t).replace(/^### (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^## (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^# (.+)$/gm,"<b class='ia-h'>$1</b>")
   .replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|\s)\*(\S.+?)\*(?=\s|$)/g,"$1<i>$2</i>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/^\s*[-•*]\s+/gm,"• ").replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>")}
+function iaMail(t){const m=t.match(/\[\[CORREO\]\]([\s\S]*?)(\[\[\/CORREO\]\]|$)/);if(!m)return {rest:t};
+  const b=m[1],to=(b.match(/^\s*Para:\s*(.*)$/mi)||[])[1]||"",sub=(b.match(/^\s*Asunto:\s*(.*)$/mi)||[])[1]||"",body=(b.split(/^\s*---\s*$/m)[1]||"").trim();
+  return {rest:t.replace(m[0],"").trim(),mail:{to:to.trim(),sub:sub.trim(),body}}}
+function iaMailCard(m,i){const x=iaMail(m.text).mail;if(!x)return "";
+  return `<div class="ia-mail"><b>✉️ Correo listo</b><label>Para<input id="iam-to${i}" type="email" multiple value="${esc(x.to)}" placeholder="correo@ejemplo.com"></label>
+   <label>Asunto<input id="iam-su${i}" value="${esc(x.sub)}"></label><label>Mensaje<textarea id="iam-bo${i}" rows="8">${esc(x.body)}</textarea></label>
+   <div class="mk-row">${m.sent?`<span class="ia-ok">✓ Enviado ${esc(m.sent)}</span>`:`<button type="button" class="btn" onclick="iaMailSend(${i},this)">✉️ Enviar</button>`}<button type="button" class="chip" onclick="iaMailOpen(${i})">Abrir en mi correo</button></div>
+   <small>Sale de hola@midnightcgo.com y las respuestas llegan a midnightcafecolombia@gmail.com (ahí también te queda copia).</small></div>`}
+async function iaMailSend(i,b){const to=$("iam-to"+i).value,subject=$("iam-su"+i).value,body=$("iam-bo"+i).value;
+  if(!to.trim())return toast("Escribe a quién va");if(!confirm("¿Enviar este correo a "+to+"?"))return;b.disabled=true;b.textContent="Enviando…";
+  try{await api("mail_send",{to,subject,body});IAM[i].sent=new Date().toLocaleTimeString("es-US",{hour:"numeric",minute:"2-digit"})+" a "+to;iaKeep();toast("Correo enviado ✓");iaDraw()}
+  catch(e){toast(e.message);b.disabled=false;b.textContent="✉️ Enviar"}}
+function iaMailOpen(i){location.href="mailto:"+encodeURIComponent($("iam-to"+i).value)+"?subject="+encodeURIComponent($("iam-su"+i).value)+"&body="+encodeURIComponent($("iam-bo"+i).value)}
 function iaStart(){iaLoad();
   $("ia-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">✨ IA de Midnight</h2><p class="mk-sub">Pregúntale lo que sea · manda fotos o PDF para que los identifique</p></div><div class="mk-per"><button type="button" class="chip ia-spk${IASPK?" on":""}" onclick="iaSpkT(this)">${IASPK?"🔊 Voz activada":"🔈 Leer respuestas"}</button><button type="button" class="chip" onclick="iaNew()">+ Nueva conversación</button></div></div>
    <div class="ia-chat" id="ia-chat"></div>
-   <div class="ia-sugg" id="ia-sugg">${["📷 ¿Qué es esto? (manda una foto)","✍️ Escríbeme un post para Instagram del café 12 oz","🧮 Si compro a $8.78 y vendo a $22.99, ¿qué margen tengo?","📄 Resúmeme este contrato (adjunta el PDF)","🌎 Traduce al inglés un mensaje para un cliente","💡 Dame 5 ideas para vender más cafeteras este mes"].map(s=>`<button type="button" class="chip" onclick="iaSug(this.textContent)">${s}</button>`).join("")}</div>
+   <div class="ia-sugg" id="ia-sugg">${["📷 ¿Qué es esto? (manda una foto)","✍️ Escríbeme un post para Instagram del café 12 oz","🧮 Si compro a $8.78 y vendo a $22.99, ¿qué margen tengo?","✉️ Escríbele un correo a un cliente ofreciendo café para su restaurante","📄 Resúmeme este contrato (adjunta el PDF)","🌎 Traduce al inglés un mensaje para un cliente","💡 Dame 5 ideas para vender más cafeteras este mes"].map(s=>`<button type="button" class="chip" onclick="iaSug(this.textContent)">${s}</button>`).join("")}</div>
    <div class="ia-bar"><label class="ia-clip" title="Adjuntar foto o PDF"><input type="file" accept="image/*,application/pdf" hidden onchange="iaPick(this.files[0]);this.value=''">📎</label>
     <div class="ia-in"><div id="ia-file" class="ia-file" hidden></div><textarea id="ia-t" rows="1" placeholder="Escribe o habla 🎤…" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,180)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();iaSend()}"></textarea></div>
     <button type="button" class="ia-mic" id="ia-mic" onclick="voz('ia-t',this,iaSend)" aria-label="Hablar" title="Habla y se envía solo">🎤</button><button type="button" class="btn ia-go" id="ia-go" onclick="iaSend()" aria-label="Enviar">➤</button></div>`;
@@ -2458,7 +2476,7 @@ function iaStart(){iaLoad();
   iaDraw()}
 function iaDraw(){const c=$("ia-chat");if(!c)return;$("ia-sugg").hidden=IAM.length>0;
   c.innerHTML=IAM.length?IAM.map((m,i)=>m.role==="u"?`<div class="ia-m u">${m.img?`<img src="${m.img}" alt="">`:m.had?`<span class="ia-att">📎 ${esc(m.fn||"archivo")}</span>`:""}${m.text?`<div>${esc(m.text).replace(/\n/g,"<br>")}</div>`:""}</div>`
-   :`<div class="ia-m a"><div>${iaMd(m.text)}</div><span class="ia-acts"><button type="button" class="ia-cp" onclick="iaCopy(${i})">Copiar</button><button type="button" class="ia-cp" onclick="IASPK?iaSay(IAM[${i}].text):(IASPK=true,iaSay(IAM[${i}].text),IASPK=false)">🔊 Escuchar</button></span></div>`).join("")+(IAB?'<div class="ia-m a ia-wait"><span></span><span></span><span></span></div>':"")
+   :`<div class="ia-m a"><div>${iaMd(iaMail(m.text).rest)}</div>${iaMailCard(m,i)}<span class="ia-acts"><button type="button" class="ia-cp" onclick="iaCopy(${i})">Copiar</button><button type="button" class="ia-cp" onclick="IASPK?iaSay(IAM[${i}].text):(IASPK=true,iaSay(IAM[${i}].text),IASPK=false)">🔊 Escuchar</button></span></div>`).join("")+(IAB?'<div class="ia-m a ia-wait"><span></span><span></span><span></span></div>':"")
    :'<div class="ia-hello">Hola 👋 Soy la IA de Midnight. Mándame una foto de cualquier cosa (una máquina, una pieza, una etiqueta, un recibo, una planta) y te digo qué es, o pregúntame lo que necesites para el negocio.</div>';
   c.scrollTop=c.scrollHeight;setTimeout(()=>{const l=c.lastElementChild;l&&l.scrollIntoView({block:"end",behavior:"smooth"})},30)}
 function iaSug(t){t=t.replace(/^\S+\s/,"");if(/foto|PDF/.test(t)){$("ia-t").value=t.replace(/\s*\((manda|adjunta)[^)]*\)/,"");document.querySelector(".ia-clip input").click()}else{$("ia-t").value=t;iaSend()}}
