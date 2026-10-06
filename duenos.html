@@ -2000,17 +2000,17 @@ async function cmdFile(inp){const f=inp.files[0];if(!f)return;
   const img=new Image();img.onload=()=>{const k=Math.min(1,1600/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=img.width*k;c.height=img.height*k;c.getContext("2d").drawImage(img,0,0,c.width,c.height);CMDF={data:c.toDataURL("image/jpeg",.85).split(",")[1],mime:"image/jpeg"};$("cmd-fn").textContent="🖼 Foto lista";URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f)}
 async function cmdGo(){const t=$("cmd-t").value.trim();if(!t&&!CMDF)return toast("Escribe lo que necesites o adjunta una foto");const b=$("cmd-go");b.disabled=true;b.textContent="Leyendo…";
   let done=false;
-  try{const r=await api("cmd_ai",{text:t,image:CMDF?CMDF.data:"",mime:CMDF?CMDF.mime:"",ctx:cmdCtx()});if(r.plan&&(r.plan.acciones||[]).some(a=>CMD_LBL[a.tipo])){CMDP=r.plan;cmdShow();done=true}}catch(e){}
+  try{const r=await api("cmd_ai",{text:t,image:CMDF?CMDF.data:"",mime:CMDF?CMDF.mime:"",ctx:cmdCtx()});if(r.plan&&(r.plan.acciones||[]).some(a=>CMD_LBL[a.tipo])){CMDP=r.plan;cmdShow();done=true;$("cmd-t").value="";CMDF=null;$("cmd-fn").textContent=""}}catch(e){}
   if(!done){b.textContent="Pensando…";try{await cmdChat(t)}catch(e){toast(e.message)}}
   b.disabled=false;b.textContent="✨ Enviar"}
 /* lo que no es comanda va a la IA general (misma conversación que la pestaña ✨ IA) */
-async function cmdChat(t){iaLoad();const m={role:"u",text:t};if(CMDF){m.file="data:"+CMDF.mime+";base64,"+CMDF.data;m.mime=CMDF.mime;m.had=true;m.fn=CMDF.mime==="application/pdf"?"PDF":"foto";if(CMDF.mime!=="application/pdf")m.img=m.file}
+async function cmdChat(t){iaLoad();if(typeof INV!=="undefined"&&!INV){try{INV=(await api("inv_list")).inv||null}catch(e){}}const m={role:"u",text:t};if(CMDF){m.file="data:"+CMDF.mime+";base64,"+CMDF.data;m.mime=CMDF.mime;m.had=true;m.fn=CMDF.mime==="application/pdf"?"PDF":"foto";if(CMDF.mime!=="application/pdf")m.img=m.file}
   IAM.push(m);let ans;
   try{const j=await api("ai_chat",{msgs:IAM.slice(-16).map((x,i,a)=>({role:x.role,text:x.text,had:x.had,...(i===a.length-1&&x.file?{file:x.file,mime:x.mime}:{})})),ctx:typeof iaCtx==="function"?iaCtx():""});ans=j.text}
   catch(e){ans="⚠️ "+e.message}
   IAM.push({role:"a",text:ans});IAM.forEach(x=>{if(x.file&&x!==m)delete x.file});iaKeep();if(typeof iaSay==="function")iaSay(ans);
   const i=IAM.length-1;CMDF=null;$("cmd-fn").textContent="";$("cmd-t").value="";
-  $("cmd-out").innerHTML=`<div class="cmd-res cmd-ans"><div class="cmd-q">${esc(t)}</div><div>${iaMd(iaMail(ans).rest)}</div>${iaMailCard(IAM[i],i)}
+  $("cmd-out").innerHTML=`<div class="cmd-res cmd-ans"><div class="cmd-q">${esc(t)}</div><div>${iaMd(iaFac(iaMail(ans).rest).rest)}</div>${iaMailCard(IAM[i],i)}${iaFacCard(IAM[i],i)}
    <div class="cmd-r"><button type="button" class="chip" onclick="iaCopy(${i})">Copiar</button><span class="sp" style="flex:1"></span><button type="button" class="chip" onclick="cmdClose();showView('ia')">Seguir conversando en ✨ IA →</button></div></div>`;
   if($("ia-chat"))iaDraw();$("cmd-t").focus()}
 const CMD_LBL={venta_cafe:"☕ Venta de café → Distribución",consultoria:"💼 Consultoría → Distribución",pago_personal:"🍸 Pago a personal → Distribución",otro_ingreso:"• Otro ingreso → Distribución",empleado_pct:"👔 Empleado con % → Distribución",inventario_mix:"📦 Ingrediente → Inventario de Mixología",estado_orden:"🧾 Estado de una orden → Órdenes"};
@@ -2414,76 +2414,6 @@ function crSend(k,how,btn){const c=crAll().find(x=>x.k===k);if(!c)return;const f
 async function crAI(b){b.disabled=true;b.textContent="Escribiendo…";const seg=(CRSEG.find(x=>x[0]===CRS)||[])[1];
   try{const j=await api("mkt_msg",{seg,goal:$("cr-goal").value,base:CRMSG});CRMSG=j.text;$("cr-msg").value=CRMSG}catch(e){toast(e.message)}b.disabled=false;b.textContent="✨ Otra versión"}
 /* ===== FIN MARKETING ===== */
-/* ===== IA GENERAL ===== (pregúntale lo que sea: fotos, PDF, cálculos, textos) */
-let IAM=null,IAF=null,IAB=false;
-function iaLoad(){if(IAM)return;try{IAM=JSON.parse(localStorage.getItem("mdn-ia")||"[]")}catch(e){IAM=[]}}
-function iaKeep(){try{localStorage.setItem("mdn-ia",JSON.stringify(IAM.slice(-40).map(m=>({role:m.role,text:m.text,had:m.had||!!m.file,fn:m.fn,sent:m.sent}))))}catch(e){}}
-function iaMd(t){return esc(t).replace(/^### (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^## (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^# (.+)$/gm,"<b class='ia-h'>$1</b>")
-  .replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|\s)\*(\S.+?)\*(?=\s|$)/g,"$1<i>$2</i>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/^\s*[-•*]\s+/gm,"• ").replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>")}
-function iaMail(t){const m=t.match(/\[\[CORREO\]\]([\s\S]*?)(\[\[\/CORREO\]\]|$)/);if(!m)return {rest:t};
-  const b=m[1],to=(b.match(/^\s*Para:\s*(.*)$/mi)||[])[1]||"",sub=(b.match(/^\s*Asunto:\s*(.*)$/mi)||[])[1]||"",body=(b.split(/^\s*---\s*$/m)[1]||"").trim();
-  return {rest:t.replace(m[0],"").trim(),mail:{to:to.trim(),sub:sub.trim(),body}}}
-function iaMailCard(m,i){const x=iaMail(m.text).mail;if(!x)return "";
-  return `<div class="ia-mail"><b>✉️ Correo listo</b><label>Para<input id="iam-to${i}" type="email" multiple value="${esc(x.to)}" placeholder="correo@ejemplo.com"></label>
-   <label>Asunto<input id="iam-su${i}" value="${esc(x.sub)}"></label><label>Mensaje<textarea id="iam-bo${i}" rows="8">${esc(x.body)}</textarea></label>
-   <div class="mk-row">${m.sent?`<span class="ia-ok">✓ Enviado ${esc(m.sent)}</span>`:`<button type="button" class="btn" onclick="iaMailSend(${i},this)">✉️ Enviar</button>`}<button type="button" class="chip" onclick="iaMailOpen(${i})">Abrir en mi correo</button></div>
-   <small>Sale de hola@midnightcgo.com y las respuestas llegan a midnightcafecolombia@gmail.com (ahí también te queda copia).</small></div>`}
-async function iaMailSend(i,b){const to=$("iam-to"+i).value,subject=$("iam-su"+i).value,body=$("iam-bo"+i).value;
-  if(!to.trim())return toast("Escribe a quién va");if(!confirm("¿Enviar este correo a "+to+"?"))return;b.disabled=true;b.textContent="Enviando…";
-  try{await api("mail_send",{to,subject,body});IAM[i].sent=new Date().toLocaleTimeString("es-US",{hour:"numeric",minute:"2-digit"})+" a "+to;iaKeep();toast("Correo enviado ✓");iaDraw()}
-  catch(e){toast(e.message);b.disabled=false;b.textContent="✉️ Enviar"}}
-function iaMailOpen(i){location.href="mailto:"+encodeURIComponent($("iam-to"+i).value)+"?subject="+encodeURIComponent($("iam-su"+i).value)+"&body="+encodeURIComponent($("iam-bo"+i).value)}
-function iaStart(){iaLoad();
-  $("ia-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">✨ IA de Midnight</h2><p class="mk-sub">Pregúntale lo que sea · manda fotos o PDF para que los identifique</p></div><div class="mk-per"><button type="button" class="chip ia-spk${IASPK?" on":""}" onclick="iaSpkT(this)">${IASPK?"🔊 Voz activada":"🔈 Leer respuestas"}</button><button type="button" class="chip" onclick="iaNew()">+ Nueva conversación</button></div></div>
-   <div class="ia-chat" id="ia-chat"></div>
-   <div class="ia-sugg" id="ia-sugg">${["📷 ¿Qué es esto? (manda una foto)","✍️ Escríbeme un post para Instagram del café 12 oz","🧮 Si compro a $8.78 y vendo a $22.99, ¿qué margen tengo?","✉️ Escríbele un correo a un cliente ofreciendo café para su restaurante","📄 Resúmeme este contrato (adjunta el PDF)","🌎 Traduce al inglés un mensaje para un cliente","💡 Dame 5 ideas para vender más cafeteras este mes"].map(s=>`<button type="button" class="chip" onclick="iaSug(this.textContent)">${s}</button>`).join("")}</div>
-   <div class="ia-bar"><label class="ia-clip" title="Adjuntar foto o PDF"><input type="file" accept="image/*,application/pdf" hidden onchange="iaPick(this.files[0]);this.value=''">📎</label>
-    <div class="ia-in"><div id="ia-file" class="ia-file" hidden></div><textarea id="ia-t" rows="1" placeholder="Escribe o habla 🎤…" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,180)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();iaSend()}"></textarea></div>
-    <button type="button" class="ia-mic" id="ia-mic" onclick="voz('ia-t',this,iaSend)" aria-label="Hablar" title="Habla y se envía solo">🎤</button><button type="button" class="btn ia-go" id="ia-go" onclick="iaSend()" aria-label="Enviar">➤</button></div>`;
-  $("ia-t").addEventListener("paste",e=>{const f=[...(e.clipboardData||{}).files||[]][0];if(f){e.preventDefault();iaPick(f)}});
-  const z=$("ia-root");z.ondragover=e=>e.preventDefault();z.ondrop=e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)iaPick(f)};
-  iaDraw()}
-function iaDraw(){const c=$("ia-chat");if(!c)return;$("ia-sugg").hidden=IAM.length>0;
-  c.innerHTML=IAM.length?IAM.map((m,i)=>m.role==="u"?`<div class="ia-m u">${m.img?`<img src="${m.img}" alt="">`:m.had?`<span class="ia-att">📎 ${esc(m.fn||"archivo")}</span>`:""}${m.text?`<div>${esc(m.text).replace(/\n/g,"<br>")}</div>`:""}</div>`
-   :`<div class="ia-m a"><div>${iaMd(iaMail(m.text).rest)}</div>${iaMailCard(m,i)}<span class="ia-acts"><button type="button" class="ia-cp" onclick="iaCopy(${i})">Copiar</button><button type="button" class="ia-cp" onclick="IASPK?iaSay(IAM[${i}].text):(IASPK=true,iaSay(IAM[${i}].text),IASPK=false)">🔊 Escuchar</button></span></div>`).join("")+(IAB?'<div class="ia-m a ia-wait"><span></span><span></span><span></span></div>':"")
-   :'<div class="ia-hello">Hola 👋 Soy la IA de Midnight. Mándame una foto de cualquier cosa (una máquina, una pieza, una etiqueta, un recibo, una planta) y te digo qué es, o pregúntame lo que necesites para el negocio.</div>';
-  c.scrollTop=c.scrollHeight;setTimeout(()=>{const l=c.lastElementChild;l&&l.scrollIntoView({block:"end",behavior:"smooth"})},30)}
-function iaSug(t){t=t.replace(/^\S+\s/,"");if(/foto|PDF/.test(t)){$("ia-t").value=t.replace(/\s*\((manda|adjunta)[^)]*\)/,"");document.querySelector(".ia-clip input").click()}else{$("ia-t").value=t;iaSend()}}
-function iaPick(f){if(!f)return;if(f.type==="application/pdf"){if(f.size>2.6e6)return toast("El PDF pesa mucho (máx. 2.5 MB)");const r=new FileReader();r.onload=()=>{IAF={mime:f.type,file:r.result,fn:f.name};iaFileShow()};r.readAsDataURL(f)}
-  else if(/^image\//.test(f.type)){const img=new Image();img.onload=()=>{const s=Math.min(1,1600/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);IAF={mime:"image/jpeg",file:c.toDataURL("image/jpeg",.85),fn:f.name};iaFileShow()};img.onerror=()=>toast("No se pudo abrir la imagen");img.src=URL.createObjectURL(f)}
-  else toast("Manda una foto o un PDF")}
-function iaFileShow(){const b=$("ia-file");b.hidden=!IAF;b.innerHTML=IAF?`${IAF.mime==="application/pdf"?"📄 "+esc(IAF.fn):`<img src="${IAF.file}" alt="">`}<button type="button" onclick="IAF=null;iaFileShow()" aria-label="Quitar">×</button>`:"";$("ia-t").focus()}
-function iaCtx(){const c={hoy:new Date().toLocaleDateString("en-CA")};
-  try{if(D){c.ordenes_recibidas=D.orders.length;c.stock=(D.stock&&D.stock.items||D.stock||[]).slice?.(0,30)}}catch(e){}
-  try{if(SL&&SL.rules)c.productos_cafe=(SL.rules.products||[]).map(p=>p.n)}catch(e){}
-  try{if(INV)c.gastos_mes=INV.filter(e=>e.d.startsWith(c.hoy.slice(0,7))).reduce((s,e)=>s+(+e.total||0),0)}catch(e){}
-  return JSON.stringify(c).slice(0,6000)}
-async function iaSend(){if(IAB)return;const t=$("ia-t").value.trim();if(!t&&!IAF)return;
-  const m={role:"u",text:t};if(IAF){m.file=IAF.file;m.mime=IAF.mime;m.fn=IAF.fn;m.had=true;if(IAF.mime!=="application/pdf")m.img=IAF.file}
-  IAM.push(m);IAF=null;iaFileShow();$("ia-t").value="";$("ia-t").style.height="auto";IAB=true;iaDraw();
-  try{const j=await api("ai_chat",{msgs:IAM.slice(-16).map((x,i,a)=>({role:x.role,text:x.text,had:x.had,...(i===a.length-1&&x.file?{file:x.file,mime:x.mime}:{})})),ctx:iaCtx()});IAM.push({role:"a",text:j.text});iaSay(j.text)}
-  catch(e){IAM.push({role:"a",text:"⚠️ "+e.message})}
-  IAB=false;IAM.forEach(x=>{if(x.file&&x!==IAM[IAM.length-2]){delete x.file}});iaKeep();iaDraw()}
-function iaCopy(i){const t=IAM[i].text;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copiado"),()=>prompt("Copia:",t))}
-function iaNew(){if(IAM.length&&!confirm("¿Empezar una conversación nueva?"))return;IAM=[];iaKeep();iaDraw()}
-/* voz: dictar con el micrófono y escuchar las respuestas */
-let VREC=null,IASPK=false;try{IASPK=localStorage.getItem("mdn-ia-voz")==="1"}catch(e){}
-function vozOk(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition)}
-function voz(tid,btn,done){
-  if(VREC){VREC.stop();return}
-  if(!vozOk())return toast("Este navegador no tiene dictado. Usa el micrófono 🎤 del teclado.");
-  const R=new (window.SpeechRecognition||window.webkitSpeechRecognition)();R.lang="es-US";R.interimResults=true;R.continuous=false;
-  const t=$(tid),base=t.value?t.value.replace(/\s*$/," "):"";let fin="";VREC=R;btn.classList.add("rec");
-  if(window.speechSynthesis)speechSynthesis.cancel();
-  R.onresult=e=>{let tmp="";for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)fin+=x[0].transcript;else tmp+=x[0].transcript}t.value=base+fin+tmp;t.dispatchEvent(new Event("input"))};
-  R.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed")toast("Permite el micrófono: toca el candado 🔒 junto a la dirección y activa Micrófono.");else if(e.error!=="no-speech"&&e.error!=="aborted")toast("No te escuché bien, intenta otra vez")};
-  R.onend=()=>{VREC=null;btn.classList.remove("rec");if(fin.trim()&&done)done()};
-  try{R.start()}catch(e){VREC=null;btn.classList.remove("rec")}}
-function iaSay(t){if(!IASPK||!window.speechSynthesis)return;speechSynthesis.cancel();
-  const clean=t.replace(/[*#`>_]/g,"").replace(/\n+/g,". ").slice(0,1500),u=new SpeechSynthesisUtterance(clean);u.lang="es-US";
-  const v=speechSynthesis.getVoices().find(v=>/^es/i.test(v.lang)&&/Paulina|Monica|Mónica|Google|Siri/i.test(v.name))||speechSynthesis.getVoices().find(v=>/^es/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u)}
-function iaSpkT(b){IASPK=!IASPK;try{localStorage.setItem("mdn-ia-voz",IASPK?"1":"0")}catch(e){}b.classList.toggle("on",IASPK);b.textContent=IASPK?"🔊 Voz activada":"🔈 Leer respuestas";if(!IASPK&&window.speechSynthesis)speechSynthesis.cancel()}
-/* ===== FIN IA GENERAL ===== */
 /* ===== INVOICES ===== (sube fotos o PDF; la IA los lee y los acomoda por categoría) */
 let INV=null,INVM="",INVC="todas",INVQ=0;
 const INVCATS=[["Gasolina","⛽"],["Viaje","✈️"],["Hotel","🏨"],["Comida","🍽️"],["Accesorios","🧰"],["Máquinas","☕"],["Insumos","📦"],["Otros","🗂️"]];
@@ -2543,6 +2473,84 @@ function invCsv(){const L=INV.filter(e=>INVM==="todo"||e.d.startsWith(INVM)).sor
   const rows=[["Fecha","Proveedor","Categoría","Qué se compró","Total","Tax","Pago","Número","Subido por"]].concat(L.map(e=>[e.d,e.prov,e.cat,e.desc,e.total??"",e.tax||0,e.pay,e.num,e.by]));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"}));a.download="invoices-"+INVM+".csv";a.click()}
 /* ===== FIN INVOICES ===== */
+/* ===== IA GENERAL ===== (pregúntale lo que sea: fotos, PDF, cálculos, textos) */
+let IAM=null,IAF=null,IAB=false;
+function iaLoad(){if(IAM)return;try{IAM=JSON.parse(localStorage.getItem("mdn-ia")||"[]")}catch(e){IAM=[]}}
+function iaKeep(){try{localStorage.setItem("mdn-ia",JSON.stringify(IAM.slice(-40).map(m=>({role:m.role,text:m.text,had:m.had||!!m.file,fn:m.fn,sent:m.sent,facOk:m.facOk}))))}catch(e){}}
+function iaMd(t){return esc(t).replace(/^### (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^## (.+)$/gm,"<b class='ia-h'>$1</b>").replace(/^# (.+)$/gm,"<b class='ia-h'>$1</b>")
+  .replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|\s)\*(\S.+?)\*(?=\s|$)/g,"$1<i>$2</i>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/^\s*[-•*]\s+/gm,"• ").replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>")}
+function iaMail(t){const m=t.match(/\[\[CORREO\]\]([\s\S]*?)(\[\[\/CORREO\]\]|$)/);if(!m)return {rest:t};
+  const b=m[1],to=(b.match(/^\s*Para:\s*(.*)$/mi)||[])[1]||"",sub=(b.match(/^\s*Asunto:\s*(.*)$/mi)||[])[1]||"",body=(b.split(/^\s*---\s*$/m)[1]||"").trim();
+  return {rest:t.replace(m[0],"").trim(),mail:{to:to.trim(),sub:sub.trim(),body}}}
+function iaMailCard(m,i){const x=iaMail(m.text).mail;if(!x)return "";
+  return `<div class="ia-mail"><b>✉️ Correo listo</b><label>Para<input id="iam-to${i}" type="email" multiple value="${esc(x.to)}" placeholder="correo@ejemplo.com"></label>
+   <label>Asunto<input id="iam-su${i}" value="${esc(x.sub)}"></label><label>Mensaje<textarea id="iam-bo${i}" rows="8">${esc(x.body)}</textarea></label>
+   <div class="mk-row">${m.sent?`<span class="ia-ok">✓ Enviado ${esc(m.sent)}</span>`:`<button type="button" class="btn" onclick="iaMailSend(${i},this)">✉️ Enviar</button>`}<button type="button" class="chip" onclick="iaMailOpen(${i})">Abrir en mi correo</button></div>
+   <small>Sale de hola@midnightcgo.com y las respuestas llegan a midnightcafecolombia@gmail.com (ahí también te queda copia).</small></div>`}
+async function iaMailSend(i,b){const to=$("iam-to"+i).value,subject=$("iam-su"+i).value,body=$("iam-bo"+i).value;
+  if(!to.trim())return toast("Escribe a quién va");if(!confirm("¿Enviar este correo a "+to+"?"))return;b.disabled=true;b.textContent="Enviando…";
+  try{await api("mail_send",{to,subject,body});IAM[i].sent=new Date().toLocaleTimeString("es-US",{hour:"numeric",minute:"2-digit"})+" a "+to;iaKeep();toast("Correo enviado ✓");iaDraw()}
+  catch(e){toast(e.message);b.disabled=false;b.textContent="✉️ Enviar"}}
+function iaMailOpen(i){location.href="mailto:"+encodeURIComponent($("iam-to"+i).value)+"?subject="+encodeURIComponent($("iam-su"+i).value)+"&body="+encodeURIComponent($("iam-bo"+i).value)}
+function iaFac(t){const m=t.match(/\[\[FACTURA\]\]([\s\S]*?)\[\[\/FACTURA\]\]/);if(!m)return {rest:t};let f=null;try{f=JSON.parse(m[1].trim())}catch(e){}return {rest:t.replace(m[0],"").trim(),fac:f}}
+function iaFacCard(m,i){const f=iaFac(m.text).fac;if(!f||!f.id)return "";const e=(typeof INV!=="undefined"&&INV||[]).find(x=>x.id===f.id);
+  return `<div class="ia-mail"><b>🧾 Actualizar invoice</b><p style="margin:0">${esc(e?e.prov:f.id)}: <s>${e&&e.total!=null?esc(String(e.total))+" "+esc(e.cur||""):""}</s> → <b>${money(+f.total)} USD</b></p>${f.orig?`<small>${esc(f.orig)}</small>`:""}
+   <div class="mk-row">${m.facOk?'<span class="ia-ok">✓ Invoice actualizado</span>':`<button type="button" class="btn" onclick="iaFacApply(${i},this)">✓ Actualizar el invoice</button>`}</div></div>`}
+async function iaFacApply(i,b){const f=iaFac(IAM[i].text).fac;b.disabled=true;
+  try{const e=(typeof INV!=="undefined"&&INV||[]).find(x=>x.id===f.id),r=await api("inv_upd",{id:f.id,patch:{total:Math.round(+f.total*100)/100,cur:"USD",orig:String(f.orig||"").slice(0,150),desc:((e&&e.desc?e.desc+" · ":"")+"convertido: "+(f.orig||"")).slice(0,160),rev:false}});
+    if(typeof INV!=="undefined"&&INV){INV=r.inv;if($("inv-root")&&!$("v-inv").hidden)invRender()}IAM[i].facOk=1;iaKeep();toast("Invoice actualizado ✓");b.outerHTML='<span class="ia-ok">✓ Invoice actualizado</span>'}
+  catch(e){toast(e.message);b.disabled=false}}
+function iaStart(){iaLoad();
+  $("ia-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">✨ IA de Midnight</h2><p class="mk-sub">Pregúntale lo que sea · manda fotos o PDF para que los identifique</p></div><div class="mk-per"><button type="button" class="chip ia-spk${IASPK?" on":""}" onclick="iaSpkT(this)">${IASPK?"🔊 Voz activada":"🔈 Leer respuestas"}</button><button type="button" class="chip" onclick="iaNew()">+ Nueva conversación</button></div></div>
+   <div class="ia-chat" id="ia-chat"></div>
+   <div class="ia-sugg" id="ia-sugg">${["📷 ¿Qué es esto? (manda una foto)","✍️ Escríbeme un post para Instagram del café 12 oz","🧮 Si compro a $8.78 y vendo a $22.99, ¿qué margen tengo?","✉️ Escríbele un correo a un cliente ofreciendo café para su restaurante","📄 Resúmeme este contrato (adjunta el PDF)","🌎 Traduce al inglés un mensaje para un cliente","💡 Dame 5 ideas para vender más cafeteras este mes"].map(s=>`<button type="button" class="chip" onclick="iaSug(this.textContent)">${s}</button>`).join("")}</div>
+   <div class="ia-bar"><label class="ia-clip" title="Adjuntar foto o PDF"><input type="file" accept="image/*,application/pdf" hidden onchange="iaPick(this.files[0]);this.value=''">📎</label>
+    <div class="ia-in"><div id="ia-file" class="ia-file" hidden></div><textarea id="ia-t" rows="1" placeholder="Escribe o habla 🎤…" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,180)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();iaSend()}"></textarea></div>
+    <button type="button" class="ia-mic" id="ia-mic" onclick="voz('ia-t',this,iaSend)" aria-label="Hablar" title="Habla y se envía solo">🎤</button><button type="button" class="btn ia-go" id="ia-go" onclick="iaSend()" aria-label="Enviar">➤</button></div>`;
+  $("ia-t").addEventListener("paste",e=>{const f=[...(e.clipboardData||{}).files||[]][0];if(f){e.preventDefault();iaPick(f)}});
+  const z=$("ia-root");z.ondragover=e=>e.preventDefault();z.ondrop=e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)iaPick(f)};
+  iaDraw()}
+function iaDraw(){const c=$("ia-chat");if(!c)return;$("ia-sugg").hidden=IAM.length>0;
+  c.innerHTML=IAM.length?IAM.map((m,i)=>m.role==="u"?`<div class="ia-m u">${m.img?`<img src="${m.img}" alt="">`:m.had?`<span class="ia-att">📎 ${esc(m.fn||"archivo")}</span>`:""}${m.text?`<div>${esc(m.text).replace(/\n/g,"<br>")}</div>`:""}</div>`
+   :`<div class="ia-m a"><div>${iaMd(iaFac(iaMail(m.text).rest).rest)}</div>${iaMailCard(m,i)}${iaFacCard(m,i)}<span class="ia-acts"><button type="button" class="ia-cp" onclick="iaCopy(${i})">Copiar</button><button type="button" class="ia-cp" onclick="IASPK?iaSay(IAM[${i}].text):(IASPK=true,iaSay(IAM[${i}].text),IASPK=false)">🔊 Escuchar</button></span></div>`).join("")+(IAB?'<div class="ia-m a ia-wait"><span></span><span></span><span></span></div>':"")
+   :'<div class="ia-hello">Hola 👋 Soy la IA de Midnight. Mándame una foto de cualquier cosa (una máquina, una pieza, una etiqueta, un recibo, una planta) y te digo qué es, o pregúntame lo que necesites para el negocio.</div>';
+  c.scrollTop=c.scrollHeight;setTimeout(()=>{const l=c.lastElementChild;l&&l.scrollIntoView({block:"end",behavior:"smooth"})},30)}
+function iaSug(t){t=t.replace(/^\S+\s/,"");if(/foto|PDF/.test(t)){$("ia-t").value=t.replace(/\s*\((manda|adjunta)[^)]*\)/,"");document.querySelector(".ia-clip input").click()}else{$("ia-t").value=t;iaSend()}}
+function iaPick(f){if(!f)return;if(f.type==="application/pdf"){if(f.size>2.6e6)return toast("El PDF pesa mucho (máx. 2.5 MB)");const r=new FileReader();r.onload=()=>{IAF={mime:f.type,file:r.result,fn:f.name};iaFileShow()};r.readAsDataURL(f)}
+  else if(/^image\//.test(f.type)){const img=new Image();img.onload=()=>{const s=Math.min(1,1600/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);IAF={mime:"image/jpeg",file:c.toDataURL("image/jpeg",.85),fn:f.name};iaFileShow()};img.onerror=()=>toast("No se pudo abrir la imagen");img.src=URL.createObjectURL(f)}
+  else toast("Manda una foto o un PDF")}
+function iaFileShow(){const b=$("ia-file");b.hidden=!IAF;b.innerHTML=IAF?`${IAF.mime==="application/pdf"?"📄 "+esc(IAF.fn):`<img src="${IAF.file}" alt="">`}<button type="button" onclick="IAF=null;iaFileShow()" aria-label="Quitar">×</button>`:"";$("ia-t").focus()}
+function iaCtx(){const c={hoy:new Date().toLocaleDateString("en-CA")};
+  try{if(D){c.ordenes_recibidas=D.orders.length;c.stock=(D.stock&&D.stock.items||D.stock||[]).slice?.(0,30)}}catch(e){}
+  try{if(SL&&SL.rules)c.productos_cafe=(SL.rules.products||[]).map(p=>p.n)}catch(e){}
+  try{if(INV){c.gastos_mes=INV.filter(e=>e.d.startsWith(c.hoy.slice(0,7))).reduce((s,e)=>s+(+e.total||0),0);c.invoices_recientes=INV.slice().sort((a,b)=>b.at.localeCompare(a.at)).slice(0,20).map(e=>({id:e.id,proveedor:e.prov,fecha:e.d,total:e.total,moneda:e.cur||"USD",que:e.desc}))}}catch(e){}
+  return JSON.stringify(c).slice(0,6000)}
+async function iaSend(){if(IAB)return;if(typeof INV!=="undefined"&&!INV){try{INV=(await api("inv_list")).inv||null}catch(e){}}const t=$("ia-t").value.trim();if(!t&&!IAF)return;
+  const m={role:"u",text:t};if(IAF){m.file=IAF.file;m.mime=IAF.mime;m.fn=IAF.fn;m.had=true;if(IAF.mime!=="application/pdf")m.img=IAF.file}
+  IAM.push(m);IAF=null;iaFileShow();$("ia-t").value="";$("ia-t").style.height="auto";IAB=true;iaDraw();
+  try{const j=await api("ai_chat",{msgs:IAM.slice(-16).map((x,i,a)=>({role:x.role,text:x.text,had:x.had,...(i===a.length-1&&x.file?{file:x.file,mime:x.mime}:{})})),ctx:iaCtx()});IAM.push({role:"a",text:j.text});iaSay(j.text)}
+  catch(e){IAM.push({role:"a",text:"⚠️ "+e.message})}
+  IAB=false;IAM.forEach(x=>{if(x.file&&x!==IAM[IAM.length-2]){delete x.file}});iaKeep();iaDraw()}
+function iaCopy(i){const t=IAM[i].text;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copiado"),()=>prompt("Copia:",t))}
+function iaNew(){if(IAM.length&&!confirm("¿Empezar una conversación nueva?"))return;IAM=[];iaKeep();iaDraw()}
+/* voz: dictar con el micrófono y escuchar las respuestas */
+let VREC=null,IASPK=false;try{IASPK=localStorage.getItem("mdn-ia-voz")==="1"}catch(e){}
+function vozOk(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition)}
+function voz(tid,btn,done){
+  if(VREC){VREC.stop();return}
+  if(!vozOk())return toast("Este navegador no tiene dictado. Usa el micrófono 🎤 del teclado.");
+  const R=new (window.SpeechRecognition||window.webkitSpeechRecognition)();R.lang="es-US";R.interimResults=true;R.continuous=false;
+  const t=$(tid),base=t.value?t.value.replace(/\s*$/," "):"";let fin="";VREC=R;btn.classList.add("rec");
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  R.onresult=e=>{let tmp="";for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)fin+=x[0].transcript;else tmp+=x[0].transcript}t.value=base+fin+tmp;t.dispatchEvent(new Event("input"))};
+  R.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed")toast("Permite el micrófono: toca el candado 🔒 junto a la dirección y activa Micrófono.");else if(e.error!=="no-speech"&&e.error!=="aborted")toast("No te escuché bien, intenta otra vez")};
+  R.onend=()=>{VREC=null;btn.classList.remove("rec");if(fin.trim()&&done)done()};
+  try{R.start()}catch(e){VREC=null;btn.classList.remove("rec")}}
+function iaSay(t){if(!IASPK||!window.speechSynthesis)return;speechSynthesis.cancel();
+  const clean=t.replace(/[*#`>_]/g,"").replace(/\n+/g,". ").slice(0,1500),u=new SpeechSynthesisUtterance(clean);u.lang="es-US";
+  const v=speechSynthesis.getVoices().find(v=>/^es/i.test(v.lang)&&/Paulina|Monica|Mónica|Google|Siri/i.test(v.name))||speechSynthesis.getVoices().find(v=>/^es/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u)}
+function iaSpkT(b){IASPK=!IASPK;try{localStorage.setItem("mdn-ia-voz",IASPK?"1":"0")}catch(e){}b.classList.toggle("on",IASPK);b.textContent=IASPK?"🔊 Voz activada":"🔈 Leer respuestas";if(!IASPK&&window.speechSynthesis)speechSynthesis.cancel()}
+/* ===== FIN IA GENERAL ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
