@@ -582,6 +582,9 @@ body.ia-on #cmd-fab{display:none}
 .ia-mail small{font-size:11px;color:var(--muted)}.ia-ok{color:#5bc489;font-size:13.5px}
 html[data-theme="light"] .ia-mail input,html[data-theme="light"] .ia-mail textarea{color:#111}
 /* ===== FIN IA GENERAL ===== */
+.cmd-ans{max-height:55vh;overflow:auto;font-size:14.5px;line-height:1.55}
+.cmd-q{font-size:12.5px;color:var(--muted);border-left:2px solid var(--gold);padding-left:8px;margin-bottom:6px}
+.cmd-ans a{color:var(--gold);word-break:break-all}
 /* ===== INVOICES ===== */
 #inv-root{display:flex;flex-direction:column;gap:12px}
 .inv-mes{padding:6px 10px;border:1px solid var(--line);border-radius:18px;background:transparent;color:var(--cream);font:inherit;font-size:13px;text-transform:capitalize}
@@ -602,10 +605,16 @@ html[data-theme="light"] .ia-mail input,html[data-theme="light"] .ia-mail textar
 html[data-theme="light"] .inv-cat,html[data-theme="light"] .inv-mes,html[data-theme="light"] .inv-act select,html[data-theme="light"] .inv-drop small{color:#111}
 .inv-paste{margin-top:6px;font-size:13px;padding:7px 14px;border-color:var(--gold);color:var(--gold)}
 .inv-hint{font-size:11.5px;color:var(--muted)}
+.inv-mode{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.inv-mode button{padding:8px 14px;border:1px solid var(--line);border-radius:20px;background:none;color:var(--cream);font:inherit;font-size:13.5px;cursor:pointer}
+.inv-mode button.on{background:var(--gold);color:#120d07;border-color:var(--gold)}
+.inv-drop.pend{border-color:#e0a03a;background:rgba(224,160,58,.08)}
+.inv-pend{border-color:#e0a03a}
+.inv-kp b{color:#e0a03a}
+.inv-due{font-size:12.5px;color:var(--muted)}.inv-due.p{color:#e0a03a}.inv-due.v{color:#e07a6b;font-weight:600}
+.inv-pay{width:auto!important;padding:8px 16px!important;font-size:13px}
+html[data-theme="light"] .inv-mode button{color:#111}
 /* ===== FIN INVOICES ===== */
-.cmd-ans{max-height:55vh;overflow:auto;font-size:14.5px;line-height:1.55}
-.cmd-q{font-size:12.5px;color:var(--muted);border-left:2px solid var(--gold);padding-left:8px;margin-bottom:6px}
-.cmd-ans a{color:var(--gold);word-break:break-all}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -2414,65 +2423,6 @@ function crSend(k,how,btn){const c=crAll().find(x=>x.k===k);if(!c)return;const f
 async function crAI(b){b.disabled=true;b.textContent="Escribiendo…";const seg=(CRSEG.find(x=>x[0]===CRS)||[])[1];
   try{const j=await api("mkt_msg",{seg,goal:$("cr-goal").value,base:CRMSG});CRMSG=j.text;$("cr-msg").value=CRMSG}catch(e){toast(e.message)}b.disabled=false;b.textContent="✨ Otra versión"}
 /* ===== FIN MARKETING ===== */
-/* ===== INVOICES ===== (sube fotos o PDF; la IA los lee y los acomoda por categoría) */
-let INV=null,INVM="",INVC="todas",INVQ=0;
-const INVCATS=[["Gasolina","⛽"],["Viaje","✈️"],["Hotel","🏨"],["Comida","🍽️"],["Accesorios","🧰"],["Máquinas","☕"],["Insumos","📦"],["Otros","🗂️"]];
-const invIc=c=>(INVCATS.find(x=>x[0]===c)||["","🗂️"])[1];
-async function invStart(){$("inv-root").innerHTML='<div class="empty">Cargando invoices…</div>';
-  try{INV=(await api("inv_list")).inv||[]}catch(e){INV=null;$("inv-root").innerHTML='<div class="empty">No se pudo abrir. Sube el api.php nuevo a la carpeta duenos y recarga.</div>';return}
-  if(!INVM)INVM=new Date().toLocaleDateString("en-CA").slice(0,7);invRender()}
-function invMonths(){const s=new Set(INV.map(e=>e.d.slice(0,7)));s.add(new Date().toLocaleDateString("en-CA").slice(0,7));return [...s].sort().reverse()}
-const invMN=m=>m==="todo"?"Todo":new Date(m+"-15T12:00").toLocaleDateString("es-US",{month:"long",year:"numeric"});
-function invRender(){
-  const L=INV.filter(e=>INVM==="todo"||e.d.startsWith(INVM)),tot=L.reduce((s,e)=>s+(+e.total||0),0),tax=L.reduce((s,e)=>s+(+e.tax||0),0);
-  const by=INVCATS.map(([c,i])=>({c,i,n:L.filter(e=>e.cat===c).length,t:L.filter(e=>e.cat===c).reduce((s,e)=>s+(+e.total||0),0)}));const mx=Math.max(...by.map(b=>b.t),1);
-  const list=L.filter(e=>INVC==="todas"||e.cat===INVC||(INVC==="rev"&&e.rev)).sort((a,b)=>b.d.localeCompare(a.d)||b.at.localeCompare(a.at));
-  const rev=L.filter(e=>e.rev).length;
-  $("inv-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">Invoices y gastos</h2><p class="mk-sub">Sube la foto o el PDF · la IA lo lee y lo pone en su categoría</p></div>
-    <div class="mk-per"><select class="inv-mes" onchange="INVM=this.value;invRender()">${invMonths().concat(["todo"]).map(m=>`<option value="${m}" ${m===INVM?"selected":""}>${invMN(m)}</option>`).join("")}</select><button type="button" class="chip" onclick="invCsv()">⬇ Excel</button></div></div>
-   <label class="inv-drop" id="inv-drop"><input type="file" accept="image/*,application/pdf" multiple hidden onchange="invFiles(this.files);this.value=''"><b>📷 Subir invoices</b><span>Foto o PDF · puedes elegir varios a la vez</span><button type="button" class="chip inv-paste" onclick="event.preventDefault();event.stopPropagation();invPasteBtn()">📋 Pegar imagen copiada</button><small class="inv-hint">o presiona ⌘ V aquí · también puedes arrastrar</small><small id="inv-q">${INVQ?`Leyendo ${INVQ}…`:""}</small></label>
-   <div class="mk-kpis"><div class="kpi mk-kpi hi"><span>Gastos de ${esc(invMN(INVM))}</span><b>${money(tot)}</b><small>${L.length} invoice${L.length===1?"":"s"}</small></div>
-    <div class="kpi mk-kpi"><span>Taxes pagados</span><b>${money(tax)}</b><small>incluidos en el total</small></div>
-    <div class="kpi mk-kpi"><span>Por revisar</span><b>${rev}</b><small>la IA no leyó todo claro</small></div></div>
-   <div class="mk-card"><div class="mk-ct"><b>Por categoría</b><small>toca una para ver solo esos</small></div>
-    <div class="inv-cats">${by.map(b=>`<button type="button" class="inv-cat${INVC===b.c?" on":""}" onclick="INVC=INVC==='${b.c}'?'todas':'${b.c}';invRender()"><span>${b.i} ${b.c}</span><div class="mk-bar"><i style="width:${b.t?Math.max(3,b.t/mx*100):0}%"></i></div><b>${money(b.t)}</b><small>${b.n}</small></button>`).join("")}</div></div>
-   <div class="mk-card"><div class="mk-ct"><b>${INVC==="todas"?"Todos los invoices":INVC==="rev"?"Por revisar":invIc(INVC)+" "+INVC}</b>${INVC!=="todas"?`<button type="button" class="chip" onclick="INVC='todas';invRender()">Ver todos</button>`:rev?`<button type="button" class="chip" onclick="INVC='rev';invRender()">⚠️ Ver los ${rev} por revisar</button>`:""}</div>
-    ${list.length?`<div class="cr-list">${list.map(e=>`<div class="inv-row${e.rev?" rev":""}"><div class="cr-n"><b>${esc(e.prov)}</b><small>${crDate(e.d)}${e.desc?" · "+esc(e.desc):""}${e.pay?" · "+esc(e.pay):""}</small></div>
-      <b class="inv-tot">${e.total==null?"¿?":money(e.total)}</b>
-      <div class="inv-act"><select onchange="invUpd('${e.id}',{cat:this.value,rev:false})" aria-label="Categoría">${INVCATS.map(([c,i])=>`<option value="${c}" ${e.cat===c?"selected":""}>${i} ${c}</option>`).join("")}</select>
-       <button type="button" class="chip" onclick="invEdit('${e.id}')">✎</button><button type="button" class="chip" onclick="invView('${esc(e.file)}')">📎 Ver</button><button type="button" class="chip" onclick="invDel('${e.id}')" aria-label="Borrar">×</button></div>
-      ${e.rev?'<small class="mk-err">⚠️ Revisa el monto o la fecha</small>':""}</div>`).join("")}</div>`:'<div class="empty">No hay invoices aquí todavía. Sube el primero arriba.</div>'}</div>`;
-  const dz=$("inv-drop");["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.add("over")}));["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.remove("over")}));dz.addEventListener("drop",x=>invFiles(x.dataTransfer.files))}
-async function invPasteBtn(){
-  if(!navigator.clipboard||!navigator.clipboard.read)return toast("Copia la imagen y presiona ⌘ V en esta pantalla");
-  try{const items=await navigator.clipboard.read(),fs=[];
-    for(const it of items){const t=it.types.find(x=>/^image\//.test(x)||x==="application/pdf");if(t){const b=await it.getType(t);fs.push(new File([b],"pegado."+(t==="application/pdf"?"pdf":"png"),{type:t==="image/png"||t==="application/pdf"?t:"image/png"}))}}
-    if(!fs.length)return toast("No hay ninguna imagen copiada. Copia la foto del invoice primero.");invFiles(fs)}
-  catch(e){toast("Presiona ⌘ V en esta pantalla para pegar la imagen")}}
-document.addEventListener("paste",e=>{const v=document.getElementById("v-inv");if(!v||v.hidden||!INV)return;const t=e.target;if(t&&t.closest&&t.closest("input,textarea,.cr-modal"))return;
-  const fs=[...(e.clipboardData&&e.clipboardData.files)||[]].filter(f=>/^image\//.test(f.type)||f.type==="application/pdf");
-  if(fs.length){e.preventDefault();invFiles(fs)}else{const h=e.clipboardData&&e.clipboardData.getData("text/html");const m=h&&h.match(/<img[^>]+src="(data:image\/[^"]+)"/);
-    if(m){e.preventDefault();fetch(m[1]).then(r=>r.blob()).then(b=>invFiles([new File([b],"pegado.png",{type:b.type})]))}else toast("Eso no es una imagen. Copia la foto del invoice (clic derecho → Copiar imagen).")}});
-function invRead(f){return new Promise((ok,ko)=>{if(f.type==="application/pdf"){if(f.size>2.6e6)return ko(new Error(f.name+": el PDF pesa mucho (máx. 2.5 MB)"));const r=new FileReader();r.onload=()=>ok({mime:f.type,file:r.result});r.onerror=ko;r.readAsDataURL(f)}
-  else{const img=new Image();img.onload=()=>{const s=Math.min(1,1800/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);ok({mime:"image/jpeg",file:c.toDataURL("image/jpeg",.85)})};img.onerror=()=>ko(new Error(f.name+": no se pudo abrir la imagen"));img.src=URL.createObjectURL(f)}})}
-async function invFiles(fs){fs=[...fs];if(!fs.length)return;INVQ+=fs.length;invRender();let ok=0;
-  for(const f of fs){try{const x=await invRead(f),r=await api("inv_add",x);INV=r.inv;ok+=r.new.length;const e=r.new[0];if(e){INVM=e.d.slice(0,7);toast(`${invIc(e.cat)} ${e.prov} · ${e.total==null?"revisar monto":money(e.total)} → ${e.cat}`)}}catch(e){toast(e.message)}INVQ--;invRender()}
-  if(ok>1)toast(`Listo: ${ok} invoices acomodados`)}
-async function invUpd(id,p){try{INV=(await api("inv_upd",{id,patch:p})).inv;invRender()}catch(e){toast(e.message)}}
-async function invDel(id){if(!confirm("¿Borrar este invoice?"))return;try{INV=(await api("inv_del",{id})).inv;invRender()}catch(e){toast(e.message)}}
-function invEdit(id){const e=INV.find(x=>x.id===id);if(!e)return;const m=document.createElement("div");m.className="cr-modal";m.onclick=x=>{if(x.target===m)m.remove()};
-  m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>✎ ${esc(e.prov)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button></div>
-   <form class="mk-form" onsubmit="event.preventDefault();const f=new FormData(this);invUpd('${e.id}',{prov:f.get('prov'),d:f.get('d'),total:mkNum(f.get('total')),tax:mkNum(f.get('tax')),cat:f.get('cat'),desc:f.get('desc'),pay:f.get('pay'),rev:false});this.closest('.cr-modal').remove()">
-    <label class="mk-w2">Proveedor<input name="prov" value="${esc(e.prov)}"></label><label>Fecha<input type="date" name="d" value="${esc(e.d)}"></label>
-    <label>Total ($)<input name="total" inputmode="decimal" value="${e.total??""}"></label><label>Tax ($)<input name="tax" inputmode="decimal" value="${e.tax||""}"></label>
-    <label>Categoría<select name="cat">${INVCATS.map(([c,i])=>`<option value="${c}" ${e.cat===c?"selected":""}>${i} ${c}</option>`).join("")}</select></label>
-    <label class="mk-w2">Qué se compró<input name="desc" value="${esc(e.desc)}"></label><label>Pago<input name="pay" value="${esc(e.pay)}"></label>
-    <button class="btn" type="submit">Guardar</button></form></div>`;document.body.appendChild(m)}
-async function invView(f){try{const r=await api("inv_file",{file:f});const b=Uint8Array.from(atob(r.data),c=>c.charCodeAt(0));window.open(URL.createObjectURL(new Blob([b],{type:r.mime})),"_blank")}catch(e){toast(e.message)}}
-function invCsv(){const L=INV.filter(e=>INVM==="todo"||e.d.startsWith(INVM)).sort((a,b)=>a.d.localeCompare(b.d)),q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=[["Fecha","Proveedor","Categoría","Qué se compró","Total","Tax","Pago","Número","Subido por"]].concat(L.map(e=>[e.d,e.prov,e.cat,e.desc,e.total??"",e.tax||0,e.pay,e.num,e.by]));
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"}));a.download="invoices-"+INVM+".csv";a.click()}
-/* ===== FIN INVOICES ===== */
 /* ===== IA GENERAL ===== (pregúntale lo que sea: fotos, PDF, cálculos, textos) */
 let IAM=null,IAF=null,IAB=false;
 function iaLoad(){if(IAM)return;try{IAM=JSON.parse(localStorage.getItem("mdn-ia")||"[]")}catch(e){IAM=[]}}
@@ -2551,6 +2501,76 @@ function iaSay(t){if(!IASPK||!window.speechSynthesis)return;speechSynthesis.canc
   const v=speechSynthesis.getVoices().find(v=>/^es/i.test(v.lang)&&/Paulina|Monica|Mónica|Google|Siri/i.test(v.name))||speechSynthesis.getVoices().find(v=>/^es/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u)}
 function iaSpkT(b){IASPK=!IASPK;try{localStorage.setItem("mdn-ia-voz",IASPK?"1":"0")}catch(e){}b.classList.toggle("on",IASPK);b.textContent=IASPK?"🔊 Voz activada":"🔈 Leer respuestas";if(!IASPK&&window.speechSynthesis)speechSynthesis.cancel()}
 /* ===== FIN IA GENERAL ===== */
+/* ===== INVOICES ===== (sube fotos o PDF; la IA los lee y los acomoda por categoría) */
+let INV=null,INVM="",INVC="todas",INVQ=0,INVP=false;
+const INVCATS=[["Gasolina","⛽"],["Viaje","✈️"],["Hotel","🏨"],["Comida","🍽️"],["Accesorios","🧰"],["Máquinas","☕"],["Insumos","📦"],["Otros","🗂️"]];
+const invIc=c=>(INVCATS.find(x=>x[0]===c)||["","🗂️"])[1];
+async function invStart(){$("inv-root").innerHTML='<div class="empty">Cargando invoices…</div>';
+  try{INV=(await api("inv_list")).inv||[]}catch(e){INV=null;$("inv-root").innerHTML='<div class="empty">No se pudo abrir. Sube el api.php nuevo a la carpeta duenos y recarga.</div>';return}
+  if(!INVM)INVM=new Date().toLocaleDateString("en-CA").slice(0,7);invRender()}
+function invMonths(){const s=new Set(INV.map(e=>e.d.slice(0,7)));s.add(new Date().toLocaleDateString("en-CA").slice(0,7));return [...s].sort().reverse()}
+const invMN=m=>m==="todo"?"Todo":new Date(m+"-15T12:00").toLocaleDateString("es-US",{month:"long",year:"numeric"});
+function invRender(){
+  const PEND=INV.filter(e=>e.pend).sort((a,b)=>(a.due||"9").localeCompare(b.due||"9")),pendT=PEND.reduce((s,e)=>s+(+e.total||0),0),hoy=new Date().toLocaleDateString("en-CA");
+  const L=INV.filter(e=>!e.pend&&(INVM==="todo"||(e.paidAt||e.d).startsWith(INVM))),tot=L.reduce((s,e)=>s+(+e.total||0),0),tax=L.reduce((s,e)=>s+(+e.tax||0),0);
+  const by=INVCATS.map(([c,i])=>({c,i,n:L.filter(e=>e.cat===c).length,t:L.filter(e=>e.cat===c).reduce((s,e)=>s+(+e.total||0),0)}));const mx=Math.max(...by.map(b=>b.t),1);
+  const list=L.filter(e=>INVC==="todas"||e.cat===INVC||(INVC==="rev"&&e.rev)).sort((a,b)=>b.d.localeCompare(a.d)||b.at.localeCompare(a.at));
+  const rev=L.filter(e=>e.rev).length;
+  $("inv-root").innerHTML=`<div class="mk-head"><div><h2 class="mk-h">Invoices y gastos</h2><p class="mk-sub">Sube la foto o el PDF · la IA lo lee y lo pone en su categoría</p></div>
+    <div class="mk-per"><select class="inv-mes" onchange="INVM=this.value;invRender()">${invMonths().concat(["todo"]).map(m=>`<option value="${m}" ${m===INVM?"selected":""}>${invMN(m)}</option>`).join("")}</select><button type="button" class="chip" onclick="invCsv()">⬇ Excel</button></div></div>
+   <div class="inv-mode"><span>Al subir, guardar como:</span><button type="button" class="${INVP?"":"on"}" onclick="INVP=false;invRender()">✅ Ya pagado</button><button type="button" class="${INVP?"on":""}" onclick="INVP=true;invRender()">⏳ Pendiente por pagar</button></div>
+   <label class="inv-drop${INVP?" pend":""}" id="inv-drop"><input type="file" accept="image/*,application/pdf" multiple hidden onchange="invFiles(this.files);this.value=''"><b>📷 Subir invoices${INVP?" pendientes":""}</b><span>Foto o PDF · puedes elegir varios a la vez</span><button type="button" class="chip inv-paste" onclick="event.preventDefault();event.stopPropagation();invPasteBtn()">📋 Pegar imagen copiada</button><small class="inv-hint">o presiona ⌘ V aquí · también puedes arrastrar</small><small id="inv-q">${INVQ?`Leyendo ${INVQ}…`:""}</small></label>
+   <div class="mk-kpis"><div class="kpi mk-kpi hi"><span>Gastos de ${esc(invMN(INVM))}</span><b>${money(tot)}</b><small>${L.length} invoice${L.length===1?"":"s"}</small></div>
+    <div class="kpi mk-kpi"><span>Taxes pagados</span><b>${money(tax)}</b><small>incluidos en el total</small></div>
+    <div class="kpi mk-kpi${PEND.length?" inv-kp":""}"><span>Pendiente por pagar</span><b>${money(pendT)}</b><small>${PEND.length} recibo${PEND.length===1?"":"s"}${PEND.some(e=>e.due&&e.due<hoy)?" · ⚠️ vencidos":""}</small></div>
+    <div class="kpi mk-kpi"><span>Por revisar</span><b>${rev}</b><small>la IA no leyó todo claro</small></div></div>
+   <div class="mk-card inv-pend"><div class="mk-ct"><b>⏳ Recibos pendientes</b><small>${PEND.length?"toca ✓ Pagar y se va solo a su categoría":"sube un recibo como “Pendiente por pagar” y aparece aquí"}</small></div>
+    ${PEND.length?`<div class="cr-list">${PEND.map(e=>{const ven=e.due&&e.due<hoy,pr=e.due&&!ven&&e.due<=new Date(Date.now()+3*864e5).toLocaleDateString("en-CA");return `<div class="inv-row${ven?" rev":""}"><div class="cr-n"><b>${esc(e.prov)}</b><small>${invIc(e.cat)} ${esc(e.cat)}${e.desc?" · "+esc(e.desc):""}</small></div>
+      <b class="inv-tot">${e.total==null?"¿?":money(e.total)}</b>
+      <div class="inv-act"><span class="inv-due${ven?" v":pr?" p":""}">${e.due?(ven?"⚠️ Venció ":"Vence ")+crDate(e.due):"Sin fecha límite"}</span><span class="sp" style="flex:1"></span>
+       <button type="button" class="chip" onclick="invEdit('${e.id}')">✎</button><button type="button" class="chip" onclick="invView('${esc(e.file)}')">📎 Ver</button><button type="button" class="btn inv-pay" onclick="invPay('${e.id}')">✓ Pagar</button></div></div>`}).join("")}</div>`:""}</div>
+   <div class="mk-card"><div class="mk-ct"><b>Por categoría</b><small>toca una para ver solo esos</small></div>
+    <div class="inv-cats">${by.map(b=>`<button type="button" class="inv-cat${INVC===b.c?" on":""}" onclick="INVC=INVC==='${b.c}'?'todas':'${b.c}';invRender()"><span>${b.i} ${b.c}</span><div class="mk-bar"><i style="width:${b.t?Math.max(3,b.t/mx*100):0}%"></i></div><b>${money(b.t)}</b><small>${b.n}</small></button>`).join("")}</div></div>
+   <div class="mk-card"><div class="mk-ct"><b>${INVC==="todas"?"Todos los invoices":INVC==="rev"?"Por revisar":invIc(INVC)+" "+INVC}</b>${INVC!=="todas"?`<button type="button" class="chip" onclick="INVC='todas';invRender()">Ver todos</button>`:rev?`<button type="button" class="chip" onclick="INVC='rev';invRender()">⚠️ Ver los ${rev} por revisar</button>`:""}</div>
+    ${list.length?`<div class="cr-list">${list.map(e=>`<div class="inv-row${e.rev?" rev":""}"><div class="cr-n"><b>${esc(e.prov)}</b><small>${crDate(e.d)}${e.desc?" · "+esc(e.desc):""}${e.pay?" · "+esc(e.pay):""}</small></div>
+      <b class="inv-tot">${e.total==null?"¿?":money(e.total)}</b>
+      <div class="inv-act"><select onchange="invUpd('${e.id}',{cat:this.value,rev:false})" aria-label="Categoría">${INVCATS.map(([c,i])=>`<option value="${c}" ${e.cat===c?"selected":""}>${i} ${c}</option>`).join("")}</select>
+       <button type="button" class="chip" onclick="invEdit('${e.id}')">✎</button><button type="button" class="chip" onclick="invView('${esc(e.file)}')">📎 Ver</button><button type="button" class="chip" onclick="invDel('${e.id}')" aria-label="Borrar">×</button></div>
+      ${e.rev?'<small class="mk-err">⚠️ Revisa el monto o la fecha</small>':""}</div>`).join("")}</div>`:'<div class="empty">No hay invoices aquí todavía. Sube el primero arriba.</div>'}</div>`;
+  const dz=$("inv-drop");["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.add("over")}));["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,x=>{x.preventDefault();dz.classList.remove("over")}));dz.addEventListener("drop",x=>invFiles(x.dataTransfer.files))}
+async function invPasteBtn(){
+  if(!navigator.clipboard||!navigator.clipboard.read)return toast("Copia la imagen y presiona ⌘ V en esta pantalla");
+  try{const items=await navigator.clipboard.read(),fs=[];
+    for(const it of items){const t=it.types.find(x=>/^image\//.test(x)||x==="application/pdf");if(t){const b=await it.getType(t);fs.push(new File([b],"pegado."+(t==="application/pdf"?"pdf":"png"),{type:t==="image/png"||t==="application/pdf"?t:"image/png"}))}}
+    if(!fs.length)return toast("No hay ninguna imagen copiada. Copia la foto del invoice primero.");invFiles(fs)}
+  catch(e){toast("Presiona ⌘ V en esta pantalla para pegar la imagen")}}
+document.addEventListener("paste",e=>{const v=document.getElementById("v-inv");if(!v||v.hidden||!INV)return;const t=e.target;if(t&&t.closest&&t.closest("input,textarea,.cr-modal"))return;
+  const fs=[...(e.clipboardData&&e.clipboardData.files)||[]].filter(f=>/^image\//.test(f.type)||f.type==="application/pdf");
+  if(fs.length){e.preventDefault();invFiles(fs)}else{const h=e.clipboardData&&e.clipboardData.getData("text/html");const m=h&&h.match(/<img[^>]+src="(data:image\/[^"]+)"/);
+    if(m){e.preventDefault();fetch(m[1]).then(r=>r.blob()).then(b=>invFiles([new File([b],"pegado.png",{type:b.type})]))}else toast("Eso no es una imagen. Copia la foto del invoice (clic derecho → Copiar imagen).")}});
+function invRead(f){return new Promise((ok,ko)=>{if(f.type==="application/pdf"){if(f.size>2.6e6)return ko(new Error(f.name+": el PDF pesa mucho (máx. 2.5 MB)"));const r=new FileReader();r.onload=()=>ok({mime:f.type,file:r.result});r.onerror=ko;r.readAsDataURL(f)}
+  else{const img=new Image();img.onload=()=>{const s=Math.min(1,1800/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);ok({mime:"image/jpeg",file:c.toDataURL("image/jpeg",.85)})};img.onerror=()=>ko(new Error(f.name+": no se pudo abrir la imagen"));img.src=URL.createObjectURL(f)}})}
+async function invFiles(fs){fs=[...fs];if(!fs.length)return;INVQ+=fs.length;invRender();let ok=0;
+  for(const f of fs){try{const x=await invRead(f),r=await api("inv_add",{...x,pend:INVP});INV=r.inv;ok+=r.new.length;const e=r.new[0];if(e){if(!e.pend)INVM=e.d.slice(0,7);toast(`${invIc(e.cat)} ${e.prov} · ${e.total==null?"revisar monto":money(e.total)} → ${e.pend?"⏳ Pendientes":e.cat}`)}}catch(e){toast(e.message)}INVQ--;invRender()}
+  if(ok>1)toast(`Listo: ${ok} invoices acomodados`)}
+async function invPay(id){const e=INV.find(x=>x.id===id);if(!e)return;const how=prompt(`¿Cómo se pagó ${e.prov} (${e.total==null?"monto por revisar":money(e.total)})?\nEj.: Zelle, tarjeta 1234, efectivo`,e.pay||"");if(how===null)return;
+  const hoy=new Date().toLocaleDateString("en-CA");await invUpd(id,{pend:false,paidAt:hoy,pay:how.trim()||e.pay||""});INVM=hoy.slice(0,7);invRender();toast(`✓ Pagado · ${invIc(e.cat)} pasó a ${e.cat}`)}
+async function invUpd(id,p){try{INV=(await api("inv_upd",{id,patch:p})).inv;invRender()}catch(e){toast(e.message)}}
+async function invDel(id){if(!confirm("¿Borrar este invoice?"))return;try{INV=(await api("inv_del",{id})).inv;invRender()}catch(e){toast(e.message)}}
+function invEdit(id){const e=INV.find(x=>x.id===id);if(!e)return;const m=document.createElement("div");m.className="cr-modal";m.onclick=x=>{if(x.target===m)m.remove()};
+  m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>✎ ${esc(e.prov)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button></div>
+   <form class="mk-form" onsubmit="event.preventDefault();const f=new FormData(this);invUpd('${e.id}',{prov:f.get('prov'),d:f.get('d'),total:mkNum(f.get('total')),tax:mkNum(f.get('tax')),cat:f.get('cat'),desc:f.get('desc'),pay:f.get('pay'),due:f.get('due')||'',pend:!!f.get('pend'),rev:false});this.closest('.cr-modal').remove()">
+    <label class="mk-w2">Proveedor<input name="prov" value="${esc(e.prov)}"></label><label>Fecha<input type="date" name="d" value="${esc(e.d)}"></label>
+    <label>Total ($)<input name="total" inputmode="decimal" value="${e.total??""}"></label><label>Tax ($)<input name="tax" inputmode="decimal" value="${e.tax||""}"></label>
+    <label>Categoría<select name="cat">${INVCATS.map(([c,i])=>`<option value="${c}" ${e.cat===c?"selected":""}>${i} ${c}</option>`).join("")}</select></label>
+    <label class="mk-w2">Qué se compró<input name="desc" value="${esc(e.desc)}"></label><label>Pago<input name="pay" value="${esc(e.pay)}"></label><label>Fecha límite<input type="date" name="due" value="${esc(e.due||"")}"></label>
+    <label class="cr-ck mk-w2"><input type="checkbox" name="pend" ${e.pend?"checked":""}> ⏳ Pendiente por pagar</label>
+    <button class="btn" type="submit">Guardar</button></form></div>`;document.body.appendChild(m)}
+async function invView(f){try{const r=await api("inv_file",{file:f});const b=Uint8Array.from(atob(r.data),c=>c.charCodeAt(0));window.open(URL.createObjectURL(new Blob([b],{type:r.mime})),"_blank")}catch(e){toast(e.message)}}
+function invCsv(){const L=INV.filter(e=>e.pend||INVM==="todo"||(e.paidAt||e.d).startsWith(INVM)).sort((a,b)=>a.d.localeCompare(b.d)),q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const rows=[["Fecha","Proveedor","Categoría","Qué se compró","Total","Tax","Estado","Pagado el","Vence","Pago","Número","Subido por"]].concat(L.map(e=>[e.d,e.prov,e.cat,e.desc,e.total??"",e.tax||0,e.pend?"Pendiente":"Pagado",e.paidAt||"",e.due||"",e.pay,e.num,e.by]));
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"}));a.download="invoices-"+INVM+".csv";a.click()}
+/* ===== FIN INVOICES ===== */
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
