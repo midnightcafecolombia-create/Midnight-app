@@ -739,6 +739,7 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 #q-form>p.note{font-size:11.5px;margin:0;line-height:1.35}
 #q-form>p.note:last-child{display:none}
 @media (max-width:560px){#q-form.reply{grid-template-columns:1fr 1fr}#q-form .send-row .btn{grid-column:1/-1}#q-thread .thread{height:calc(100vh - 300px)}}
+.vd-send{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 4px}.vd-tel{flex:1 1 150px;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid var(--line,#c9a45c66);background:transparent;color:inherit;font:inherit}.vd-wa{width:auto;flex:0 0 auto;padding:10px 16px}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -2910,6 +2911,16 @@ setTimeout(refsLoad,1500);setInterval(()=>{if(!document.hidden)refsLoad()},60000
 const refLink=c=>"https://midnightcgo.com/?r="+c;
 function ptRefOrders(k){const code=Object.keys(REFS).find(c=>REFS[c].k===k);if(!code||typeof D==="undefined"||!D||!D.orders)return {code,list:[]};
   return {code,list:D.orders.map(parseOrder).filter(o=>o.rr===code)}}
+/* enviar a cada distribuidor SU enlace (teléfono guardado por persona) */
+const ptDigits=v=>{const t=String(v||"").replace(/\D/g,"");return t.length===10?"1"+t:t};
+function ptTel(k,n){const T=(SL&&SL.rules&&SL.rules.tels)||{};if(T[k])return T[k];
+  const nn=String(n||"").trim().toLowerCase();const a=(typeof DAPPS!=="undefined"&&DAPPS||[]).find(x=>String(x.name||"").trim().toLowerCase()===nn&&x.phone);return a?a.phone:""}
+function ptTelSave(k,v){if(!SL)return;SL.rules.tels=SL.rules.tels||{};if(String(v).trim())SL.rules.tels[k]=String(v).trim();else delete SL.rules.tels[k];slSave()}
+function ptSendLink(k,n,code){const el=document.getElementById("vd-tel"),v=el?el.value:"";const w=ptDigits(v);
+  if(w.length<10){toast("Escribe el teléfono de "+n.split(" ")[0]+" (con código de área)");el&&el.focus();return}
+  ptTelSave(k,v);
+  const msg=`Hola ${n.split(" ")[0]}, este es tu enlace personal de Midnight para compartir con tus clientes:\n\n${refLink(code)}\n\nTodo el que compre con este enlace queda registrado como cliente tuyo y tu comisión se calcula sola.`;
+  window.open("https://wa.me/"+w+"?text="+encodeURIComponent(msg),"_blank","noopener")}
 /* detalle de una persona */
 const VD_ST={nueva:"Por verificar",pagada:"Pago verificado",preparada:"Preparada",entregada:"Entregada",cancelada:"Cancelada"};
 function ptDetail(k){if(!SL)return;const P=ptPeople().find(p=>p.k===k);if(!P)return;const R=SL.rules,rows=[];
@@ -2923,6 +2934,7 @@ function ptDetail(k){if(!SL)return;const P=ptPeople().find(p=>p.k===k);if(!P)ret
    <div class="vd-k"><div><span>Ganado en total</span><b>${$$(gan)}</b></div>${sales.length?`<div><span>Ventas</span><b>${sales.length}</b></div><div><span>Total vendido</span><b>${$$(vend)}</b></div><div><span>Bolsas</span><b>${bags}</b></div><div><span>Café</span><b>${Math.round(lb*100)/100} lb</b></div>`:""}${pay?`<div><span>Salario fijo</span><b>${$$(pay)}</b></div>`:""}</div>
    ${(()=>{const R2=ptRefOrders(k);if(!R2.code)return "";const st=o=>(((D.status||{})[o.ref]||{}).s)||"nueva",ok=R2.list.filter(o=>["pagada","preparada","entregada"].includes(st(o)));
      return `<div class="vd-ref"><div class="vd-h"><div><b>🤝 Clientes que llegaron con su enlace</b><small>${esc(refLink(R2.code))}</small></div><div class="vd-m"><button type="button" class="chip" onclick="mkCopy('${refLink(R2.code)}')">Copiar enlace</button></div></div>
+     <div class="vd-send"><input class="vd-tel" id="vd-tel" type="tel" inputmode="tel" placeholder="Teléfono de ${esc(P.n.split(" ")[0])}" value="${esc(ptTel(k,P.n))}" onchange="ptTelSave('${esc(k)}',this.value)" aria-label="Teléfono de ${esc(P.n)}"><button type="button" class="btn vd-wa" onclick="ptSendLink('${esc(k)}','${esc(P.n)}','${R2.code}')">Enviar su enlace por WhatsApp</button></div>
      ${R2.list.length?`<small>${R2.list.length} orden${R2.list.length===1?"":"es"} · ${ok.length} pagada${ok.length===1?"":"s"} · ${$$(ok.reduce((a,o)=>a+o.totalN,0))}</small><ul class="vd-it">${R2.list.slice(0,30).map(o=>`<li><span>${esc(o.client||o.kind)} · ${esc(o.ref)} · ${o.at.toLocaleDateString("es-US",{day:"numeric",month:"short"})} · ${VD_ST[st(o)]||st(o)}</span><span>${o.total||""}</span></li>`).join("")}</ul>`:'<small>Todavía no ha entrado ninguna orden con su enlace.</small>'}</div>`})()}
    ${rows.length?rows.map(({e,l,K})=>{const v=e.vd,its=itemsOf(e),st=v?((D.status||{})[v.ref]||{}).s||v.st||"nueva":"";
      return `<div class="vd-row"><div class="vd-h"><div><b>${esc(e.cuenta||e.rama)}</b><small>${fdt(e.fecha)} · ${esc(e.rama)}${v?" · "+esc(v.ref):""}</small></div><div class="vd-m">${K.v?`<b>${$$(K.v)}</b>`:""}<small class="vd-g">+${$$(l.v)} ${l.k==="dist"?"comisión":l.k==="st"?"servicio":"participación"}</small></div></div>
