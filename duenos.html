@@ -740,6 +740,7 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 #q-form>p.note:last-child{display:none}
 @media (max-width:560px){#q-form.reply{grid-template-columns:1fr 1fr}#q-form .send-row .btn{grid-column:1/-1}#q-thread .thread{height:calc(100vh - 300px)}}
 .vd-send{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 4px}.vd-tel{flex:1 1 150px;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid var(--line,#c9a45c66);background:transparent;color:inherit;font:inherit}.vd-wa{width:auto;flex:0 0 auto;padding:10px 16px}
+.cr-row{position:relative}.cr-row:has(.cr-trash){padding-right:52px}.cr-trash{position:absolute;top:50%;right:8px;transform:translateY(-50%);z-index:2;background:none;border:1px solid var(--line);border-radius:999px;color:var(--cream);width:34px;height:34px;font:inherit;cursor:pointer;display:grid;place-items:center;padding:0}.cr-trash:hover{border-color:var(--gold);background:rgba(201,162,86,.12)}.pt-trash{min-width:36px}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -2449,7 +2450,7 @@ const crKey=(tel,n)=>{const t=crTel(tel);return t.length>=7?"t"+t:n?"n"+String(n
 const crWa=t=>{let d=String(t||"").replace(/\D/g,"");if(d.length===10)d="1"+d;return d};
 const crDate=d=>d?new Date(String(d).length<=5?"2000-"+d+"T12:00":String(d).slice(0,10)+"T12:00").toLocaleDateString("es-US",String(d).length<=5?{day:"numeric",month:"long"}:{day:"numeric",month:"short",year:"numeric"}):"—";
 const crBday=d=>{const s=String(d||"");return s.length>=10?s.slice(5,10):s.length===5?s:""};
-function crAll(){
+function crAll(tr){
   const M={},today=mkDay(0),get=(k,base)=>M[k]||(M[k]={k,n:"",tel:"",email:"",bday:"",src:"",reco:"",biz:"",optin:false,buys:[],leads:[],...base});
   (D&&D.orders||[]).forEach(o=>{const p=parseOrder(o),t=(o.text||"").replace(/\*/g,""),g=re=>((t.match(re)||[])[1]||"").trim();
     const n=p.client&&p.client!=="—"?p.client:"",k=crKey(p.tel,n);if(!k)return;const c=get(k);
@@ -2467,14 +2468,17 @@ function crAll(){
     c.dor=c.nb>0&&!c.conAct&&c.last<mkDay(60);const b=crBday(c.bday);c.cum=!!b&&b.slice(0,2)===today.slice(5,7)});
   const names=L.map(c=>({c,n:(c.n||"").toLowerCase()}));
   L.forEach(c=>{if(!c.reco)return;const r=c.reco.toLowerCase(),h=names.find(x=>x.n&&(x.n===r||x.n.split(" ")[0]===r.split(" ")[0]&&r.length>2));if(h){h.c.refs=(h.c.refs||0)+1;c.recoK=h.c.k}});
-  return L}
+  return tr?L.filter(crHid):L.filter(c=>!crHid(c))}
+const crHid=c=>{const h=(MK.hidden||{})[c.k];if(!h)return false;const a=[...c.buys.map(b=>b.d),...c.leads.map(l=>l.d)].filter(Boolean).sort().pop()||"";return !(a>h.d)};
+let CRT=false;
+function crTrash(k,on){MK.hidden=MK.hidden||{};if(on){const c=crAll().find(x=>x.k===k);MK.hidden[k]={d:mkDay(0),n:(c&&(c.n||c.tel))||""}}else delete MK.hidden[k];mkSave();document.querySelector(".cr-modal")?.remove();mkCli();toast(on?"Mandado a la papelera (lo puedes restaurar)":"Restaurado")}
 function crIn(c,s){return s==="todos"||c.seg===s||(s==="ren"&&c.conRen)||(s==="dor"&&c.dor)||(s==="cum"&&c.cum)||(s==="ref"&&!!c.reco)||(s==="emb"&&c.refs>0)||(s==="opt"&&c.optin)||(s==="con"&&c.conAct)}
 function crSaveC(k,patch){MK.clients=MK.clients||{};MK.clients[k]={...(MK.clients[k]||{k}),...patch,k};mkSave()}
 
 function mkCli(){
   const L=crAll(),buyers=L.filter(c=>c.nb),rep=buyers.filter(c=>c.nb>=2),q=CRQ.toLowerCase();
   const cnt=s=>L.filter(c=>crIn(c,s)).length;
-  const list=L.filter(c=>crIn(c,CRS)&&(!q||[c.n,c.tel,c.email,c.biz,c.reco].join(" ").toLowerCase().includes(q))).sort((a,b)=>(b.last||"").localeCompare(a.last||"")||b.tot-a.tot);
+  const list=(CRT?crAll(true):L).filter(c=>(CRT||crIn(c,CRS))&&(!q||[c.n,c.tel,c.email,c.biz,c.reco].join(" ").toLowerCase().includes(q))).sort((a,b)=>(b.last||"").localeCompare(a.last||"")||b.tot-a.tot);
   const ltv=buyers.length?buyers.reduce((s,c)=>s+c.tot,0)/buyers.length:0;
   $("mk-body").innerHTML=`<div class="mk-kpis">
     <div class="kpi mk-kpi"><span>Contactos</span><b>${L.length}</b><small>${cnt("pros")} sin comprar todavía</small></div>
@@ -2486,15 +2490,15 @@ function mkCli(){
     <div class="kpi mk-kpi"><span>Cumpleaños este mes</span><b>${cnt("cum")}</b><small>regalo = recompra</small></div>
     <div class="kpi mk-kpi"><span>Por un amigo</span><b>${cnt("ref")}</b><small>${cnt("emb")} clientes recomiendan</small></div></div>
    <div class="mk-card"><div class="mk-row"><input class="mk-in" placeholder="Buscar nombre, teléfono, correo…" value="${esc(CRQ)}" oninput="CRQ=this.value;clearTimeout(window._crq);window._crq=setTimeout(mkCli,300)"><button type="button" class="btn" onclick="crOpen('')">+ Cliente</button><button type="button" class="chip" onclick="crCsv()">⬇ Excel</button></div>
-    <div class="mk-per mk-segs">${CRSEG.map(([k,l])=>`<button type="button" class="${CRS===k?"on":""}" onclick="CRS='${k}';mkCli()">${l} <i>${cnt(k)}</i></button>`).join("")}</div>
-    ${list.length&&CRS!=="todos"?`<button type="button" class="btn mk-camp" onclick="crCamp()">💬 Mandar mensaje a este grupo (${list.length})</button>`:""}
-    ${list.length?`<div class="cr-list">${list.slice(0,300).map(c=>`<button type="button" class="cr-row" onclick="crOpen('${esc(c.k)}')"><div class="cr-n"><b>${esc(c.n||c.tel||"Sin nombre")}</b><small>${esc([c.biz,c.tel,c.email].filter(Boolean).join(" · "))}</small></div>
+    <div class="mk-per mk-segs">${CRSEG.map(([k,l])=>`<button type="button" class="${!CRT&&CRS===k?"on":""}" onclick="CRT=false;CRS='${k}';mkCli()">${l} <i>${cnt(k)}</i></button>`).join("")}<button type="button" class="${CRT?"on":""}" onclick="CRT=!CRT;mkCli()">🗑 Papelera <i>${crAll(true).length}</i></button></div>
+    ${list.length&&CRS!=="todos"&&!CRT?`<button type="button" class="btn mk-camp" onclick="crCamp()">💬 Mandar mensaje a este grupo (${list.length})</button>`:""}
+    ${list.length?`<div class="cr-list">${list.slice(0,300).map(c=>`<div class="cr-row" role="button" tabindex="0" onclick="crOpen('${esc(c.k)}')" onkeydown="if(event.key==='Enter')crOpen('${esc(c.k)}')"><button type="button" class="cr-trash" title="${CRT?"Restaurar":"Mandar a la papelera"}" aria-label="${CRT?"Restaurar":"Mandar a la papelera"}" onclick="event.stopPropagation();crTrash('${esc(c.k)}',${CRT?"false":"true"})">${CRT?"↩":"🗑"}</button><div class="cr-n"><b>${esc(c.n||c.tel||"Sin nombre")}</b><small>${esc([c.biz,c.tel,c.email].filter(Boolean).join(" · "))}</small></div>
       <span class="cr-seg s-${c.seg}">${CRLBL[c.seg]}</span><div class="cr-m"><span>${c.nb} compra${c.nb===1?"":"s"}</span><span><b>${money(c.tot)}</b></span><span>${c.last?"última "+crDate(c.last):c.leads.length?c.leads[0].kind:c.chat?"escribió en la app":""}</span>
-      ${c.src&&c.src!=="Sin dato"?`<span>📣 ${esc(c.src)}</span>`:""}${c.reco?`<span>🤝 por ${esc(c.reco)}</span>`:""}${c.refs?`<span>⭐ trajo ${c.refs}</span>`:""}${c.cum?"<span>🎂 este mes</span>":""}${c.dor?"<span>💤 dormido</span>":""}${c.conRen?"<span>⏰ renovar</span>":""}${c.optin?"<span>✅ acepta mensajes</span>":""}</div></button>`).join("")}</div>`
+      ${c.src&&c.src!=="Sin dato"?`<span>📣 ${esc(c.src)}</span>`:""}${c.reco?`<span>🤝 por ${esc(c.reco)}</span>`:""}${c.refs?`<span>⭐ trajo ${c.refs}</span>`:""}${c.cum?"<span>🎂 este mes</span>":""}${c.dor?"<span>💤 dormido</span>":""}${c.conRen?"<span>⏰ renovar</span>":""}${c.optin?"<span>✅ acepta mensajes</span>":""}</div></div>`).join("")}</div>`
     :'<div class="empty">No hay clientes en este grupo todavía. Cada orden y cada persona que escribe en la app se agrega sola.</div>'}</div>`}
 
 function crOpen(k){
-  const L=crAll(),c=L.find(x=>x.k===k)||{k:"",n:"",tel:"",email:"",bday:"",src:"",reco:"",biz:"",optin:false,buys:[],leads:[],nb:0,tot:0,seg:"pros"};CRO=c.k;
+  const L=crAll().concat(crAll(true)),c=L.find(x=>x.k===k)||{k:"",n:"",tel:"",email:"",bday:"",src:"",reco:"",biz:"",optin:false,buys:[],leads:[],nb:0,tot:0,seg:"pros"};CRO=c.k;
   const ct=c.contract||{},log=c.log||[];
   const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
   m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>${c.k?esc(c.n||"Cliente"):"Nuevo cliente"}</b>${c.k?`<span class="cr-seg s-${c.seg}">${CRLBL[c.seg]}</span>`:""}<button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()" aria-label="Cerrar">×</button></div>
@@ -2829,24 +2833,26 @@ setTimeout(()=>{const b=document.querySelector(".tabs .wa-tab:not(.wa-new)");if(
 let PTA=null,PTsyncT=null;
 const ptKey=n=>String(n||"").split(" · ")[0].trim().toLowerCase().replace(/\s+/g," ");
 const ptName=l=>l.k==="st"?String(l.n).split(" · ")[0]:l.n;
-function ptPeople(){const M={};const add=(n,role)=>{const k=ptKey(n);if(!k||/^distribuidor \d|^sin nombre|^persona \d|sin asignar/.test(k))return null;return M[k]=M[k]||{k,n:String(n).split(" · ")[0].trim(),roles:new Set(),lines:[],pay:[]},M[k].roles.add(role),M[k]};
+function ptPeople(tr){const M={};const add=(n,role)=>{const k=ptKey(n);if(!k||/^distribuidor \d|^sin nombre|^persona \d|sin asignar/.test(k))return null;return M[k]=M[k]||{k,n:String(n).split(" · ")[0].trim(),roles:new Set(),lines:[],pay:[]},M[k].roles.add(role),M[k]};
   (SL.entries||[]).forEach(e=>{let K;try{K=slCalcSnap(e)}catch(x){return}(K.L||[]).forEach(l=>{if(!["dist","emp","st"].includes(l.k)||!(l.v>0))return;
     const p=add(ptName(l),{dist:"Distribuidor",emp:"Empleado %",st:"Personal"}[l.k]);if(!p)return;
     p.lines.push({d:e.fecha||"",c:e.cuenta||"",r:e.rama||"",v:K.v||0,g:l.v,k:l.k,t:String(l.t||"").replace(/ de \$[\d.,]+/,"").replace(/ de la base neta/,"")})})});
   (SL.payroll||[]).forEach(x=>{const p=add(x.n,"Nómina");if(p)p.pay.push({t:x.t||"",m:+x.m||0,f:x.f||"",r:x.r||""})});
   (SL.rules.emps||[]).forEach(x=>add(x.n,"Empleado %"));(SL.rules.distributors||[]).forEach(x=>add(x.n,"Distribuidor"));
-  return Object.values(M).sort((a,b)=>a.n.localeCompare(b.n))}
-async function ptSync(quiet){if(!SL)return;try{if(!PTA)PTA=(await api("portal_list")).access||{};const P={};ptPeople().forEach(p=>{if(PTA[p.k])P[p.k]={n:p.n,lines:p.lines,pay:p.pay}});
+  return Object.values(M).filter(p=>tr==='all'||(tr?!!(SL.trash||{})[p.k]:!(SL.trash||{})[p.k])).sort((a,b)=>a.n.localeCompare(b.n))}
+let PTT=false;
+function ptTrash(k,on){SL.trash=SL.trash||{};if(on){const p=ptPeople('all').find(x=>x.k===k);SL.trash[k]={n:p?p.n:k,d:new Date().toISOString().slice(0,10)}}else delete SL.trash[k];slSave();toast(on?'Mandado a la papelera (sus ventas y pagos siguen guardados)':'Restaurado');slPortal()}
+async function ptSync(quiet){if(!SL)return;try{if(!PTA)PTA=(await api("portal_list")).access||{};const P={};ptPeople('all').forEach(p=>{if(PTA[p.k])P[p.k]={n:p.n,lines:p.lines,pay:p.pay}});
   if(Object.keys(PTA).length)await api("portal_sync",{people:P});if(!quiet)toast("Portal del equipo actualizado ✓")}catch(e){if(!quiet)toast(e.message)}}
 function ptSyncSoon(){clearTimeout(PTsyncT);PTsyncT=setTimeout(()=>ptSync(true),2500)}
 if(typeof slSave==="function"&&!slSave._pt){const _s=slSave;slSave=function(){_s.apply(this,arguments);ptSyncSoon()};slSave._pt=1}
 async function slPortal(){const B=$("emp-root");if(!SL){B.innerHTML=`<div class="mk-head"><div><h2 class="mk-h">🪪 Empleados</h2><p class="mk-sub">Portal privado del equipo · cada empleado ve solo lo que gana</p></div></div><div id="da-box"></div><div class="mk-card emp-lock"><b>🔒 Esta sección usa los datos de Distribución</b><p class="mk-small">Ábrela con tu clave de Distribución y vuelves aquí sola.</p><button type="button" class="btn" style="width:auto" onclick="empUnlock()">Abrir con mi clave</button></div>`;daLoad();return}B.innerHTML='<div class="empty">Cargando…</div>';
   try{PTA=(await api("portal_list")).access||{}}catch(e){B.innerHTML=`<div class="empty">${esc(e.message)}<br>Sube el api.php nuevo.</div>`;return}
-  const P=ptPeople(),mo=new Date().toLocaleDateString("en-CA").slice(0,7);
+  const P=ptPeople(PTT),mo=new Date().toLocaleDateString("en-CA").slice(0,7);
   B.innerHTML=`<div class="mk-head"><div><h2 class="mk-h">🪪 Empleados</h2><p class="mk-sub">Portal privado del equipo · midnightcgo.com/equipo.php</p></div></div><div id="da-box"></div><div class="mk-card"><div class="mk-ct"><b>Accesos de empleados</b><small>Cada persona entra en <b>midnightcgo.com/equipo.php</b> con su código y ve <b>solo lo que gana</b>: sus comisiones, ventas, pagos y salario. Nunca ve costos, márgenes ni lo de los demás.</small></div>
-   <div class="mk-row"><button type="button" class="chip" onclick="mkCopy('https://midnightcgo.com/equipo.php')">Copiar enlace del portal</button><button type="button" class="chip" onclick="ptSync()">↻ Publicar ahora</button>${ptHasDemo()?'<button type="button" class="chip" onclick="ptDemo(false)">🗑 Borrar ejemplo de Andrés</button>':'<button type="button" class="chip" onclick="ptDemo(true)">🧪 Ver ejemplo de Andrés</button>'}</div>
+   <div class="mk-row"><button type="button" class="chip" onclick="mkCopy('https://midnightcgo.com/equipo.php')">Copiar enlace del portal</button><button type="button" class="chip" onclick="ptSync()">↻ Publicar ahora</button><button type="button" class="chip ${PTT?"on":""}" onclick="PTT=!PTT;slPortal()">🗑 Papelera de empleados · ${ptPeople(true).length}</button>${ptHasDemo()?'<button type="button" class="chip" onclick="ptDemo(false)">🗑 Borrar ejemplo de Andrés</button>':'<button type="button" class="chip" onclick="ptDemo(true)">🧪 Ver ejemplo de Andrés</button>'}</div>
    ${P.length?`<div class="cr-list">${P.map(p=>{const on=!!PTA[p.k],gm=p.lines.filter(l=>l.d.startsWith(mo)).reduce((s,l)=>s+l.g,0);return `<div class="pt-row"><div class="cr-n"><button type="button" class="pt-name" data-k="${esc(p.k)}" onclick="ptDetail(this.dataset.k)">${esc(p.n)} ›</button><small>${esc([...p.roles].join(" · "))} · ${p.lines.length} registro${p.lines.length===1?"":"s"} · este mes ${$$(gm)}</small>${on&&PTA[p.k].last?`<small>Último ingreso: ${new Date(PTA[p.k].last).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</small>`:""}</div>
-     <div class="pt-act">${on?`<span class="pt-on">● Con acceso</span>${PTA[p.k].ref?`<button type="button" class="chip" title="Enlace de referido para compartir con clientes" onclick="mkCopy('https://midnightcgo.com/?r=${esc(PTA[p.k].ref)}')">🔗 ${esc(PTA[p.k].ref)}</button>`:""}<button type="button" class="chip" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n,1)">Nuevo código</button><button type="button" class="chip" data-k="${esc(p.k)}" onclick="ptRevoke(this.dataset.k)">Quitar</button>`:`<button type="button" class="btn pt-give" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n)">Dar acceso</button>`}</div></div>`}).join("")}</div>`
+     <div class="pt-act"><button type="button" class="chip pt-trash" title="${PTT?"Restaurar":"Mandar a la papelera"}" aria-label="${PTT?"Restaurar":"Mandar a la papelera"}" data-k="${esc(p.k)}" onclick="ptTrash(this.dataset.k,${PTT?"false":"true"})">${PTT?"↩ Restaurar":"🗑"}</button>${on?`<span class="pt-on">● Con acceso</span>${PTA[p.k].ref?`<button type="button" class="chip" title="Enlace de referido para compartir con clientes" onclick="mkCopy('https://midnightcgo.com/?r=${esc(PTA[p.k].ref)}')">🔗 ${esc(PTA[p.k].ref)}</button>`:""}<button type="button" class="chip" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n,1)">Nuevo código</button><button type="button" class="chip" data-k="${esc(p.k)}" onclick="ptRevoke(this.dataset.k)">Quitar</button>`:`<button type="button" class="btn pt-give" data-k="${esc(p.k)}" data-n="${esc(p.n)}" onclick="ptCode(this.dataset.k,this.dataset.n)">Dar acceso</button>`}</div></div>`}).join("")}</div>`
    :'<div class="empty">Todavía no hay empleados. Aparecen solas cuando registras ventas con distribuidores, personal de Mixología, empleados con % o nómina.</div>'}</div>`;daLoad()}
 async function ptCode(k,n,re){if(re&&!confirm("El código anterior de "+n+" dejará de funcionar. ¿Crear uno nuevo?"))return;
   try{const r=await api("portal_code",{key:k,n});PTA=null;await ptSync(true);
@@ -2867,7 +2873,7 @@ function daBadge(){const b=document.querySelector('[data-v="emp"]');if(!b)return
   if(!n){s&&s.remove();return}if(!s){s=document.createElement("span");s.className="da-badge";b.appendChild(s)}s.textContent=n}
 function daRender(){const B=$("da-box");if(!B)return;if(DAPPS===null){B.innerHTML="";return}
   const L=DAPPS.filter(a=>DAf==="todas"||(DAf==="activas"?["nuevo","contactado"].includes(a.st):a.st===DAf)),cnt=k=>DAPPS.filter(a=>a.st===k).length;
-  const fil=[["activas","Por atender",cnt("nuevo")+cnt("contactado")],["aprobado","Aprobados",cnt("aprobado")],["rechazado","No aplica",cnt("rechazado")],["todas","Todas",DAPPS.length]];
+  const fil=[["activas","Por atender",cnt("nuevo")+cnt("contactado")],["aprobado","Aprobados",cnt("aprobado")],["rechazado","🗑 Papelera",cnt("rechazado")],["todas","Todas",DAPPS.length]];
   B.innerHTML=`<div class="mk-card"><div class="mk-ct"><b>🚚 Solicitudes de distribuidores</b><small>Llegan solas cuando alguien llena el formulario en la página <b>Distribuidores</b> de midnightcgo.com.</small></div>
   <div class="mk-row">${fil.map(([k,t,n])=>`<button type="button" class="chip ${DAf===k?"on":""}" onclick="DAf='${k}';daRender()">${t} · ${n}</button>`).join("")}<button type="button" class="chip" onclick="daLoad()">↻</button></div>
   ${L.length?`<div class="cr-list">${L.map(a=>{const [stt,stc]=DA_ST[a.st]||DA_ST.nuevo,tel=(a.phone||"").replace(/\D/g,""),wa=tel.length===10?"1"+tel:tel,d=a.at?new Date(a.at):null;
@@ -2878,8 +2884,8 @@ function daRender(){const B=$("da-box");if(!B)return;if(DAPPS===null){B.innerHTM
       <div class="mk-row">${wa?`<a class="chip" target="_blank" rel="noopener" href="https://wa.me/${wa}">💬 ${esc(a.phone)}</a>`:""}${a.email?`<a class="chip" href="mailto:${esc(a.email)}">✉️ ${esc(a.email)}</a>`:""}</div></div>
       <div class="pt-act da-act">${a.st!=="aprobado"?`<button type="button" class="btn pt-give" data-r="${esc(a.ref)}" onclick="daApprove(this.dataset.r)">Aprobar</button>`:""}
        ${a.st==="nuevo"?`<button type="button" class="chip" data-r="${esc(a.ref)}" onclick="daSet(this.dataset.r,'contactado')">Ya lo contacté</button>`:""}
-       ${a.st!=="rechazado"&&a.st!=="aprobado"?`<button type="button" class="chip" data-r="${esc(a.ref)}" onclick="daSet(this.dataset.r,'rechazado')">No aplica</button>`:""}
-       ${a.st==="rechazado"||a.st==="aprobado"?`<button type="button" class="chip" data-r="${esc(a.ref)}" onclick="daSet(this.dataset.r,'nuevo')">Deshacer</button>`:""}</div></div>`}).join("")}</div>`
+       ${a.st!=="rechazado"?`<button type="button" class="chip" title="Mandar a la papelera" data-r="${esc(a.ref)}" onclick="daSet(this.dataset.r,'rechazado')">🗑</button>`:""}
+       ${a.st==="rechazado"||a.st==="aprobado"?`<button type="button" class="chip" data-r="${esc(a.ref)}" onclick="daSet(this.dataset.r,'nuevo')">↩ Restaurar</button>`:""}</div></div>`}).join("")}</div>`
   :`<div class="empty">${DAPPS.length?"Nada en este filtro.":"Todavía no ha llegado ninguna solicitud. Cuando alguien se inscriba en la página de Distribuidores, aparece aquí sola y te llega aviso al teléfono."}</div>`}</div>`}
 async function daSet(ref,st,quiet){try{await api("dist_app_set",{ref,st});const a=DAPPS.find(x=>x.ref===ref);if(a)a.st=st;daBadge();daRender();if(!quiet)toast("Listo ✓")}catch(e){toast(e.message)}}
 async function daApprove(ref){const a=(DAPPS||[]).find(x=>x.ref===ref);if(!a)return;
@@ -2923,7 +2929,7 @@ function ptSendLink(k,n,code){const el=document.getElementById("vd-tel"),v=el?el
   window.open("https://wa.me/"+w+"?text="+encodeURIComponent(msg),"_blank","noopener")}
 /* detalle de una persona */
 const VD_ST={nueva:"Por verificar",pagada:"Pago verificado",preparada:"Preparada",entregada:"Entregada",cancelada:"Cancelada"};
-function ptDetail(k){if(!SL)return;const P=ptPeople().find(p=>p.k===k);if(!P)return;const R=SL.rules,rows=[];
+function ptDetail(k){if(!SL)return;const P=ptPeople('all').find(p=>p.k===k);if(!P)return;const R=SL.rules,rows=[];
   (SL.entries||[]).forEach(e=>{let K;try{K=slCalcSnap(e)}catch(x){return}(K.L||[]).forEach(l=>{if(["dist","emp","st"].includes(l.k)&&(l.v>0||l.own)&&ptKey(ptName(l))===k)rows.push({e,l,K})})});
   rows.sort((a,b)=>String(b.e.fecha).localeCompare(String(a.e.fecha)));
   const itemsOf=e=>e.vd?e.vd.items.map(i=>({q:i.q,n:i.n,t:i.t,lb:i.lb,bag:i.id!=="caps"})):(e.items||[]).filter(it=>slPrice(it,R)||it.d||it.prod).map(it=>slIsCat(it)?{q:slNum(it.q),n:(slProd(it,R)||{}).n||"Producto",t:slPrice(it,R),lb:0,bag:true}:{q:0,n:it.t+(it.d?": "+it.d:""),t:slPrice(it,R),lb:it.t==="Café"?slNum(it.lb):0,bag:false});
