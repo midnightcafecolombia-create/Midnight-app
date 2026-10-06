@@ -2819,7 +2819,7 @@ async function slPortal(){const B=$("emp-root");if(!SL){B.innerHTML=`<div class=
    :'<div class="empty">Todavía no hay empleados. Aparecen solas cuando registras ventas con distribuidores, personal de Mixología, empleados con % o nómina.</div>'}</div>`;daLoad()}
 async function ptCode(k,n,re){if(re&&!confirm("El código anterior de "+n+" dejará de funcionar. ¿Crear uno nuevo?"))return;
   try{const r=await api("portal_code",{key:k,n});PTA=null;await ptSync(true);
-    const msg=`Hola ${n.split(" ")[0]} 👋 Ya tienes acceso al Portal del equipo de Midnight, donde ves lo que vas ganando.\n\n🔗 ${r.link}\n🔑 Tu código: ${r.code}\n\nEs personal, no lo compartas.`;
+    const msg=`Hola ${n.split(" ")[0]}, ya tienes acceso al Portal del equipo de Midnight. Ahí registras tus ventas y ves lo que vas ganando.\n\nEntra aquí: ${r.link}\nTu código: ${r.code}\n\nEs personal, no lo compartas.`;
     const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
     m.innerHTML=`<div class="cr-box wa-box"><div class="mk-ct"><b>🔑 Código de ${esc(n)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>Cópialo ahora: por seguridad no se vuelve a mostrar (si se pierde, creas uno nuevo).</small></div>
      <div class="pt-code">${esc(r.code)}</div><textarea class="mk-in" rows="6" id="pt-msg">${esc(msg)}</textarea>
