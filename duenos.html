@@ -993,7 +993,7 @@ async function api(action,body={}){
 }
 let D=null;
 /* ===== Pestañas ===== */
-let PREVV="ordenes";function showView(v){if(v!=="sal"&&v!=="bank")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="bank"&&!BK)bkStart();if(v==="mkt"&&!MK)mkStart();if(v==="inv"&&!INV)invStart();if(v==="ia"&&!$("ia-chat"))iaStart();if(v==="emp")slPortal();document.body.classList.toggle("ia-on",v==="ia")}
+let PREVV="ordenes";function showView(v){if(v!=="sal"&&v!=="bank")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="bank"&&!BK)bkStart();if(v==="mkt"&&!(MK&&MK.cfg))mkStart();if(v==="inv"&&!INV)invStart();if(v==="ia"&&!$("ia-chat"))iaStart();if(v==="emp")slPortal();document.body.classList.toggle("ia-on",v==="ia")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 
 /* ===== Órdenes ===== */
