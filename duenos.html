@@ -788,6 +788,9 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
 .bk-calc .bk-sg button{font-size:12px;padding:9px 4px}
 .bk-links{display:flex;gap:4px;flex-wrap:wrap;align-items:center}.bk-links button{background:none;border:0;border-bottom:1px dashed var(--gold);color:var(--gold);padding:2px 1px;font:inherit;font-size:12px;cursor:pointer}.bk-links button:hover{background:rgba(212,175,96,.15)}.bk-links i{opacity:.4;font-style:normal}
 /* ===== FIN BANCO ===== */
+.tabs button[hidden]{display:none!important}
+body.fin #cmd-fab,body.fin .cmd-fab,body.fin .bk-fab,body.fin #bk-drop,body.fin .bk-x,body.fin .inv-drop,body.fin .inv-act button[title*="papelera"],body.fin .inv-act button[title*="Borrar"],body.fin .bk-bal{display:none!important}
+body.fin #v-bank .inv-act button[aria-label="Borrar statement"]{display:none!important}
 /* panel extra (fuera de la región de Distribución) */
 .ai-pop input{width:100%;box-sizing:border-box;background:var(--ink);color:var(--cream);border:1px solid var(--line);border-radius:8px;margin-top:3px;font:inherit}
 .pw-row{display:flex;gap:6px;align-items:center}.pw-row input{flex:1;min-width:0}
@@ -956,7 +959,7 @@ html[data-theme="light"] .wa-b.out{background:#d9fdd3}html[data-theme="light"] .
         <label>Nombre<input id="u-name" required></label>
         <label>Usuario<input id="u-user" autocapitalize="none" required></label>
         <label>Contraseña provisoria (10+ caracteres)<span class="pw-row"><input id="u-pw" type="password" autocomplete="new-password" required><button type="button" class="chip" title="Crear una contraseña segura" onclick="pwGen('u-pw')">🎲 Crear</button><button type="button" class="chip" title="Copiar" onclick="pwCopy('u-pw')">📋</button></span><small class="note" id="u-pw-tip" style="margin:4px 0 0" hidden>Al tocar Agregar te sale el botón para enviársela por WhatsApp. Al entrar, la persona crea la suya.</small></label>
-        <label>Permiso<select id="u-role"><option value="socio">Socio: ve y actualiza</option><option value="admin">Administrador: también maneja el equipo</option></select></label>
+        <label>Permiso<select id="u-role"><option value="socio">Socio: ve y actualiza</option><option value="fin">Socio de solo lectura: ve Costos, Distribución, Banco e Invoices</option><option value="admin">Administrador: también maneja el equipo</option></select></label>
         <label class="ck" style="flex-direction:row;align-items:center;gap:8px;grid-column:1/-1"><input type="checkbox" id="u-sal" style="width:auto"> 🔒 También puede entrar a <b>Distribución</b> (crea su clave al entrar)</label>
         <button class="btn" type="submit">Agregar</button>
       </form>
@@ -993,7 +996,7 @@ async function api(action,body={}){
 }
 let D=null;
 /* ===== Pestañas ===== */
-let PREVV="ordenes";function showView(v){if(v!=="sal"&&v!=="bank")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="bank"&&!BK)bkStart();if(v==="mkt"&&!window.MKREADY)mkStart();if(v==="inv"&&!INV)invStart();if(v==="ia"&&!$("ia-chat"))iaStart();if(v==="emp")slPortal();document.body.classList.toggle("ia-on",v==="ia")}
+const FINV=["costos","sal","bank","inv"];let PREVV="ordenes";function showView(v){if(document.body.classList.contains("fin")&&!FINV.includes(v))v="costos";if(v!=="sal"&&v!=="bank")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="bank"&&!BK)bkStart();if(v==="mkt"&&!window.MKREADY)mkStart();if(v==="inv"&&!INV)invStart();if(v==="ia"&&!$("ia-chat"))iaStart();if(v==="emp")slPortal();document.body.classList.toggle("ia-on",v==="ia")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 
 /* ===== Órdenes ===== */
@@ -1065,7 +1068,7 @@ $("s-save").onclick=async()=>{
 /* ===== Equipo ===== */
 function renderUsers(){
   const admin=BOOT.role==="admin";$("u-admin").hidden=!admin;
-  $("u-list").innerHTML=D.users.map(u=>`<div class="user"><div><b style="font-weight:500">${esc(u.name)}</b><small>${esc(u.user)} · ${u.role==="admin"?"Administrador":"Socio"}${u.user===BOOT.user?" · tú":""}</small></div>${admin&&u.user!==BOOT.user?`<span class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end"><button type="button" class="chip" title="Crear contraseña provisoria y enviarla por WhatsApp" onclick="resetPw('${esc(u.user)}','${esc(u.name)}')">📲 Enviar acceso</button><button type="button" class="u-x" title="Borrar a ${esc(u.name)}" aria-label="Borrar" onclick="delUser('${esc(u.user)}','${esc(u.name)}')">×</button></span>`:""}</div>`).join("");
+  $("u-list").innerHTML=D.users.map(u=>`<div class="user"><div><b style="font-weight:500">${esc(u.name)}</b><small>${esc(u.user)} · ${u.role==="admin"?"Administrador":u.fin?"Socio · solo finanzas":"Socio"}${u.user===BOOT.user?" · tú":""}</small></div>${admin&&u.user!==BOOT.user?`<span class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end"><button type="button" class="chip" title="Crear contraseña provisoria y enviarla por WhatsApp" onclick="resetPw('${esc(u.user)}','${esc(u.name)}')">📲 Enviar acceso</button><button type="button" class="u-x" title="Borrar a ${esc(u.name)}" aria-label="Borrar" onclick="delUser('${esc(u.user)}','${esc(u.name)}')">×</button></span>`:""}</div>`).join("");
 }
 async function delUser(u,n){if(!confirm(`¿Borrar a ${n||u} (${u})? Ya no podrá entrar al panel.`))return;
   try{const r=await api("del_user",{user:u});D.users=r.users;renderUsers();toast("Persona borrada")}catch(e){toast(e.message)}}
@@ -3232,7 +3235,7 @@ function bkAcc(){return '<div class="mk-card" id="bk-acc"><div class="empty">Car
 let BKAF=false;
 async function bkAccLoad(){let r;try{r=await api("bk_access")}catch(e){return bkErr(e)}const B=$("bk-acc");if(!B)return;
   B.innerHTML=`${r.isOwner?`<div class="mk-row"><button type="button" class="btn" style="width:auto" onclick="BKAF=!BKAF;bkAccLoad()">＋ Agregar persona</button></div>`:""}
-   ${r.isOwner&&BKAF?`<div class="bk-form bk-add"><label>Nombre<input class="mk-in" id="ba-n" placeholder="Nombre y apellido" autocomplete="off"></label><label>Usuario<input class="mk-in" id="ba-u" placeholder="sin espacios" autocapitalize="none" autocomplete="off"></label><label>Contraseña temporal (10+ caracteres)<input class="mk-in" id="ba-p" type="text" autocomplete="off"></label><label>Tipo<select class="mk-in" id="ba-r"><option value="socio">Socio</option><option value="admin">Administrador</option></select></label><div style="grid-column:1/-1" class="mk-row"><button type="button" class="btn" style="width:auto" onclick="bkAddPerson()">Crear y dar acceso a Banco</button><button type="button" class="chip" onclick="BKAF=false;bkAccLoad()">Cancelar</button></div><p class="note" style="grid-column:1/-1">La persona entra al panel con ese usuario y contraseña, y cambia la contraseña al entrar. Para Banco crea su propia clave de 4 números.</p></div>`:""}
+   ${r.isOwner&&BKAF?`<div class="bk-form bk-add"><label>Nombre<input class="mk-in" id="ba-n" placeholder="Nombre y apellido" autocomplete="off"></label><label>Usuario<input class="mk-in" id="ba-u" placeholder="sin espacios" autocapitalize="none" autocomplete="off"></label><label>Contraseña temporal (10+ caracteres)<input class="mk-in" id="ba-p" type="text" autocomplete="off"></label><label>Tipo<select class="mk-in" id="ba-r"><option value="fin">Socio · solo ver finanzas</option><option value="socio">Socio · ve y actualiza</option><option value="admin">Administrador</option></select></label><div style="grid-column:1/-1" class="mk-row"><button type="button" class="btn" style="width:auto" onclick="bkAddPerson()">Crear y dar acceso a Banco</button><button type="button" class="chip" onclick="BKAF=false;bkAccLoad()">Cancelar</button></div><p class="note" style="grid-column:1/-1">La persona entra al panel con ese usuario y contraseña, y cambia la contraseña al entrar. Para Banco crea su propia clave de 4 números.</p></div>`:""}
    <div class="cr-list">${r.users.map(u=>{const on=r.allow.includes(u.user),own=u.user===r.owner;return `<div class="pt-row"><div class="cr-n"><b>${esc(u.name)}</b><small>${own?"Principal":on?(r.haskey.includes(u.user)?"Con acceso y clave":"Con acceso · todavía no crea su clave"):"Sin acceso a Banco"}</small></div><div class="pt-act">${r.isOwner&&!own?`<button type="button" class="chip" onclick="bkGrant('${esc(u.user)}',${on?"false":"true"})">${on?"Quitar acceso":"Dar acceso"}</button><button type="button" class="chip pt-trash" title="Eliminar persona" aria-label="Eliminar persona" data-u="${esc(u.user)}" data-n="${esc(u.name)}" onclick="bkDelPerson(this.dataset.u,this.dataset.n)">🗑</button>`:""}</div></div>`}).join("")}</div>
    <div class="mk-row"><button type="button" class="chip" onclick="bkChangeKey()">🔑 Cambiar mi clave</button><button type="button" class="chip" onclick="bkLock()">🔒 Cerrar Banco</button></div>`}
 async function bkAddPerson(){const n=$("ba-n").value.trim(),u=$("ba-u").value.trim().toLowerCase().replace(/[^a-z0-9._-]/g,""),p=$("ba-p").value;if(!n||u.length<3)return toast("Escribe el nombre y un usuario de 3+ letras");if(p.length<10)return toast("La contraseña temporal debe tener 10+ caracteres");
@@ -3268,9 +3271,16 @@ async function bkChangeKey(){const old=prompt("Tu clave actual (solo números):"
   if(document.body)run();else document.addEventListener("DOMContentLoaded",run);
 })();
 /* ===== FIN CORRECTOR ===== */
+/* ===== SOCIO SOLO LECTURA (Costos, Distribución, Banco, Invoices) ===== */
+function finBoot(){document.body.classList.add("fin");document.querySelectorAll(".tabs button").forEach(b=>{if(!FINV.includes(b.dataset.v))b.hidden=true});
+  const ro=()=>{["v-costos","v-sal","v-bank","v-inv"].forEach(id=>{const r=$(id);if(!r)return;r.querySelectorAll("input,select,textarea").forEach(e=>{if(e.closest("#sl-lock,#bk-lock,#mx-lock,.cr-modal,.tg"))return;if(e.type==="file"||e.type==="checkbox"||e.type==="radio"||e.tagName==="SELECT")e.disabled=true;else e.readOnly=true})})};
+  new MutationObserver(ro).observe(document.querySelector("main"),{childList:true,subtree:true});ro();
+  const no=()=>toast("Tu acceso es de solo lectura");cxSave=no;try{slSave=no}catch(e){}try{mkSave=no}catch(e){}
+  tempGate();let v="costos";try{const s=localStorage.getItem("mdn-tab");if(FINV.includes(s))v=s}catch(e){}showView(v)}
 async function boot(){
   $("who").textContent=BOOT.name;
   try{D=await api("load")}catch(e){$("o-list").innerHTML='<div class="empty">No se pudieron cargar los datos. Recarga la página.</div>';return}
+  if(D.me&&D.me.fin){finBoot();return}
   renderOrders();ordHidLoad();renderStock();renderUsers();setChatBadge(D.chatsUnread||0);loadChats();aiStatus();tempGate();
   let v="ordenes";try{v=localStorage.getItem("mdn-tab")||v}catch(e){}showView(v);
   setInterval(async()=>{if(document.hidden)return;try{const r=await api("load");const had=new Set(D.orders.map(o=>o.ref));const fresh=r.orders.filter(o=>!had.has(o.ref));D.orders=r.orders;D.status=r.status;if(!sDirty()){D.stock=r.stock;SW=null;renderStock()}renderOrders();if(fresh.length)toast(fresh.length===1?"Nueva orden recibida":fresh.length+" órdenes nuevas")}catch(e){}},60000);
