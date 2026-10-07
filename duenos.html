@@ -993,7 +993,7 @@ async function api(action,body={}){
 }
 let D=null;
 /* ===== Pestañas ===== */
-let PREVV="ordenes";function showView(v){if(v!=="sal"&&v!=="bank")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="bank"&&!BK)bkStart();if(v==="mkt"&&!(MK&&MK.cfg))mkStart();if(v==="inv"&&!INV)invStart();if(v==="ia"&&!$("ia-chat"))iaStart();if(v==="emp")slPortal();document.body.classList.toggle("ia-on",v==="ia")}
+let PREVV="ordenes";function showView(v){if(v!=="sal"&&v!=="bank")PREVV=v;setTimeout(()=>{const t=document.querySelector('.tabs button[data-v="'+v+'"]');t&&t.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})},30);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));document.querySelectorAll("main>.view").forEach(s=>s.hidden=s.id!=="v-"+v);try{localStorage.setItem("mdn-tab",v)}catch(e){}if(v==="costos"&&!CX&&D)cxStart();if(v==="mix"&&!MX)mxStart();if(v==="sal"&&!SL)slStart();if(v==="bank"&&!BK)bkStart();if(v==="mkt"&&!window.MKREADY)mkStart();if(v==="inv"&&!INV)invStart();if(v==="ia"&&!$("ia-chat"))iaStart();if(v==="emp")slPortal();document.body.classList.toggle("ia-on",v==="ia")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 
 /* ===== Órdenes ===== */
@@ -2313,7 +2313,7 @@ async function mkStart(){
   catch(e){MK=null;$("mk-root").innerHTML='<div class="empty">No se pudo abrir Marketing. Sube el archivo api.php nuevo a la carpeta duenos y recarga.</div>';return}
   MK.cfg=MK.cfg||{};MK.cfg.h=MK.cfg.h||{};MK.cfg.acc=MK.cfg.acc||{};MK.manual=MK.manual||[];MK.posts=MK.posts||[];MK.ordsrc=MK.ordsrc||{};
   try{MKT=localStorage.getItem("mk-tab")||"ini";MKP=+localStorage.getItem("mk-p")||30}catch(e){}
-  mkRender();mkAuto();
+  window.MKREADY=true;mkRender();mkAuto();
 }
 function mkSave(){clearTimeout(MKSV);MKSV=setTimeout(async()=>{try{await api("mkt_save",{mk:MK})}catch(e){toast("No se guardó: "+e.message)}},500)}
 function mkTab(t){MKT=t;try{localStorage.setItem("mk-tab",t)}catch(e){}mkRender()}
