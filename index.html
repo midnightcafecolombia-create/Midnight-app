@@ -3076,5 +3076,30 @@ function zPick(id){FQ.model=id;saveFQ();zClose();renderFranq();const s=$("fq-sel
 document.addEventListener("click",e=>{const el=e.target.closest&&e.target.closest(ZSEL);if(!el||e.target.closest("#zv"))return;e.preventDefault();e.stopPropagation();zOpen(el)},true);
 document.addEventListener("keydown",e=>{if(!$("zv"))return;if(e.key==="Escape")zClose();else if(e.key==="ArrowRight")zMove(1);else if(e.key==="ArrowLeft")zMove(-1)});
 (function(){const b=document.createElement("button");b.id="fback";b.type="button";b.setAttribute("aria-label","Volver a la página anterior");b.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg>';b.onclick=()=>goBack();($("app")||document.body).appendChild(b)})();
+/* ===== CORRECTOR ===== (autocorrector y mayúsculas como un teclado de celular · todos los campos de texto) */
+(function(){if(window.__acorr)return;window.__acorr=1;
+  const F={tambien:"también",ademas:"además",aqui:"aquí",ahi:"ahí",alli:"allí",asi:"así",despues:"después",ultimo:"último",ultima:"última",ultimos:"últimos",ultimas:"últimas",numero:"número",numeros:"números",telefono:"teléfono",telefonos:"teléfonos",direccion:"dirección",informacion:"información",cafe:"café",cafes:"cafés",cafeteria:"cafetería",cafeterias:"cafeterías",debito:"débito",credito:"crédito",pagina:"página",paginas:"páginas",facil:"fácil",dificil:"difícil",rapido:"rápido",unico:"único",maquina:"máquina",maquinas:"máquinas",dolares:"dólares",pais:"país",espanol:"español",ingles:"inglés",porfavor:"por favor",porfa:"por favor",mexico:"México",colombia:"Colombia",miami:"Miami",florida:"Florida",doral:"Doral",hialeah:"Hialeah",sabado:"sábado",miercoles:"miércoles",menu:"menú",envio:"envío",envios:"envíos",codigo:"código",razon:"razón",opinion:"opinión",comision:"comisión",promocion:"promoción",descripcion:"descripción",organizacion:"organización",inversion:"inversión",operacion:"operación",atencion:"atención",produccion:"producción",ubicacion:"ubicación",reunion:"reunión",tecnico:"técnico",electronico:"electrónico",electronica:"electrónica",basico:"básico",practico:"práctico",economico:"económico",economica:"económica",clasico:"clásico",armonia:"armonía",tendria:"tendría",podria:"podría",podrias:"podrías",habia:"había",sera:"será",estara:"estará",quiza:"quizá",quizas:"quizás",jamas:"jamás",tambn:"también",xfa:"por favor"};
+  const SKIPT=/^(password|email|tel|number|url|date|time|datetime-local|month|week|file|checkbox|radio|range|color|hidden|submit|button|reset|image)$/i;
+  const SKIPAC=/(username|current-password|new-password|one-time-code|email|tel|url|cc-)/i;
+  const SKIPID=/(^|[-_])(user|usuario|pw|pass|password|clave|key|k|k1|k2|u|p|token|url|iban|sku|ref|code|codigo|apikey|secret)([-_0-9]|$)/i;
+  const dictOn=()=>typeof LANG==="undefined"||LANG==="es";
+  function ok(el){if(!el||!el.tagName)return false;const t=el.tagName;if(t==="TEXTAREA")return !el.readOnly&&!el.disabled&&el.dataset.nocorrect==null;if(t!=="INPUT")return false;
+    const ty=(el.getAttribute("type")||"text").toLowerCase();if(SKIPT.test(ty)||ty==="search")return false;if(/^(buscar|search)/i.test(el.placeholder||""))return false;if(el.readOnly||el.disabled||el.dataset.nocorrect!=null)return false;
+    const im=(el.getAttribute("inputmode")||"").toLowerCase();if(/^(numeric|decimal|tel|email|url)$/.test(im))return false;if(SKIPAC.test(el.getAttribute("autocomplete")||""))return false;if(SKIPID.test(el.id||"")||SKIPID.test(el.name||""))return false;return true}
+  function prep(el){if(!ok(el)||el.__acp)return;el.__acp=1;if(!el.hasAttribute("spellcheck"))el.setAttribute("spellcheck","true");el.setAttribute("autocorrect","on");
+    const hint=((el.id||"")+" "+(el.placeholder||"")+" "+(el.getAttribute("aria-label")||"")).toLowerCase();el.setAttribute("autocapitalize",/nombre|name|ciudad|city|apellido|direcci|address|banco|bank/.test(hint)?"words":"sentences");if(!el.lang&&dictOn())el.lang="es"}
+  function scan(r){if(!r||!r.querySelectorAll)return;if(r.matches&&r.matches("input,textarea"))prep(r);r.querySelectorAll("input,textarea").forEach(prep)}
+  function fix(el){const pos=el.selectionStart;if(pos==null||pos!==el.selectionEnd)return;const txt=el.value,m=txt.slice(0,pos-1).match(/([A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)$/);if(!m)return;
+    const w=m[1],start=pos-1-w.length,before=txt.slice(0,start);if(/[@\/\\._:-]$/.test(before)||/https?:|www\./i.test(before.split(/\s/).pop()||""))return;
+    let r=w;const low=w.toLowerCase();
+    if(dictOn()&&F[low]&&F[low]!==low){r=F[low];if(w===w.toUpperCase()&&w.length>1)r=r.toUpperCase();else if(w[0]===w[0].toUpperCase()&&w[0]!==w[0].toLowerCase())r=r[0].toUpperCase()+r.slice(1)}
+    const wm=el.getAttribute("autocapitalize")==="words"&&(before.trim()===""||!/^(de|del|la|las|los|y|e|da|do|van|von)$/i.test(r));if((wm||/(^|[.!?]\s+|\n\s*)[¿¡]?$/.test(before))&&r[0]===r[0].toLowerCase()&&r[0]!==r[0].toUpperCase())r=r[0].toUpperCase()+r.slice(1);
+    if(r===w)return;const nv=txt.slice(0,start)+r+txt.slice(start+w.length);el.value=nv;const np=pos+(r.length-w.length);try{el.setSelectionRange(np,np)}catch(e){}el.dispatchEvent(new Event("input",{bubbles:true}))}
+  document.addEventListener("input",e=>{const el=e.target;if(e.isComposing||!ok(el))return;const it=e.inputType;if(!(it==="insertText"&&/^[ .,;:!?)\n]$/.test(e.data||"")||it==="insertLineBreak"||it==="insertParagraph"))return;fix(el)},true);
+  document.addEventListener("focusin",e=>prep(e.target),true);
+  const run=()=>{scan(document);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>n.nodeType===1&&scan(n)))).observe(document.body,{childList:true,subtree:true})};
+  if(document.body)run();else document.addEventListener("DOMContentLoaded",run);
+})();
+/* ===== FIN CORRECTOR ===== */
 </script>
 </body></html>
