@@ -1227,7 +1227,13 @@ async function aiRun(mode){
   if(!QCID)return;if(!D.ai)return toast(BOOT.role==="admin"?"Activa la IA en Equipo → Asistente IA":"Pide a un administrador que active la IA");
   const t=$("q-text"),draft=t.value.trim();if(mode==="improve"&&!draft)return toast("Escribe primero tu idea y luego toca «Mejorar»");
   const b=$(mode==="improve"?"ai-imp":"ai-sug"),lbl=b.textContent;b.disabled=true;b.classList.add("busy");b.textContent="✨ Escribiendo…";
-  try{const r=await api("ai_suggest",{cid:QCID,mode,draft,facts:AI_FACTS});t.value=r.text;t.focus();t.style.height="auto";t.style.height=Math.min(260,t.scrollHeight+4)+"px";toast("Revisa el texto y toca Responder")}catch(e){toast(e.message==="red"?"Sin conexión":e.message)}
+  try{let dist=null;
+    if(mode==="suggest"&&QCHAT&&QCHAT.src==="orden"&&/DST-\d{6}-\d{6}/.test((QCHAT.machine||"")+" "+((QCHAT.msgs||[]).map(m=>m.text).join(" ")))){
+      window.DISTW=window.DISTW||{};
+      if(!window.DISTW[QCID]){if(!confirm("Esto aprueba la solicitud y crea el código real de acceso del distribuidor (el anterior, si tenía, deja de funcionar). ¿Continuar?")){b.disabled=false;b.classList.remove("busy");b.textContent=lbl;return}
+        try{window.DISTW[QCID]=await api("dist_welcome",{cid:QCID})}catch(e){b.disabled=false;b.classList.remove("busy");b.textContent=lbl;return toast(e.message==="sallock"?"Primero abre Distribución con tu clave (candado) y vuelve a tocar «Sugerir con IA»":e.message)}}
+      dist=window.DISTW[QCID]}
+    const r=await api("ai_suggest",{cid:QCID,mode,draft,facts:AI_FACTS,dist:dist?{first:dist.first,block:dist.block}:undefined});t.value=r.text;t.focus();t.style.height="auto";t.style.height=Math.min(260,t.scrollHeight+4)+"px";toast("Revisa el texto y toca Responder")}catch(e){toast(e.message==="red"?"Sin conexión":e.message)}
   b.disabled=false;b.classList.remove("busy");b.textContent=lbl}
 $("q-text").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();$("q-form").requestSubmit()}});
 
