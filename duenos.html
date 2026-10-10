@@ -1189,7 +1189,7 @@ function closeChat(){QCID=null;QCHAT=null;$("q-thread").hidden=true;$("q-list-wr
 function renderThread(scroll){
   const c=QCHAT,tel=(c.tel||"").replace(/\D/g,""),wa=tel?(tel.length===10?"1"+tel:tel):"";
   const lang={es:"Español",en:"English",it:"Italiano"}[c.lang]||"";
-  $("q-head").innerHTML=`<button type="button" class="back" onclick="closeChat()">‹ Preguntas</button><div><b>${esc(c.name||"Cliente sin nombre")}</b><small>${[c.tel,lang].filter(Boolean).map(esc).join(" · ")||"Sin WhatsApp todavía"}</small></div><span class="sp"></span>${wa?`<a href="https://wa.me/${wa}" target="_blank" rel="noopener">WhatsApp</a>`:""}<button type="button" class="arch" onclick="archChat(${!c.arch})">${c.arch?"Desarchivar":"Archivar"}</button>`;
+  $("q-head").innerHTML=`<button type="button" class="back" onclick="closeChat()">‹ Preguntas</button><div><b>${esc(c.name||"Cliente sin nombre")}</b><small>${[c.tel,lang].filter(Boolean).map(esc).join(" · ")||"Sin WhatsApp todavía"}</small></div><span class="sp"></span>${wa?`<button type="button" class="arch" onclick="waGo('${wa}',false)">WhatsApp</button><button type="button" class="arch" onclick="waGo('${wa}',true)">App</button>`:""}<button type="button" class="arch" onclick="archChat(${!c.arch})">${c.arch?"Desarchivar":"Archivar"}</button>`;
   let lastM="";
   $("q-msgs").innerHTML=(c.msgs||[]).map(m=>{const showM=m.from==="c"&&m.machine&&m.machine!==lastM;if(m.from==="c"&&m.machine)lastM=m.machine;return `<div class="bub ${m.from}">${showM?`<span class="mc">${esc(m.machine)}</span>`:""}${esc(m.text)}<small>${m.from==="m"?esc(m.by||m.who||"Midnight")+" · ":""}${hhmm(m.t)}</small></div>`}).join("");
   if(scroll){const t=$("q-msgs");t.scrollTop=t.scrollHeight}
@@ -1223,6 +1223,11 @@ async function aiSaveKey(){let k=$("ai-key").value.replace(/[\s\u200B-\u200D\uFE
   if(!k.startsWith("sk-ant-"))return toast(`Lo que pegaste empieza con «${k.slice(0,6)}…», no con sk-ant-. Vuelve a copiar la clave desde Anthropic.`);
   if(k.length<60)return toast(`La clave está incompleta: tiene ${k.length} caracteres y debe tener más de 100. Cópiala otra vez completa.`);try{const r=await api("ai_key",{key:k});D.ai=r.ai;$("ai-key").value="";aiStatus();toast("Asistente IA activado")}catch(e){toast(e.message)}}
 async function aiClearKey(){if(!confirm("¿Seguro que quieres quitar la clave de IA? El asistente dejará de funcionar."))return;try{const r=await api("ai_key",{key:""});D.ai=r.ai;aiStatus();toast("Clave quitada")}catch(e){toast(e.message)}}
+/* WhatsApp directo (sin la página intermedia wa.me, que se queda trabada): app = abre la app de WhatsApp; web = WhatsApp Web. Lleva el texto de la caja y lo copia por si acaso */
+function waGo(num,app,txt){const t=(txt!==undefined?txt:(($("q-text")||{}).value||"")).trim(),e=encodeURIComponent(t),n=String(num||"").replace(/\D/g,"");
+  try{if(t&&navigator.clipboard)navigator.clipboard.writeText(t)}catch(_){}
+  if(app){location.href="whatsapp://send?"+(n?"phone="+n+"&":"")+"text="+e;toast("Abriendo la app de WhatsApp… (si no abre, usa «WhatsApp»; el mensaje ya está copiado)")}
+  else{window.open(n?`https://web.whatsapp.com/send?phone=${n}&text=${e}`:`https://web.whatsapp.com/`,"_blank");toast("Mensaje copiado por si hace falta pegarlo")}}
 async function aiRun(mode){
   if(!QCID)return;if(!D.ai)return toast(BOOT.role==="admin"?"Activa la IA en Equipo → Asistente IA":"Pide a un administrador que active la IA");
   const t=$("q-text"),draft=t.value.trim();if(mode==="improve"&&!draft)return toast("Escribe primero tu idea y luego toca «Mejorar»");
@@ -2946,7 +2951,7 @@ async function ptCode(k,n,re){if(re&&!confirm("El código anterior de "+n+" deja
     const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
     m.innerHTML=`<div class="cr-box wa-box"><div class="mk-ct"><b>🔑 Código de ${esc(n)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>Cópialo ahora: por seguridad no se vuelve a mostrar (si se pierde, creas uno nuevo).</small></div>
      <div class="pt-code">${esc(r.code)}</div><textarea class="mk-in" rows="6" id="pt-msg">${esc(msg)}</textarea>
-     <div class="mk-row"><a class="btn wa-main" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msg)}">Enviar por WhatsApp</a><button type="button" class="chip" onclick="mkCopy($('pt-msg').value)">Copiar mensaje</button></div></div>`;
+     <div class="mk-row"><button type="button" class="btn wa-main" onclick="waGo('',true,$('pt-msg').value)">Enviar por WhatsApp (app)</button><button type="button" class="chip" onclick="waGo('',false,$('pt-msg').value)">WhatsApp Web</button><button type="button" class="chip" onclick="mkCopy($('pt-msg').value)">Copiar mensaje</button></div></div>`;
     document.body.appendChild(m);slPortal()}catch(e){toast(e.message)}}
 async function ptRevoke(k){if(!confirm("¿Quitarle el acceso al portal? Su código deja de funcionar al instante."))return;try{await api("portal_revoke",{key:k});toast("Acceso quitado");slPortal()}catch(e){toast(e.message)}}
 function empUnlock(){showView("sal");const iv=setInterval(()=>{if(SL){clearInterval(iv);showView("emp")}},700);setTimeout(()=>clearInterval(iv),180000)}
