@@ -1033,7 +1033,7 @@ function renderOrders(){
     <div class="o-act">${ST.map(([k,l])=>`<button type="button" class="${s===k?"on":""}" onclick="setSt('${o.ref}','${k}')">${l}</button>`).join("")}<span class="sp"></span>${o.items.some(i=>i.sku)?(st.stock?'<span class="chip ok">Descontada del stock</span>':`<button type="button" onclick="discount('${o.ref}')">Descontar del stock</button>`):""}</div>
     ${st.by?`<p class="note">Último cambio: ${esc(st.by)} · ${new Date(st.t).toLocaleString("es-US",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</p>`:""}
     <details class="raw"><summary>Ver mensaje completo</summary><pre>${esc(o.text)}</pre></details>
-    <div class="o-reply"><button type="button" class="chip" onclick="orReply('${o.ref}')">💬 Responder</button><button type="button" class="chip ai" onclick="orReply('${o.ref}',1)">✨ Responder con IA</button></div></article>`}).join(""):`<div class="empty">${OF==="todas"?"Todavía no han llegado órdenes desde la app.":"No hay órdenes en esta vista."}</div>`;
+    <div class="o-reply"><button type="button" class="chip" onclick="orReply('${o.ref}')">💬 Responder</button><button type="button" class="chip ai" onclick="orReply('${o.ref}',1)">✨ Responder con IA</button>${/^DST-/.test(o.ref)&&OF!=="papelera"?`<button type="button" class="chip ai" onclick="distSend('${o.ref}')">📲 Enviar acceso y link de referidos</button>`:""}</div></article>`}).join(""):`<div class="empty">${OF==="todas"?"Todavía no han llegado órdenes desde la app.":"No hay órdenes en esta vista."}</div>`;
 }
 async function ordHidLoad(){if(MK)return;try{const r=await api("mkt_load");if(MK)return;MK=Array.isArray(r.mk)||!r.mk?{}:r.mk;MKA=r.auto||{};MKV=r.visits||{};MKW=!!r.windsor;MKADM=!!r.admin;renderOrders()}catch(e){}}
 async function ordTrash(ref,on){await ordHidLoad();if(!MK)return toast("No se pudo guardar. Intenta de nuevo");MK.hiddenOrd=MK.hiddenOrd||{};if(on)MK.hiddenOrd[ref]=new Date().toISOString().slice(0,10);else delete MK.hiddenOrd[ref];mkSave();renderOrders();toast(on?"Mandada a la papelera (la puedes restaurar)":"Restaurada")}
@@ -1235,7 +1235,7 @@ async function aiRun(mode){
   try{let dist=null;
     if(mode==="suggest"&&QCHAT&&QCHAT.src==="orden"&&/DST-\d{6}-\d{6}/.test((QCHAT.machine||"")+" "+((QCHAT.msgs||[]).map(m=>m.text).join(" ")))){
       window.DISTW=window.DISTW||{};
-      if(!window.DISTW[QCID]){if(!confirm("Esto aprueba la solicitud y crea el código real de acceso del distribuidor (el anterior, si tenía, deja de funcionar). ¿Continuar?")){b.disabled=false;b.classList.remove("busy");b.textContent=lbl;return}
+      if(!window.DISTW[QCID]){if(!confirm("Esto aprueba la solicitud y crea su acceso real al portal de distribución (contraseña provisional, o código si no dejó correo; el anterior deja de funcionar). ¿Continuar?")){b.disabled=false;b.classList.remove("busy");b.textContent=lbl;return}
         try{window.DISTW[QCID]=await api("dist_welcome",{cid:QCID})}catch(e){b.disabled=false;b.classList.remove("busy");b.textContent=lbl;return toast(e.message==="sallock"?"Primero abre Distribución con tu clave (candado) y vuelve a tocar «Sugerir con IA»":e.message)}}
       dist=window.DISTW[QCID]}
     const r=await api("ai_suggest",{cid:QCID,mode,draft,facts:AI_FACTS,dist:dist?{first:dist.first,block:dist.block}:undefined});t.value=r.text;t.focus();t.style.height="auto";t.style.height=Math.min(260,t.scrollHeight+4)+"px";toast("Revisa el texto y toca Responder")}catch(e){toast(e.message==="red"?"Sin conexión":e.message)}
@@ -3065,6 +3065,24 @@ async function ptDemo(on){if(!SL)return;
 /* ===== FIN COMPOSER PREGUNTAS ===== */
 /* ===== RESPONDER ORDEN ===== (botón bajo cada orden o solicitud: responder tú o con ayuda de la IA, por la app, WhatsApp o correo) */
 const orPlain=t=>String(t||"").replace(/\*/g,"").replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu,"").replace(/━+/g,"———");
+/* Solicitud de distribuidor (DST-): aprueba, crea su acceso al portal (correo + contraseña provisional, o código si no dejó correo) y arma el mensaje listo para enviar */
+async function distSend(ref){const raw=(D.orders||[]).find(x=>x.ref===ref);if(!raw)return;
+  if(!confirm("Esto aprueba la solicitud y crea su acceso al portal de distribución con una contraseña provisional nueva (si tenía una anterior, deja de funcionar). ¿Continuar?"))return;
+  let cid="";try{cid=(await api("chat_by_ref",{ref})).cid||""}catch(e){}
+  if(!cid)return toast("No encuentro el chat de esta solicitud. Ábrela en Preguntas y vuelve a intentar");
+  let d;try{d=await api("dist_welcome",{cid})}catch(e){return toast(e.message==="sallock"?"Primero abre Distribución con tu clave (candado) y vuelve a tocar el botón":e.message)}
+  const o=parseOrder(raw),t=orPlain(raw.text),tel=(o.tel||"").replace(/\D/g,""),num=tel.length===10?"1"+tel:tel,en=/^Your /.test(d.block||"");
+  const mail=d.email||((t.match(/Correo:\s*(\S+@\S+)/)||[])[1]||"");
+  const msg=(en?`Hi ${d.first}, this is Midnight Café Colombia. Your distributor application was approved.\n\n`:`Hola ${d.first}, te escribimos de Midnight Café Colombia. Tu solicitud de distribuidor fue aprobada.\n\n`)+d.block+(en?"\n\nAny questions, message us in this same chat.":"\n\nCualquier duda, escríbenos por este mismo chat.");
+  const m=document.createElement("div");m.className="cr-modal";m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="cr-box"><div class="mk-ct"><b>Acceso listo · ${esc(d.name)}</b><button type="button" class="cr-x" onclick="this.closest('.cr-modal').remove()">×</button><small>${d.password?"Correo y contraseña provisional creados":"Código de acceso creado"} · enlace de referidos ${esc(d.ref)}</small></div>
+   <textarea class="mk-in" id="ds-t" rows="12">${esc(msg)}</textarea>
+   <div class="mk-row">${num?`<button type="button" class="btn" style="width:auto" id="ds-app">Enviar por WhatsApp</button><button type="button" class="chip" id="ds-web">WhatsApp Web</button>`:""}${mail?`<a class="chip" id="ds-mail" href="mailto:${esc(mail)}?subject=${encodeURIComponent(en?"Midnight Café Colombia · Your distributor access":"Midnight Café Colombia · Tu acceso de distribuidor")}">Enviar por correo</a>`:""}<button type="button" class="chip" id="ds-cp">Copiar</button></div>
+   <small class="note">${d.password?"La primera vez que entre, el portal le pide crear su propia contraseña.":"No dejó correo en la solicitud: se le creó un código de acceso."}</small></div>`;
+  document.body.appendChild(m);const T=m.querySelector("#ds-t");
+  if(num){m.querySelector("#ds-app").onclick=()=>waGo(num,true,T.value);m.querySelector("#ds-web").onclick=()=>waGo(num,false,T.value)}
+  if(mail)m.querySelector("#ds-mail").onclick=e=>{e.currentTarget.href=e.currentTarget.href.split("&body=")[0]+"&body="+encodeURIComponent(T.value)};
+  m.querySelector("#ds-cp").onclick=()=>{try{navigator.clipboard.writeText(T.value);toast("Mensaje copiado")}catch(e){T.select()}};}
 async function orReply(ref,ai){const raw=(D.orders||[]).find(x=>x.ref===ref);if(!raw)return;
   if(!ai){try{const r=await api("chat_by_ref",{ref});if(r.cid){showView("preguntas");await loadChats();openChat(r.cid);return}}catch(e){}}const o=parseOrder(raw),t=orPlain(raw.text),g=re=>(t.match(re)||[])[1]||"";
   const tel=(o.tel||"").replace(/\D/g,""),wa=tel.length===10?"1"+tel:tel,mail=g(/Correo:\s*(\S+@\S+)/),nm=(o.client||g(/Nombre:\s*(.+)/)||"").trim();
